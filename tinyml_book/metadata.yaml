@@ -1,0 +1,38 @@
+title: 'TinyML for Embedded Software Engineers'
+subtitle: 'Neural-Network Inference on Resource-Constrained Microcontrollers'
+author: 'James Lavrenz'
+date: 'Draft manuscript • 26 October 2026'
+lang: en-US
+documentclass: book
+classoption: [openany,oneside]
+papersize: custom
+geometry: [paperwidth=6in,paperheight=9in,inner=0.68in,outer=0.64in,top=0.73in,bottom=0.73in]
+fontsize: 10pt
+linestretch: 1.12
+colorlinks: true
+linkcolor: NavyBlue
+urlcolor: NavyBlue
+toc: true
+toc-depth: 1
+numbersections: true
+mainfont: 'DejaVu Serif'
+sansfont: 'DejaVu Sans'
+monofont: 'DejaVu Sans Mono'
+header-includes: |
+  \usepackage{amsmath,amssymb,mathtools,booktabs,longtable,microtype}
+  \usepackage[dvipsnames]{xcolor}
+  \usepackage{fancyhdr}
+  \pagestyle{fancy}
+  \fancyhf{}
+  \fancyhead[LO]{\scriptsize TinyML for Embedded Software Engineers}
+  \fancyhead[RO]{}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0.3pt}
+  \setlength{\headheight}{13pt}
+  \usepackage{enumitem}
+  \setlist[itemize]{topsep=3pt,partopsep=0pt,itemsep=2pt}
+  \setlist[enumerate]{topsep=3pt,partopsep=0pt,itemsep=2pt}
+  \usepackage{titlesec}
+  \titleformat{\chapter}[display]{\bfseries\Huge}{\textcolor{MidnightBlue}{\chaptertitlename\ \thechapter}}{4pt}{\Huge}
+  \titlespacing*{\chapter}{0pt}{-5pt}{15pt}
+  \usepackage{float}
