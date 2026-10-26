@@ -1,0 +1,188 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R 9 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /MediaBox [0 0 612 792] /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 6207 >>
+stream
+0.08 0.23 0.35 rg 0 785 612 7 re f
+BT /F3 8 Tf 0.05 0.46 0.55 rg 1 0 0 1 34.0 755.0 Tm (ENGINEERING / QUICK REFERENCE) Tj ET
+BT /F3 20 Tf 0.08 0.20 0.31 rg 1 0 0 1 34.0 725.0 Tm (Git CLI) Tj ET
+BT /F1 8.5 Tf 0.34 0.42 0.48 rg 1 0 0 1 34.0 706.0 Tm (Commands, branching, recovery, and safe remote workflows) Tj ET
+0.85 0.9 0.93 34 688 544 1 re f
+0.92 0.96 0.97 34 648 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 655.0 Tm (GET STARTED) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 625.0 Tm (git init) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 615.6 Tm (Initialize a new repository.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 589.2 Tm (git clone <url>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 579.8 Tm (Clone a remote repository.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 553.4 Tm (git status -sb) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 544.0 Tm (Compact status with branch and upstream.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 517.6 Tm (git remote -v) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 508.2 Tm (Inspect fetch and push remotes.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 481.8 Tm (git config --global -l) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 472.4 Tm (Inspect global Git configuration.) Tj ET
+0.92 0.96 0.97 34 436.0000000000002 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 443.0 Tm (INSPECT CHANGES) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 413.0 Tm (git diff) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 403.6 Tm (Review unstaged changes.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 377.2 Tm (git diff --staged) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 367.8 Tm (Review staged changes.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 341.4 Tm (git diff --check) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 332.0 Tm (Catch whitespace errors.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 305.6 Tm (git log --oneline --graph --decorate -15) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 296.2 Tm (Compact commit graph.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 269.8 Tm (git show HEAD) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 260.4 Tm (Inspect the most recent commit.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 234.0 Tm (git log --follow -- <file>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 224.6 Tm (Trace changes through file renames.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 198.2 Tm (git blame -L 10,30 <file>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 188.8 Tm (Identify authors of a line range.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 162.4 Tm (git grep -n "pattern") Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 153.0 Tm (Search tracked files.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 126.6 Tm (git log -S"symbol" --all) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 117.2 Tm (Find commits adding/removing a string.) Tj ET
+0.92 0.96 0.97 34 80.80000000000038 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 87.8 Tm (STAGE AND COMMIT) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 658.0 Tm (git add <file>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 648.6 Tm (Stage a file.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 622.2 Tm (git add -p) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 612.8 Tm (Stage selected hunks interactively.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 586.4 Tm (git restore --staged <file>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 577.0 Tm (Unstage without changing working file.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 550.6 Tm (git commit -m "message") Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 541.2 Tm (Commit staged changes.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 514.8 Tm (git commit --amend) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 505.4 Tm (Replace the latest local commit; rewrites ID.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 479.0 Tm (git mv old new) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 469.6 Tm (Move a tracked file.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 443.2 Tm (git rm --cached <file>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 433.8 Tm (Untrack but retain local file.) Tj ET
+0.92 0.96 0.97 315 397.4000000000003 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 404.4 Tm (BRANCHES AND WORKTREES) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 374.4 Tm (git branch -avv) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 365.0 Tm (List local and remote branches.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 338.6 Tm (git switch <branch>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 329.2 Tm (Change current branch.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 302.8 Tm (git switch -c <new>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 293.4 Tm (Create and switch to branch.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 267.0 Tm (git branch -d <branch>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 257.6 Tm (Delete merged local branch.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 231.2 Tm (git worktree add ../fix -b fix) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 221.8 Tm (Create second checkout on new branch.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 195.4 Tm (git worktree list) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 186.0 Tm (List active worktrees.) Tj ET
+0.92 0.96 0.97 315 149.60000000000045 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 156.6 Tm (REMOTE SYNCHRONIZATION) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 126.6 Tm (git fetch --prune origin) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 117.2 Tm (Update remote refs; remove stale remote refs.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 90.8 Tm (git pull --ff-only) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 81.4 Tm (Pull only if fast-forward is possible.) Tj ET
+BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 34 20 Tm (2026-10  /  Git CLI) Tj ET BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 531 20 Tm (1 / 2) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /MediaBox [0 0 612 792] /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 5354 >>
+stream
+0.08 0.23 0.35 rg 0 785 612 7 re f
+BT /F3 8 Tf 0.05 0.46 0.55 rg 1 0 0 1 34.0 755.0 Tm (ENGINEERING / QUICK REFERENCE) Tj ET
+BT /F3 20 Tf 0.08 0.20 0.31 rg 1 0 0 1 34.0 725.0 Tm (Git CLI) Tj ET
+BT /F1 8.5 Tf 0.34 0.42 0.48 rg 1 0 0 1 34.0 706.0 Tm (Commands, branching, recovery, and safe remote workflows) Tj ET
+0.85 0.9 0.93 34 688 544 1 re f
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 658.0 Tm (git push -u origin <branch>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 648.6 Tm (Publish branch and record upstream.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 622.2 Tm (git push) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 612.8 Tm (Push current branch to tracked upstream.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 586.4 Tm (git merge origin/main) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 577.0 Tm (Merge remote-tracking main.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 550.6 Tm (git rebase origin/main) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 541.2 Tm (Replay local commits on new base.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 514.8 Tm (git rebase --continue) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 505.4 Tm (Continue after resolving conflicts.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 479.0 Tm (git rebase --abort) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 469.6 Tm (Cancel rebase and restore starting point.) Tj ET
+0.92 0.96 0.97 34 433.2000000000003 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 440.2 Tm (RECOVER AND UNDO) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 410.2 Tm (git stash push -u -m "wip") Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 400.8 Tm (Stash tracked and untracked files.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 374.4 Tm (git stash list) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 365.0 Tm (Inspect saved stashes.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 338.6 Tm (git stash pop) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 329.2 Tm (Reapply most recent stash and drop if successful.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 302.8 Tm (git reflog) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 293.4 Tm (Find previous branch tips and lost commits.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 267.0 Tm (git switch -c rescue <sha>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 257.6 Tm (Protect recovered commit in new branch.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 231.2 Tm (git revert <sha>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 221.8 Tm (Create inverse commit; safer for shared branches.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 195.4 Tm (git restore -- <file>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 186.0 Tm (DISCARDS unstaged edits in tracked file.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 159.6 Tm (git clean -nd) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 150.2 Tm (Preview untracked deletion.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 123.8 Tm (git clean -fd) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 114.4 Tm (DELETES untracked files; preview first.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 88.0 Tm (git reset --hard <sha>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 78.6 Tm (DESTRUCTIVE: reset HEAD, index, worktree.) Tj ET
+0.92 0.96 0.97 315 648 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 655.0 Tm (MERGE AND CODE ARCHAEOLOGY) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 625.0 Tm (git diff main...feature) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 615.6 Tm (Compare feature to merge-base of main.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 589.2 Tm (git cherry-pick <sha>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 579.8 Tm (Apply an individual commit.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 553.4 Tm (git merge --abort) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 544.0 Tm (Cancel in-progress merge.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 517.6 Tm (git bisect start) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 508.2 Tm (Begin regression bisection; mark good/bad.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 481.8 Tm (git bisect reset) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 472.4 Tm (Stop bisection and restore original state.) Tj ET
+0.92 0.96 0.97 315 436.0000000000002 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 443.0 Tm (KEY CONSIDERATIONS) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 413.0 Tm (MENTAL MODEL: HEAD is current commit; index is staging; working) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 386.6 Tm (tree is checked-out files. Fetch does not merge. Rebase and amend) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 360.2 Tm (change commit IDs; avoid rewriting shared work.) Tj ET
+0.92 0.96 0.97 315 323.8000000000003 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 330.8 Tm (OFFICIAL DOCUMENTATION) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 300.8 Tm (https://git-scm.com/docs) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 274.4 Tm (https://git-scm.com/cheat-sheet) Tj ET
+BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 34 20 Tm (2026-10  /  Git CLI) Tj ET BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 531 20 Tm (2 / 2) Tj ET
+endstream
+endobj
+xref
+0 11
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000191 00000 n 
+0000000259 00000 n 
+0000000334 00000 n 
+0000000407 00000 n 
+0000000563 00000 n 
+0000006821 00000 n 
+0000006978 00000 n 
+trailer
+<< /Size 11 /Root 1 0 R >>
+startxref
+12384
+%%EOF

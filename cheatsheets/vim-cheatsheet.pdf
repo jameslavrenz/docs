@@ -1,0 +1,218 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R 9 0 R 11 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /MediaBox [0 0 612 792] /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 6013 >>
+stream
+0.08 0.23 0.35 rg 0 785 612 7 re f
+BT /F3 8 Tf 0.05 0.46 0.55 rg 1 0 0 1 34.0 755.0 Tm (ENGINEERING / QUICK REFERENCE) Tj ET
+BT /F3 20 Tf 0.08 0.20 0.31 rg 1 0 0 1 34.0 725.0 Tm (Vim) Tj ET
+BT /F1 8.5 Tf 0.34 0.42 0.48 rg 1 0 0 1 34.0 706.0 Tm (Modal editing, operators, motions, search, splits, and macros) Tj ET
+0.85 0.9 0.93 34 688 544 1 re f
+0.92 0.96 0.97 34 648 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 655.0 Tm (MODES AND FILES) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 625.0 Tm (i / I) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 615.6 Tm (Insert at cursor / line first nonblank.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 589.2 Tm (a / A) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 579.8 Tm (Insert after cursor / end of line.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 553.4 Tm (o / O) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 544.0 Tm (Open new line below / above.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 517.6 Tm (Esc / Ctrl-[) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 508.2 Tm (Return to Normal mode.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 481.8 Tm (:w / :q / :wq / :q!) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 472.4 Tm (Write / quit / write+quit / force quit.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 446.0 Tm (:e <file>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 436.6 Tm (Edit a file.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 410.2 Tm (:help <topic>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 400.8 Tm (Open built-in help.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 374.4 Tm (u / Ctrl-r) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 365.0 Tm (Undo / redo.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 338.6 Tm (.) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 329.2 Tm (Repeat the latest change.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 302.8 Tm (ZZ / ZQ) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 293.4 Tm (Save+exit / exit without saving.) Tj ET
+0.92 0.96 0.97 34 257.00000000000045 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 264.0 Tm (NAVIGATION) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 234.0 Tm (h j k l) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 224.6 Tm (Move left/down/up/right.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 198.2 Tm (w / b / e) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 188.8 Tm (Word forward / back / to end.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 162.4 Tm (W / B / E) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 153.0 Tm (WORD motions \(whitespace-delimited\).) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 126.6 Tm (0 / ^ / $) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 117.2 Tm (Column 0 / first nonblank / end of line.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 90.8 Tm (gg / G / 42G) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 81.4 Tm (First line / last line / line 42.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 658.0 Tm (Ctrl-f / Ctrl-b) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 648.6 Tm (Scroll page forward / back.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 622.2 Tm (Ctrl-d / Ctrl-u) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 612.8 Tm (Scroll half-page down / up.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 586.4 Tm (%) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 577.0 Tm (Jump to matching bracket.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 550.6 Tm (f<char> / t<char>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 541.2 Tm (Find character / move before character.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 514.8 Tm (; / ,) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 505.4 Tm (Repeat character search / reverse.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 479.0 Tm (Ctrl-o / Ctrl-i) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 469.6 Tm (Jump backward / forward through jump list.) Tj ET
+0.92 0.96 0.97 315 433.2000000000003 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 440.2 Tm (OPERATORS AND TEXT OBJECTS) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 410.2 Tm (d / c / y + motion) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 400.8 Tm (Delete / change / yank motion.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 374.4 Tm (dd / cc / yy) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 365.0 Tm (Act on current line.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 338.6 Tm (dw / cw / yw) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 329.2 Tm (Operate on word.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 302.8 Tm (diw / ciw / yiw) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 293.4 Tm (Operate inside word.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 267.0 Tm (dap / cip / yi") Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 257.6 Tm (Around paragraph / inside paragraph / quotes.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 231.2 Tm (d$ / c$) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 221.8 Tm (Delete / change through end of line.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 195.4 Tm (x / X) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 186.0 Tm (Delete char at / before cursor.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 159.6 Tm (p / P) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 150.2 Tm (Paste after / before cursor.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 123.8 Tm ("ay / "ap) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 114.4 Tm (Yank / paste using register a.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 88.0 Tm ("+y / "+p) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 78.6 Tm (System clipboard \(if compiled with support\).) Tj ET
+BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 34 20 Tm (2026-10  /  Vim) Tj ET BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 531 20 Tm (1 / 3) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /MediaBox [0 0 612 792] /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 5992 >>
+stream
+0.08 0.23 0.35 rg 0 785 612 7 re f
+BT /F3 8 Tf 0.05 0.46 0.55 rg 1 0 0 1 34.0 755.0 Tm (ENGINEERING / QUICK REFERENCE) Tj ET
+BT /F3 20 Tf 0.08 0.20 0.31 rg 1 0 0 1 34.0 725.0 Tm (Vim) Tj ET
+BT /F1 8.5 Tf 0.34 0.42 0.48 rg 1 0 0 1 34.0 706.0 Tm (Modal editing, operators, motions, search, splits, and macros) Tj ET
+0.85 0.9 0.93 34 688 544 1 re f
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 658.0 Tm (3dd / 5j) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 648.6 Tm (Counts repeat operations and motions.) Tj ET
+0.92 0.96 0.97 34 612.2 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 619.2 Tm (VISUAL SELECTION) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 589.2 Tm (v / V / Ctrl-v) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 579.8 Tm (Character / line / block Visual mode.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 553.4 Tm (> / <) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 544.0 Tm (Indent or outdent selection.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 517.6 Tm (=) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 508.2 Tm (Autoindent selected lines.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 481.8 Tm (gv) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 472.4 Tm (Reselect previous visual selection.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 446.0 Tm (o) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 436.6 Tm (Move to other endpoint of selection.) Tj ET
+0.92 0.96 0.97 34 400.2000000000003 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 407.2 Tm (SEARCH AND REPLACE) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 377.2 Tm (/pattern / ?pattern) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 367.8 Tm (Search forward / backward.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 341.4 Tm (n / N) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 332.0 Tm (Next / previous match.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 305.6 Tm (* / #) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 296.2 Tm (Search word under cursor forward / backward.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 269.8 Tm (:noh) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 260.4 Tm (Clear highlighted matches.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 234.0 Tm (:%s/old/new/g) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 224.6 Tm (Replace all file matches.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 198.2 Tm (:%s/old/new/gc) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 188.8 Tm (Confirm each replacement.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 162.4 Tm (:g/pattern/d) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 153.0 Tm (Delete lines matching expression.) Tj ET
+0.92 0.96 0.97 34 116.60000000000039 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 123.6 Tm (BUFFERS AND WINDOWS) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 93.6 Tm (:ls / :bn / :bp) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 84.2 Tm (List / next / previous buffers.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 658.0 Tm (:b <number> / :bd) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 648.6 Tm (Go to buffer / close buffer.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 622.2 Tm (:split / :vsplit) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 612.8 Tm (Split horizontally / vertically.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 586.4 Tm (Ctrl-w h/j/k/l) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 577.0 Tm (Change active split.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 550.6 Tm (Ctrl-w = / Ctrl-w q) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 541.2 Tm (Equalize / close split.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 514.8 Tm (:tabnew / gt / gT) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 505.4 Tm (New / next / previous tab.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 479.0 Tm (:e!) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 469.6 Tm (Discard changes and reload disk file.) Tj ET
+0.92 0.96 0.97 315 433.2000000000003 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 440.2 Tm (MACROS, MARKS, FOLDS) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 410.2 Tm (qa ... q / @a) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 400.8 Tm (Record macro a / replay macro.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 374.4 Tm (@@ / 10@a) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 365.0 Tm (Repeat latest / run ten times.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 338.6 Tm (ma / 'a / `a) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 329.2 Tm (Set mark; jump to mark line/column.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 302.8 Tm (za / zc / zo) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 293.4 Tm (Toggle / close / open fold.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 267.0 Tm (zR / zM) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 257.6 Tm (Expand / close all folds.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 231.2 Tm (:make / :copen / :cnext) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 221.8 Tm (Build and navigate quickfix list.) Tj ET
+0.92 0.96 0.97 315 185.40000000000046 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 192.4 Tm (KEY CONSIDERATIONS) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 162.4 Tm (EDITOR GRAMMAR: [count] + operator + motion/text object. Examples:) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 136.0 Tm (ci\( changes inside parentheses; diw deletes inner word; 5j moves) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 109.6 Tm (down 5 lines. These are built-in Vim keys, not plugin mappings.) Tj ET
+0.92 0.96 0.97 315 73.20000000000044 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 80.2 Tm (OFFICIAL DOCUMENTATION) Tj ET
+BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 34 20 Tm (2026-10  /  Vim) Tj ET BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 531 20 Tm (2 / 3) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /MediaBox [0 0 612 792] /Contents 12 0 R >>
+endobj
+12 0 obj
+<< /Length 668 >>
+stream
+0.08 0.23 0.35 rg 0 785 612 7 re f
+BT /F3 8 Tf 0.05 0.46 0.55 rg 1 0 0 1 34.0 755.0 Tm (ENGINEERING / QUICK REFERENCE) Tj ET
+BT /F3 20 Tf 0.08 0.20 0.31 rg 1 0 0 1 34.0 725.0 Tm (Vim) Tj ET
+BT /F1 8.5 Tf 0.34 0.42 0.48 rg 1 0 0 1 34.0 706.0 Tm (Modal editing, operators, motions, search, splits, and macros) Tj ET
+0.85 0.9 0.93 34 688 544 1 re f
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 658.0 Tm (https://www.vim.org/docs.php) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 631.6 Tm (https://vimhelp.org/quickref.txt.html) Tj ET
+BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 34 20 Tm (2026-10  /  Vim) Tj ET BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 531 20 Tm (3 / 3) Tj ET
+endstream
+endobj
+xref
+0 13
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000128 00000 n 
+0000000198 00000 n 
+0000000266 00000 n 
+0000000341 00000 n 
+0000000414 00000 n 
+0000000570 00000 n 
+0000006634 00000 n 
+0000006791 00000 n 
+0000012835 00000 n 
+0000012993 00000 n 
+trailer
+<< /Size 13 /Root 1 0 R >>
+startxref
+13712
+%%EOF

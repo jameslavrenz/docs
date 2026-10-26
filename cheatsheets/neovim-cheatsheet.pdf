@@ -1,0 +1,178 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R 9 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /MediaBox [0 0 612 792] /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 6262 >>
+stream
+0.08 0.23 0.35 rg 0 785 612 7 re f
+BT /F3 8 Tf 0.05 0.46 0.55 rg 1 0 0 1 34.0 755.0 Tm (ENGINEERING / QUICK REFERENCE) Tj ET
+BT /F3 20 Tf 0.08 0.20 0.31 rg 1 0 0 1 34.0 725.0 Tm (Neovim) Tj ET
+BT /F1 8.5 Tf 0.34 0.42 0.48 rg 1 0 0 1 34.0 706.0 Tm (Vim essentials plus modern Lua, LSP, terminal, and runtime tooling) Tj ET
+0.85 0.9 0.93 34 688 544 1 re f
+0.92 0.96 0.97 34 648 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 655.0 Tm (VIM-STYLE CORE) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 625.0 Tm (nvim <file> / nvim .) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 615.6 Tm (Edit file / start in directory.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 589.2 Tm (i / Esc / :wq) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 579.8 Tm (Insert / Normal / save+exit.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 553.4 Tm (gg / G / 42G) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 544.0 Tm (First / last / line 42.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 517.6 Tm (ciw / di\( / yap) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 508.2 Tm (Change word / delete in \(\) / yank paragraph.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 481.8 Tm (/term / n / N) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 472.4 Tm (Search and cycle matches.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 446.0 Tm (:sp / :vsp / Ctrl-w w) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 436.6 Tm (Split horizontally/vertically; cycle windows.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 410.2 Tm (:bnext / :bd) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 400.8 Tm (Next / close buffer.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 374.4 Tm (:help lua-guide) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 365.0 Tm (Read Lua configuration help.) Tj ET
+0.92 0.96 0.97 34 328.60000000000036 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 335.6 Tm (HEALTH AND CONFIGURATION) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 305.6 Tm (:checkhealth) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 296.2 Tm (Diagnose Neovim installation and providers.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 269.8 Tm (:checkhealth vim.lsp) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 260.4 Tm (Check language-server configuration.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 234.0 Tm (:lua =vim.fn.stdpath\("config"\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 224.6 Tm (Print configuration directory.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 198.2 Tm (~/.config/nvim/init.lua) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 188.8 Tm (Typical main configuration on macOS/Linux.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 162.4 Tm (:source $MYVIMRC) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 153.0 Tm (Reload current config \(some effects persist\).) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 126.6 Tm (:messages) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 117.2 Tm (Inspect messages and error output.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 90.8 Tm (:verbose map <keys>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 81.4 Tm (Find where mapping is defined.) Tj ET
+0.92 0.96 0.97 315 648 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 655.0 Tm (LUA API AND KEYMAPS) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 625.0 Tm (vim.opt.number = true) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 615.6 Tm (Show line numbers.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 589.2 Tm (vim.opt.relativenumber = true) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 579.8 Tm (Enable relative line numbers.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 553.4 Tm (vim.g.mapleader = " ") Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 544.0 Tm (Set leader before creating mappings.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 517.6 Tm (vim.keymap.set\("n", lhs, rhs\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 508.2 Tm (Map normal-mode input to keys/function.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 481.8 Tm (vim.cmd\("edit file.c"\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 472.4 Tm (Execute Ex commands from Lua.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 446.0 Tm (vim.fn.expand\("%:p"\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 436.6 Tm (Use Vimscript function in Lua.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 410.2 Tm (vim.api.nvim_create_autocmd\(...\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 400.8 Tm (Register an event-driven hook.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 374.4 Tm (vim.notify\("message"\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 365.0 Tm (Display notification.) Tj ET
+0.92 0.96 0.97 315 328.60000000000036 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 335.6 Tm (BUILT-IN TERMINAL) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 305.6 Tm (:terminal) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 296.2 Tm (Open terminal buffer.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 269.8 Tm (i) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 260.4 Tm (Enter Terminal input from Normal mode.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 234.0 Tm (Ctrl-\\ Ctrl-n) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 224.6 Tm (Leave Terminal input; return to Normal.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 198.2 Tm (Ctrl-w h/j/k/l) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 188.8 Tm (Navigate among editor windows.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 162.4 Tm (:terminal make test) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 153.0 Tm (Run shell command in terminal buffer.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 126.6 Tm (nvim --headless +"q") Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 117.2 Tm (Run without terminal UI.) Tj ET
+0.92 0.96 0.97 315 80.80000000000038 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 87.8 Tm (BUILT-IN LSP \(0.11+\)) Tj ET
+BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 34 20 Tm (2026-10  /  Neovim) Tj ET BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 531 20 Tm (1 / 2) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /MediaBox [0 0 612 792] /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 4552 >>
+stream
+0.08 0.23 0.35 rg 0 785 612 7 re f
+BT /F3 8 Tf 0.05 0.46 0.55 rg 1 0 0 1 34.0 755.0 Tm (ENGINEERING / QUICK REFERENCE) Tj ET
+BT /F3 20 Tf 0.08 0.20 0.31 rg 1 0 0 1 34.0 725.0 Tm (Neovim) Tj ET
+BT /F1 8.5 Tf 0.34 0.42 0.48 rg 1 0 0 1 34.0 706.0 Tm (Vim essentials plus modern Lua, LSP, terminal, and runtime tooling) Tj ET
+0.85 0.9 0.93 34 688 544 1 re f
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 658.0 Tm (vim.lsp.config\("clangd", {...}\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 648.6 Tm (Configure a language server.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 622.2 Tm (vim.lsp.enable\("clangd"\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 612.8 Tm (Enable clangd config; install server separately.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 586.4 Tm (vim.lsp.buf.definition\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 577.0 Tm (Jump to symbol definition.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 550.6 Tm (vim.lsp.buf.references\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 541.2 Tm (List references.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 514.8 Tm (vim.lsp.buf.rename\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 505.4 Tm (Rename symbol.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 479.0 Tm (vim.lsp.buf.code_action\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 469.6 Tm (Get code actions.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 443.2 Tm (vim.lsp.buf.format\({async=true}\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 433.8 Tm (Ask language server to format buffer.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 407.4 Tm (vim.diagnostic.open_float\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 398.0 Tm (Show diagnostic in floating window.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 371.6 Tm (:checkhealth vim.lsp) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 362.2 Tm (Diagnose active servers.) Tj ET
+0.92 0.96 0.97 34 325.8000000000004 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 332.8 Tm (PARSERS, PLUGINS, RUNTIME) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 302.8 Tm (:Inspect) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 293.4 Tm (Inspect syntax under cursor.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 267.0 Tm (vim.treesitter.start\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 257.6 Tm (Begin tree-sitter highlighting; parser needed.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 231.2 Tm (:packadd <name>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 221.8 Tm (Load optional Vim package.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 195.4 Tm (vim.pack.add\({...}\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 186.0 Tm (Built-in plugin manager on supporting versions.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 159.6 Tm (:packupdate) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 150.2 Tm (Update vim.pack-managed plugins \(version dependent\).) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 123.8 Tm (vim.fn.has\("nvim-0.11"\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 114.4 Tm (Guard version-specific code.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 88.0 Tm (vim.api.nvim_buf_get_lines\(...\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 78.6 Tm (Read buffer lines from Lua.) Tj ET
+0.92 0.96 0.97 315 648 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 655.0 Tm (KEY CONSIDERATIONS) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 625.0 Tm (LSP CLIENT IS BUILT IN; SERVERS ARE NOT. Install clangd or other) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 598.6 Tm (servers separately. Plugin shortcuts such as <leader>ff are not) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 572.2 Tm (universal defaults. Neovim 0.11 introduced the) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 545.8 Tm (vim.lsp.config\(\)/enable\(\) API; check version before use.) Tj ET
+0.92 0.96 0.97 315 509.4000000000001 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 516.4 Tm (OFFICIAL DOCUMENTATION) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 486.4 Tm (https://neovim.io/doc/user/lua-guide/) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 460.0 Tm (https://neovim.io/doc/user/lsp/) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 433.6 Tm (https://neovim.io/doc/user/pack/) Tj ET
+BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 34 20 Tm (2026-10  /  Neovim) Tj ET BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 531 20 Tm (2 / 2) Tj ET
+endstream
+endobj
+xref
+0 11
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000191 00000 n 
+0000000259 00000 n 
+0000000334 00000 n 
+0000000407 00000 n 
+0000000563 00000 n 
+0000006876 00000 n 
+0000007033 00000 n 
+trailer
+<< /Size 11 /Root 1 0 R >>
+startxref
+11637
+%%EOF

@@ -1,0 +1,266 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R 9 0 R 11 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /MediaBox [0 0 612 792] /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 6696 >>
+stream
+0.08 0.23 0.35 rg 0 785 612 7 re f
+BT /F3 8 Tf 0.05 0.46 0.55 rg 1 0 0 1 34.0 755.0 Tm (ENGINEERING / QUICK REFERENCE) Tj ET
+BT /F3 20 Tf 0.08 0.20 0.31 rg 1 0 0 1 34.0 725.0 Tm (FreeRTOS Kernel API) Tj ET
+BT /F1 8.5 Tf 0.34 0.42 0.48 rg 1 0 0 1 34.0 706.0 Tm (Cortex-M task/ISR quick reference for RTOS-based firmware) Tj ET
+0.85 0.9 0.93 34 688 544 1 re f
+0.92 0.96 0.97 34 648 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 655.0 Tm (TASKS: task.h) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 625.0 Tm (xTaskCreate\(fn,name,depth,arg,prio,&h\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 615.6 Tm (Dynamic task creation; stack depth in StackType_t words.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 589.2 Tm (xTaskCreateStatic\(fn,name,depth,arg,prio,stack,&tcb\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 579.8 Tm (Task with caller-owned stack and TCB.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 553.4 Tm (vTaskStartScheduler\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 544.0 Tm (Start scheduler; generally never returns on success.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 517.6 Tm (vTaskDelete\(h\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 508.2 Tm (Delete task \(NULL = current task\).) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 481.8 Tm (vTaskPrioritySet\(h,p\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 472.4 Tm (Set a task priority.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 446.0 Tm (uxTaskPriorityGet\(h\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 436.6 Tm (Get priority.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 410.2 Tm (vTaskSuspend\(h\) / vTaskResume\(h\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 400.8 Tm (Suspend/resume. Not a synchronization primitive.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 374.4 Tm (taskYIELD\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 365.0 Tm (Offer CPU to appropriate Ready task.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 338.6 Tm (xTaskGetCurrentTaskHandle\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 329.2 Tm (Handle of running task.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 302.8 Tm (uxTaskGetStackHighWaterMark\(h\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 293.4 Tm (Minimum historically unused stack in words.) Tj ET
+0.92 0.96 0.97 34 257.00000000000045 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 264.0 Tm (TIME AND PERIODIC WORK) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 234.0 Tm (vTaskDelay\(pdMS_TO_TICKS\(ms\)\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 224.6 Tm (Delay relative to now at tick resolution.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 198.2 Tm (xTaskDelayUntil\(&last,period\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 188.8 Tm (Periodic absolute release; returns if delayed.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 162.4 Tm (xTaskGetTickCount\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 153.0 Tm (Tick count from task.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 126.6 Tm (xTaskGetTickCountFromISR\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 117.2 Tm (Tick count from ISR \(port constraints apply\).) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 90.8 Tm (pdMS_TO_TICKS\(ms\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 81.4 Tm (Convert milliseconds to ticks; watch rounding/overflow.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 658.0 Tm (portMAX_DELAY) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 648.6 Tm (Indefinite wait only with supported configuration.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 622.2 Tm (pdTRUE / pdFALSE) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 612.8 Tm (Boolean-like values; check each API contract.) Tj ET
+0.92 0.96 0.97 315 576.4000000000001 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 583.4 Tm (QUEUES: queue.h) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 553.4 Tm (xQueueCreate\(n,sizeof\(Item\)\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 544.0 Tm (Create queue of copied objects.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 517.6 Tm (xQueueCreateStatic\(n,size,storage,&cb\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 508.2 Tm (Static queue; storage >= n * size bytes.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 481.8 Tm (xQueueSend\(q,&item,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 472.4 Tm (Copy item to queue tail \(may wait\).) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 446.0 Tm (xQueueSendToFront\(q,&item,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 436.6 Tm (Copy item to head.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 410.2 Tm (xQueueReceive\(q,&out,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 400.8 Tm (Receive and remove item.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 374.4 Tm (xQueuePeek\(q,&out,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 365.0 Tm (Read without removing.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 338.6 Tm (uxQueueMessagesWaiting\(q\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 329.2 Tm (Number of queued items.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 302.8 Tm (xQueueOverwrite\(q,&item\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 293.4 Tm (Overwrite - ONLY on length-1 queue.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 267.0 Tm (xQueueSendFromISR\(q,&item,&woken\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 257.6 Tm (ISR-safe, never blocks.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 231.2 Tm (xQueueReceiveFromISR\(q,&out,&woken\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 221.8 Tm (ISR-safe, never blocks.) Tj ET
+0.92 0.96 0.97 315 185.40000000000046 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 192.4 Tm (SEMAPHORES AND MUTEXES: semphr.h) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 162.4 Tm (xSemaphoreCreateBinary\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 153.0 Tm (Binary semaphore, created empty.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 126.6 Tm (xSemaphoreCreateBinaryStatic\(&cb\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 117.2 Tm (Static binary semaphore.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 90.8 Tm (xSemaphoreCreateCounting\(max,init\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 81.4 Tm (Counting semaphore.) Tj ET
+BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 34 20 Tm (2026-10  /  FreeRTOS Kernel API) Tj ET BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 531 20 Tm (1 / 3) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /MediaBox [0 0 612 792] /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 6780 >>
+stream
+0.08 0.23 0.35 rg 0 785 612 7 re f
+BT /F3 8 Tf 0.05 0.46 0.55 rg 1 0 0 1 34.0 755.0 Tm (ENGINEERING / QUICK REFERENCE) Tj ET
+BT /F3 20 Tf 0.08 0.20 0.31 rg 1 0 0 1 34.0 725.0 Tm (FreeRTOS Kernel API) Tj ET
+BT /F1 8.5 Tf 0.34 0.42 0.48 rg 1 0 0 1 34.0 706.0 Tm (Cortex-M task/ISR quick reference for RTOS-based firmware) Tj ET
+0.85 0.9 0.93 34 688 544 1 re f
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 658.0 Tm (xSemaphoreCreateMutex\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 648.6 Tm (Task mutex with priority inheritance.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 622.2 Tm (xSemaphoreCreateMutexStatic\(&cb\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 612.8 Tm (Statically allocated mutex.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 586.4 Tm (xSemaphoreTake\(s,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 577.0 Tm (Take semaphore/mutex in task.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 550.6 Tm (xSemaphoreGive\(s\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 541.2 Tm (Give semaphore/mutex in task.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 514.8 Tm (xSemaphoreGiveFromISR\(s,&woken\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 505.4 Tm (FromISR for semaphore, NOT mutex.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 479.0 Tm (xSemaphoreTakeFromISR\(s,&woken\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 469.6 Tm (FromISR only for binary/counting semaphore.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 443.2 Tm (xSemaphoreCreateRecursiveMutex\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 433.8 Tm (Use recursive take/give APIs.) Tj ET
+0.92 0.96 0.97 34 397.4000000000003 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 404.4 Tm (DIRECT NOTIFICATIONS: task.h) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 374.4 Tm (xTaskNotifyGive\(task\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 365.0 Tm (Increment recipient notification count.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 338.6 Tm (vTaskNotifyGiveFromISR\(task,&woken\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 329.2 Tm (ISR increment notification count.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 302.8 Tm (ulTaskNotifyTake\(pdTRUE,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 293.4 Tm (Wait; clear count to zero.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 267.0 Tm (ulTaskNotifyTake\(pdFALSE,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 257.6 Tm (Wait; decrement count by one.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 231.2 Tm (xTaskNotify\(task,bits,eSetBits\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 221.8 Tm (OR event bits into notification value.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 195.4 Tm (xTaskNotifyWait\(clearIn,clearOut,&value,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 186.0 Tm (Wait for notification state; read value.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 159.6 Tm (xTaskNotifyFromISR\(task,v,action,&woken\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 150.2 Tm (ISR notification action.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 123.8 Tm (xTaskNotifyGiveIndexed\(task,idx\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 114.4 Tm (Increment indexed notification.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 88.0 Tm (ulTaskNotifyTakeIndexed\(idx,clear,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 78.6 Tm (Wait on indexed slot.) Tj ET
+0.92 0.96 0.97 315 648 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 655.0 Tm (EVENT GROUPS: event_groups.h) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 625.0 Tm (xEventGroupCreateStatic\(&cb\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 615.6 Tm (Create event bit group statically.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 589.2 Tm (xEventGroupSetBits\(g,mask\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 579.8 Tm (Set bits from task context.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 553.4 Tm (xEventGroupWaitBits\(g,bits,clear,all,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 544.0 Tm (Wait for any or all selected bits.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 517.6 Tm (xEventGroupClearBits\(g,mask\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 508.2 Tm (Clear selected bits.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 481.8 Tm (xEventGroupSetBitsFromISR\(g,bits,&woken\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 472.4 Tm (Defer set operation to daemon; check result.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 446.0 Tm (xEventGroupGetBits\(g\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 436.6 Tm (Read group bits from task.) Tj ET
+0.92 0.96 0.97 315 400.2000000000003 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 407.2 Tm (TIMERS AND BYTE BUFFERS) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 377.2 Tm (xTimerCreate\(...,period,reload,id,cb\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 367.8 Tm (Create SW timer: callback in daemon task.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 341.4 Tm (xTimerCreateStatic\(...,&cb\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 332.0 Tm (Statically allocated software timer.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 305.6 Tm (xTimerStart\(t,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 296.2 Tm (Queue start request to timer daemon.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 269.8 Tm (xTimerChangePeriod\(t,period,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 260.4 Tm (Change timer period.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 234.0 Tm (xTimerStartFromISR\(t,&woken\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 224.6 Tm (Start request from interrupt.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 198.2 Tm (xStreamBufferCreate\(size,trigger\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 188.8 Tm (Byte stream buffer.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 162.4 Tm (xStreamBufferSend\(sb,data,n,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 153.0 Tm (Send bytes.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 126.6 Tm (xStreamBufferReceive\(sb,out,n,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 117.2 Tm (Receive variable number of bytes.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 90.8 Tm (xMessageBufferCreate\(bytes\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 81.4 Tm (Discrete variable-length messages.) Tj ET
+BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 34 20 Tm (2026-10  /  FreeRTOS Kernel API) Tj ET BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 531 20 Tm (2 / 3) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /MediaBox [0 0 612 792] /Contents 12 0 R >>
+endobj
+12 0 obj
+<< /Length 5086 >>
+stream
+0.08 0.23 0.35 rg 0 785 612 7 re f
+BT /F3 8 Tf 0.05 0.46 0.55 rg 1 0 0 1 34.0 755.0 Tm (ENGINEERING / QUICK REFERENCE) Tj ET
+BT /F3 20 Tf 0.08 0.20 0.31 rg 1 0 0 1 34.0 725.0 Tm (FreeRTOS Kernel API) Tj ET
+BT /F1 8.5 Tf 0.34 0.42 0.48 rg 1 0 0 1 34.0 706.0 Tm (Cortex-M task/ISR quick reference for RTOS-based firmware) Tj ET
+0.85 0.9 0.93 34 688 544 1 re f
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 658.0 Tm (xMessageBufferSend\(mb,ptr,n,to\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 648.6 Tm (Send one complete message.) Tj ET
+0.92 0.96 0.97 34 612.2 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 619.2 Tm (ISR AND CORTEX-M PRIORITIES) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 589.2 Tm (BaseType_t woken = pdFALSE;) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 579.8 Tm (Initialize context-switch flag.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 553.4 Tm (vTaskNotifyGiveFromISR\(task,&woken\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 544.0 Tm (Signal a task from interrupt.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 517.6 Tm (portYIELD_FROM_ISR\(woken\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 508.2 Tm (Request task switch on ISR exit.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 481.8 Tm (configMAX_SYSCALL_INTERRUPT_PRIORITY) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 472.4 Tm (Cortex-M encoded interrupt-priority ceiling.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 446.0 Tm (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 436.6 Tm (Unshifted NVIC priority threshold \(if defined\).) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 410.2 Tm (taskENTER_CRITICAL\(\) / taskEXIT_CRITICAL\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 400.8 Tm (Short task-context critical section.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 374.4 Tm (configTICK_RATE_HZ) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 365.0 Tm (RTOS tick, not a high-resolution PWM clock.) Tj ET
+0.92 0.96 0.97 34 328.60000000000036 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 335.6 Tm (STATIC ALLOCATION, ERRORS, CONFIG) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 305.6 Tm (configSUPPORT_STATIC_ALLOCATION=1) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 296.2 Tm (Enable static API objects.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 269.8 Tm (configSUPPORT_DYNAMIC_ALLOCATION=0) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 260.4 Tm (Disable heap allocation when supported.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 234.0 Tm (configCHECK_FOR_STACK_OVERFLOW) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 224.6 Tm (Enable overflow detection.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 198.2 Tm (configASSERT\(expr\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 188.8 Tm (Detect violated invariants.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 162.4 Tm (vApplicationStackOverflowHook\(...\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 153.0 Tm (Application stack error hook.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 126.6 Tm (vApplicationMallocFailedHook\(\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 117.2 Tm (Allocation failure hook \(dynamic builds\).) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 90.8 Tm (configUSE_TIMERS=1) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 81.4 Tm (Enable timer service.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 658.0 Tm (configTASK_NOTIFICATION_ARRAY_ENTRIES) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 648.6 Tm (How many notification indexes each task has.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 622.2 Tm (INCLUDE_xTaskDelayUntil=1) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 612.8 Tm (Enable xTaskDelayUntil API.) Tj ET
+0.92 0.96 0.97 315 576.4000000000001 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 583.4 Tm (KEY CONSIDERATIONS) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 553.4 Tm (SAFETY: ISR must never block or use a mutex. Cortex-M numerically) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 527.0 Tm (LOW NVIC value means HIGH urgency: with) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 500.6 Tm (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY=5, ISR priorities 0..4) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 474.2 Tm (may NOT call FreeRTOS FromISR APIs. Queues copy items; software) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 447.8 Tm (timer callbacks must not block.) Tj ET
+0.92 0.96 0.97 315 411.4000000000002 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 418.4 Tm (OFFICIAL DOCUMENTATION) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 388.4 Tm (https://www.freertos.org/Documentation/) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 362.0 Tm (https://github.com/FreeRTOS/FreeRTOS-Kernel) Tj ET
+BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 34 20 Tm (2026-10  /  FreeRTOS Kernel API) Tj ET BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 531 20 Tm (3 / 3) Tj ET
+endstream
+endobj
+xref
+0 13
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000128 00000 n 
+0000000198 00000 n 
+0000000266 00000 n 
+0000000341 00000 n 
+0000000414 00000 n 
+0000000570 00000 n 
+0000007317 00000 n 
+0000007474 00000 n 
+0000014306 00000 n 
+0000014464 00000 n 
+trailer
+<< /Size 13 /Root 1 0 R >>
+startxref
+19602
+%%EOF

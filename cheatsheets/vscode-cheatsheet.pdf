@@ -1,0 +1,198 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R 9 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /MediaBox [0 0 612 792] /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 5837 >>
+stream
+0.08 0.23 0.35 rg 0 785 612 7 re f
+BT /F3 8 Tf 0.05 0.46 0.55 rg 1 0 0 1 34.0 755.0 Tm (ENGINEERING / QUICK REFERENCE) Tj ET
+BT /F3 20 Tf 0.08 0.20 0.31 rg 1 0 0 1 34.0 725.0 Tm (VS Code) Tj ET
+BT /F1 8.5 Tf 0.34 0.42 0.48 rg 1 0 0 1 34.0 706.0 Tm (macOS-default shortcuts for editing, C/C++, Git, build, and debugging) Tj ET
+0.85 0.9 0.93 34 688 544 1 re f
+0.92 0.96 0.97 34 648 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 655.0 Tm (NAVIGATE AND SEARCH) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 625.0 Tm (Cmd+Shift+P / F1) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 615.6 Tm (Command Palette.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 589.2 Tm (Cmd+P) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 579.8 Tm (Quick Open file.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 553.4 Tm (Cmd+Shift+O) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 544.0 Tm (Find symbol in current file.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 517.6 Tm (Cmd+T) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 508.2 Tm (Find workspace symbol.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 481.8 Tm (Ctrl+G) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 472.4 Tm (Go to a line number.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 446.0 Tm (Ctrl+- / Ctrl+Shift+-) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 436.6 Tm (Navigate back / forward.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 410.2 Tm (Cmd+Shift+E) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 400.8 Tm (Explorer panel.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 374.4 Tm (Cmd+Shift+F) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 365.0 Tm (Search workspace.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 338.6 Tm (Cmd+Shift+H) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 329.2 Tm (Search/replace workspace.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 302.8 Tm (Cmd+,) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 293.4 Tm (Open Settings UI.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 267.0 Tm (Cmd+Shift+X) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 257.6 Tm (Extensions panel.) Tj ET
+0.92 0.96 0.97 34 221.20000000000047 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 228.2 Tm (EDITOR AND SELECTION) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 198.2 Tm (Cmd+D) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 188.8 Tm (Add next occurrence to selection.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 162.4 Tm (Cmd+Shift+L) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 153.0 Tm (Select all matching occurrences.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 126.6 Tm (Option+Click) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 117.2 Tm (Add another cursor.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 90.8 Tm (Option+Up / Option+Down) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 81.4 Tm (Move current line.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 658.0 Tm (Shift+Option+Up / Down) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 648.6 Tm (Duplicate line above/below.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 622.2 Tm (Cmd+Shift+K) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 612.8 Tm (Delete line.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 586.4 Tm (Cmd+Enter / Cmd+Shift+Enter) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 577.0 Tm (Insert line below / above.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 550.6 Tm (Option+Shift+F) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 541.2 Tm (Format file \(formatter required\).) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 514.8 Tm (Cmd+/) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 505.4 Tm (Toggle line comment.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 479.0 Tm (Shift+Option+A) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 469.6 Tm (Toggle block comment.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 443.2 Tm (Cmd+F / Cmd+Option+F) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 433.8 Tm (Find / replace within editor.) Tj ET
+0.92 0.96 0.97 315 397.4000000000003 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 404.4 Tm (WINDOWS AND PANELS) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 374.4 Tm (Ctrl+`) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 365.0 Tm (Toggle integrated terminal.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 338.6 Tm (Ctrl+Shift+`) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 329.2 Tm (Open new integrated terminal.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 302.8 Tm (Cmd+B) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 293.4 Tm (Toggle sidebar.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 267.0 Tm (Cmd+\\) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 257.6 Tm (Split editor.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 231.2 Tm (Cmd+1 / Cmd+2) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 221.8 Tm (Focus editor group.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 195.4 Tm (Cmd+W) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 186.0 Tm (Close active editor.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 159.6 Tm (Cmd+Shift+M) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 150.2 Tm (Open Problems panel.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 123.8 Tm (Cmd+K Cmd+S) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 114.4 Tm (Open Keyboard Shortcuts editor.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 88.0 Tm (Cmd+K Z) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 78.6 Tm (Enter Zen Mode.) Tj ET
+BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 34 20 Tm (2026-10  /  VS Code) Tj ET BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 531 20 Tm (1 / 2) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /MediaBox [0 0 612 792] /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 5923 >>
+stream
+0.08 0.23 0.35 rg 0 785 612 7 re f
+BT /F3 8 Tf 0.05 0.46 0.55 rg 1 0 0 1 34.0 755.0 Tm (ENGINEERING / QUICK REFERENCE) Tj ET
+BT /F3 20 Tf 0.08 0.20 0.31 rg 1 0 0 1 34.0 725.0 Tm (VS Code) Tj ET
+BT /F1 8.5 Tf 0.34 0.42 0.48 rg 1 0 0 1 34.0 706.0 Tm (macOS-default shortcuts for editing, C/C++, Git, build, and debugging) Tj ET
+0.85 0.9 0.93 34 688 544 1 re f
+0.92 0.96 0.97 34 648 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 655.0 Tm (C / C++ / SYMBOLS) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 625.0 Tm (F12 / Option+F12) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 615.6 Tm (Go to definition / peek definition.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 589.2 Tm (Shift+F12) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 579.8 Tm (Find references.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 553.4 Tm (F2) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 544.0 Tm (Rename symbol.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 517.6 Tm (Ctrl+Space) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 508.2 Tm (Trigger completions \(may conflict with OS\).) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 481.8 Tm (Cmd+.) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 472.4 Tm (Quick fix or code action.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 446.0 Tm (F8 / Shift+F8) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 436.6 Tm (Next / previous diagnostic.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 410.2 Tm (Cmd+Shift+B) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 400.8 Tm (Run default build task.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 374.4 Tm (Cmd+K Cmd+I) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 365.0 Tm (Show hover information.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 338.6 Tm (C/C++ or clangd extension) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 329.2 Tm (Required for language intelligence.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 302.8 Tm (CMake Tools extension) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 293.4 Tm (Useful for configure/build/test.) Tj ET
+0.92 0.96 0.97 34 257.00000000000045 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 42.0 264.0 Tm (RUN AND DEBUG) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 234.0 Tm (F5 / Ctrl+F5) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 224.6 Tm (Start debugger / run without debugging.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 198.2 Tm (Shift+F5) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 188.8 Tm (Stop debugging.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 162.4 Tm (F9) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 153.0 Tm (Toggle breakpoint.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 126.6 Tm (F10 / F11 / Shift+F11) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 117.2 Tm (Step over / into / out.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 39.0 90.8 Tm (Cmd+Shift+D) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 39.0 81.4 Tm (Run and Debug panel.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 658.0 Tm (.vscode/launch.json) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 648.6 Tm (Run/attach configuration.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 622.2 Tm (.vscode/tasks.json) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 612.8 Tm (Build or command task definitions.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 586.4 Tm (.vscode/settings.json) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 577.0 Tm (Workspace editor configuration.) Tj ET
+0.92 0.96 0.97 315 540.6000000000001 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 547.6 Tm (COMMAND LINE AND GIT) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 517.6 Tm (code .) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 508.2 Tm (Open current directory \(install code CLI first\).) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 481.8 Tm (code --diff a.c b.c) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 472.4 Tm (Open file comparison.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 446.0 Tm (code --wait <file>) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 436.6 Tm (Wait until an edited file is closed.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 410.2 Tm (Cmd+Shift+G) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 400.8 Tm (Source Control panel.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 374.4 Tm (Git: ... \(Command Palette\)) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 365.0 Tm (Discover Git actions.) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 338.6 Tm (File > Save Workspace As) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 329.2 Tm (Create .code-workspace file.) Tj ET
+0.92 0.96 0.97 315 292.8000000000004 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 299.8 Tm (KEY CONSIDERATIONS) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 269.8 Tm (ON macOS: Cmd is Command; Option is Alt. Windows/Linux use Ctrl for) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 243.4 Tm (many \(not all\) shortcuts. Keybindings are configurable and may be) Tj ET
+BT /F1 7.7 Tf 0.18 0.22 0.27 rg 1 0 0 1 320.0 217.0 Tm (overridden by extensions or system-level shortcuts.) Tj ET
+0.92 0.96 0.97 315 180.60000000000042 263 23 re f
+BT /F3 8.5 Tf 0.06 0.47 0.57 rg 1 0 0 1 323.0 187.6 Tm (OFFICIAL DOCUMENTATION) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 157.6 Tm (https://code.visualstudio.com/docs/reference/default-ke) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 148.2 Tm (ybindings) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 121.8 Tm (https://code.visualstudio.com/docs/configure/keybinding) Tj ET
+BT /F4 7.4 Tf 0.09 0.23 0.36 rg 1 0 0 1 320.0 112.4 Tm (s) Tj ET
+BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 34 20 Tm (2026-10  /  VS Code) Tj ET BT /F1 7 Tf 0.4 0.46 0.53 rg 1 0 0 1 531 20 Tm (2 / 2) Tj ET
+endstream
+endobj
+xref
+0 11
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000191 00000 n 
+0000000259 00000 n 
+0000000334 00000 n 
+0000000407 00000 n 
+0000000563 00000 n 
+0000006451 00000 n 
+0000006608 00000 n 
+trailer
+<< /Size 11 /Root 1 0 R >>
+startxref
+12583
+%%EOF
