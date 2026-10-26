@@ -1,0 +1,13 @@
+digraph pipeline {
+ graph [rankdir=LR, bgcolor="white", pad=".15", nodesep=".28", ranksep=".28", fontname="DejaVu Sans"];
+ node [shape=box, style="rounded,filled", fillcolor="#e9f1f7", color="#315879", fontname="DejaVu Sans", fontsize=11, margin=".12,.08"];
+ edge [color="#315879", arrowsize=.6];
+ sensor [label="ADC/PDM\nDMA"];
+ capture [label="Ring buffer\n+ timestamps"];
+ dsp [label="Window + FFT\nMel + log"];
+ quant [label="INT8\nfeatures"];
+ model [label="Quantized\ninference"];
+ gate [label="Debounce +\nthresholds"];
+ action [label="Application\naction"];
+ sensor -> capture -> dsp -> quant -> model -> gate -> action;
+}

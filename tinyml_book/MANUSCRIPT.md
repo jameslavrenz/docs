@@ -501,7 +501,7 @@ Status dense_i8_reference(
 }
 ```
 
-This example assumes symmetric weights (`weight_zero_point = 0`) and output activation spanning all signed INT8 codes; real model formats may require other conventions. The declared `requantize` must be implemented and verified before calling this a working, bit-exact kernel. The code is a **reference skeleton**, not a fully linkable complete sample. `INT32_MIN`/`INT32_MAX` require the appropriate integer-limit header or an equivalent `std::numeric_limits`-based check.
+This example assumes symmetric weights (`weight_zero_point = 0`) and output activation spanning all signed INT8 codes; real model formats may require other conventions. This listing illustrates one operator interface but deliberately does not define `requantize`. **Chapter 12 and the companion `examples/int8_reference/` directory provide a separate, complete and host-tested reference implementation** with an explicit rational-multiplier convention. That convention is educational rather than TFLM/CMSIS-NN bit-exact; do not substitute the chapter 12 function in this skeleton without adapting the interface and quantization contract. `INT32_MIN`/`INT32_MAX` require the appropriate integer-limit header or an equivalent `std::numeric_limits`-based check.
 
 ## What a fixed-point requantizer must specify
 
@@ -1242,9 +1242,430 @@ If those questions can be answered with repository evidence, a small neural netw
 3. Write a requirements-to-test traceability matrix for a wake-word device that includes acquisition continuity, stale score rejection, and a false-activation ceiling.
 
 
-# Appendices
+# Verification, Benchmarking, and Deployment Evidence
 
-## A. Essential formulas
+## A performance number is a claim with a scope
+
+A timing result is not an intrinsic property of a neural network. It belongs to the entire measurement configuration: network parameters, kernel library and commit, CPU architecture, compile flags, linker placement, clock tree, wait states, cache state if present, buffer alignment, power conditions, interrupt activity, and measurement boundary. A useful report specifies those details. A sentence such as “the model takes 8 ms” is incomplete; the engineer must ask whether that was kernel execution alone, a full invocation, or the entire path from microphone sample to decision. The engineer must also ask how many trials were measured, what input distribution was used, and whether the result includes an occasional interrupt or DMA contention.
+
+A book should never promote an illustrative timing calculation to an observed result. This edition deliberately contains no fabricated board measurements. The independently compiled reference kernel in the companion code establishes algorithmic and software-test evidence on the host. The benchmarking protocol in this chapter is intended for use when firmware is deployed to a known target board. That distinction is itself part of rigorous embedded engineering.
+
+**Evidence levels.** In decreasing order of confidence for a particular claim, one might distinguish (a) production-like hardware observations covering the specified operating envelope, (b) repeatable controlled board benchmarks, (c) instruction-set simulation or cycle-accurate models with validated fidelity, (d) host numerical tests, and (e) analytical estimates. The order is not absolute for every property: formal analysis can establish certain memory-safety or deadline bounds that testing cannot. Nonetheless, a fast host unit test never establishes a measured Cortex-M execution time.
+
+## From requirements to evidence
+
+A useful verification system begins with explicit, falsifiable requirements rather than a notebook of ad hoc tests. Consider a keyword spotter integrated into an industrial monitor. Its requirements might include:
+
+- An input rate of $16\,000$ samples/s, with monotonic timestamps and explicit loss detection.
+- A feature hop of $H=320$ samples, generating a fresh feature vector every $20$ ms.
+- A stated maximum age of a successful classification at the moment a detection is raised.
+- Flash and SRAM use below hardware allocation budgets, including interrupt, DMA, and RTOS memory.
+- A bounded response to stale input, corrupted model metadata, sensor faults, numerical failures, and missed deadlines.
+- Quantified false-trigger and missed-trigger rates on a held-out *field-representative* corpus.
+
+The requirement is incomplete until it specifies its verification method. A sample-rate requirement is checked with timer/divider configuration, scope/logic-analyzer observations, and long-running sample counts; a no-heap-in-inference requirement is checked by static code review, a link-map audit, runtime allocation instrumentation, and a deliberately constrained allocator in tests. Each method tests a different proposition.
+
+| Requirement | Suggested verification | Important exclusion |
+|:--|:--|:--|
+| Input continuity | Sequence numbers and DMA half/full transfer counters | A good-looking waveform alone |
+| INT8 numerical semantics | Fixed golden tensors, intermediate-layer parity | Only checking final argmax |
+| SRAM peak | Link map, stack watermarks, arena high-water and DMA reservations | Summing model weights |
+| Invocation time | DWT cycles and monotonic elapsed time | Desktop wall time |
+| System latency | Trace sensor timestamp through decision | Kernel cycles only |
+| Energy per decision | Integrated supply current and rail voltage | CPU load percentage |
+| Detection accuracy | Held-out operating-condition corpus | Training accuracy |
+| Safe failure | Inject and verify disabled actions | Merely logging an error |
+
+## The timing hierarchy
+
+Define $T_s$ as the sampling interval, $T_h$ as the feature-hop interval, $T_f$ as preprocessing time, $T_i$ as inference time, and $T_d$ as the decision-stage execution time. A new output cannot become available until enough new input exists to advance the feature window. If the application performs processing synchronously on each hop, the processing demand per hop is
+
+$$C_{\mathrm{hop}}=C_{\mathrm{capture\ bookkeeping}}+C_f+C_i+C_d.$$
+
+It is *necessary*, but not by itself sufficient, that $C_{\mathrm{hop}} < T_h$: preemption, contention, and blocking can increase response time. If $C_i=7$ ms and $T_h=20$ ms in a hypothetical example, the nominal utilization contribution is $0.35$ for one such job per hop. This is a calculated illustration only. It does not imply that the real project has $7$ ms inference latency.
+
+The age of data matters more than the processing time alone. For a frame of length $N$ ending at $t_e$, a detector output at $t_o$ uses data whose earliest sample is $N/f_s$ seconds old. An informative bound therefore separates **capture-window latency**, **queueing delay**, **computation**, and **decision filtering**. At $N=512$, $f_s=16$ kHz, and a new hop every 20 ms, a frame spans 32 ms. The time since its newest sample is substantially smaller than 32 ms if processing begins promptly; treating the full frame length as identical to compute latency obscures what has been measured.
+
+A system that averages over $K$ consecutive decisions adds temporal evidence accumulation. In a simple detector requiring $K$ successive positive hops, the decision can be delayed by approximately $(K-1)T_h$ beyond the first positive hop, plus queueing and processing. That delay is an algorithmic property, not an RTOS scheduling bug.
+
+## Fixed-priority response-time analysis
+
+For a preemptive fixed-priority uniprocessor system, a conventional response-time recurrence for task $i$ is
+
+$$R_i^{(n+1)}=C_i+B_i+\sum_{j\in hp(i)}\left\lceil\frac{R_i^{(n)}}{T_j}\right\rceil C_j,$$
+
+where $C_i$ is an execution-time bound, $B_i$ is a bounded blocking term, and $hp(i)$ is the set of strictly higher-priority tasks. Starting with $R_i^{(0)}=C_i+B_i$, iterate to convergence or until the result exceeds the specified deadline. The ceiling counts potentially interfering releases. This idealized equation assumes independent periodic/sporadic tasks under the stated priority assignment and does not automatically account for release jitter, interrupt execution, DMA stalls, cache effects, self-suspension, or non-preemptible sections. If such effects are material, the model must be extended.
+
+**Illustrative calculation.** Suppose a 20-ms inference task has $C_i=4$ ms, blocking $B_i=0.4$ ms, and a higher-priority capture task with $C_h=0.2$ ms and period $T_h=2$ ms. Then $R^{(0)}=4.4$ ms, $R^{(1)}=4.4+\lceil4.4/2\rceil(0.2)=5.0$ ms, and $R^{(2)}=5.0$ ms. On those assumptions it meets a 20-ms deadline. The calculation is not a substitute for establishing credible $C_i$, $B_i$, and hardware-interference bounds.
+
+Scheduling also affects which operations belong in interrupts. The DMA ISR should publish a completed buffer, update a short counter or timestamp, and wake a task. It should not perform FFTs, invoke a model, allocate memory, or emit formatted telemetry. High interrupt execution time can make a high-priority task late even if task-level CPU utilization looks low.
+
+## Measuring Cortex-M cycles
+
+On Cortex-M processors with a usable DWT cycle counter, a minimal timing boundary looks like:
+
+```cpp
+// Pseudocode: initialize DWT according to device and debug policy.
+const auto start = DWT->CYCCNT;
+model.invoke();
+const auto elapsed = DWT->CYCCNT - start;  // unsigned wrap arithmetic
+```
+
+For a 32-bit counter clocked at $f_{\mathrm{CPU}}$, the wrap period is $2^{32}/f_{\mathrm{CPU}}$. At 180 MHz this is approximately 23.86 s. An elapsed interval shorter than one wrap can be obtained through unsigned subtraction, but a silent multiple-wrap interval cannot. If the core clock changes dynamically, convert cycles using the clock rate that actually applied to the measured interval. Enable and availability of DWT vary by core/device and debug configuration; a firmware port must check these properties rather than assuming all Cortex-M designs behave identically.
+
+A robust measurement captures both the bare invocation time and the end-to-end time. If instrumenting a system with FreeRTOS, keep instrumentation outside critical paths as much as possible: record compact events into a bounded buffer and dump them asynchronously. UART logging inside a timed region distorts the result and may change the worst-case schedule. Use a GPIO edge and scope trace to validate timing independently when the measurement matters.
+
+## Statistics and worst-case claims
+
+A median communicates typical execution behavior; a high percentile helps describe variability. Neither is a worst-case execution-time (WCET) proof. If $n$ observations yield a maximum $C_{\max}$, report **observed maximum over $n$ runs**. Do not label it WCET unless a valid timing-analysis or bounded-hardware argument supports that claim.
+
+Record the number of trials, warm-up procedure, clock, optimization flags, environment, sensor activity, interrupts, whether DMA was active, and whether tested inputs changed the operator paths. If input-dependent sparsity shortcuts exist, random test data may select paths different from the field workload. A static shape does not always mean constant execution time.
+
+For a benchmark table, use a schema rather than inventing impressive numbers:
+
+| Field | Captured value |
+|:--|:--|
+| Board / MCU / revision | To be measured |
+| Core / clock / flash wait states | To be measured |
+| Source + model SHA-256 | To be recorded |
+| Toolchain, optimization, LTO | To be recorded |
+| Peak tensor arena | To be measured |
+| Flash model and total image | To be measured |
+| Median / p95 / observed max cycles | To be measured |
+| Sample count / measurement boundary | To be recorded |
+| Temperature and motor/sensor workload | To be recorded |
+
+The reader can reproduce the table for one fully specified hardware configuration. A public performance claim should link that table to the exact firmware and model revisions. Different microcontrollers, even at the same frequency, have very different memory systems and DSP/MVE capabilities.
+
+## SRAM verification as a runtime activity
+
+The linker map establishes static placement, but total RAM use can also include task stacks, temporary DMA buffers, heap allocations during initialization, and peripheral memory visible through the address space. A fixed tensor arena should report its high-water mark; each RTOS task should report stack high-water; fault and ISR stacks need their own bounds or conservative proof. On a small MCU, the difference between a 32-KiB and a 40-KiB arena could determine whether a firmware image fits at all.
+
+Guard words help detect *some* overflows after they occur; they do not establish absence of overflow. Stack-pattern watermarks can miss a path that hasn't run yet. A better strategy combines static worst-case frame information where available, diverse stress paths, fault injection, and a reserved engineering margin. If the RTOS allocates some control blocks from its own heap, that heap must be part of the budget even when the application code performs no dynamic allocation during inference.
+
+## Energy per inference
+
+Energy is the time integral of supplied electrical power:
+
+$$E_{\mathrm{inf}}=\int_{t_0}^{t_1} V(t)I(t)\,dt.$$
+
+When voltage is approximately constant, $E\approx V\bar I\Delta t$. This does not imply that reducing execution time always reduces total device energy: waking peripherals, changing clocks, putting RAM to sleep, and reactivating a radio can dominate the budget. A realistic battery-powered device should measure energy over a representative *duty cycle*, including acquisition, inference, sleep, decision, and communication.
+
+A power meter that averages over a second cannot resolve a short inference pulse on its own. Depending on the desired accuracy, use a shunt and oscilloscope/current monitor with known bandwidth, sample-rate calibration, and a measurement boundary established by a GPIO signal. Separate the microcontroller rail from sensor and driver rails when interpreting component-specific claims. For a complete product, report system-level energy as well as core-only energy.
+
+## A reproducible optimization experiment
+
+Suppose a reference convolution is replaced by a CMSIS-NN kernel. Make one change at a time and preserve a golden output for every layer. Measure correctness and three resource dimensions: cycles, flash, and RAM. An optimized implementation can be faster and still be unsuitable because temporary scratch memory exceeds the available SRAM. Likewise, a compressed INT4 weight format may reduce flash without reducing end-to-end latency if decompression overhead dominates on the selected core.
+
+**Experiment protocol:**
+
+1. Freeze model, test corpus, platform clock, power policy, and compiler revision.
+2. Run golden vectors through reference and optimized variants, recording intermediate differences or explicit bit-exact parity.
+3. Rebuild from a clean tree with the same flags and inspect the link map.
+4. Record timing distributions under quiet load and realistic interrupt/DMA load.
+5. Repeat measurements after reordering variants to expose thermal or battery drift.
+6. Record measurement uncertainty and explain any observed regressions.
+7. Save a machine-readable report with commit IDs and environmental metadata.
+
+A reproducible negative result is useful. If a hand-written unrolled kernel loses to the compiler-generated scalar loop on a Cortex-M4, publish the conditions and keep the simpler kernel. The goal is not to prove that an optimization was clever; the goal is to select the correct engineering tradeoff.
+
+## Verification through deliberately hostile inputs
+
+A happy-path recognition demonstration exercises only a fraction of the real system. Fault injection should include buffer backlog, skipped DMA completion, encoder or sensor dropout (as applicable), corrupted model metadata, saturated features, underflow/overflow, missing synchronization, and timebase discontinuity. Each fault should have an expected state transition and a bounded response. Particularly important is the **stale-data** failure: the inference engine may continue to return valid-looking outputs from an old feature window if freshness is not represented explicitly.
+
+For an audio application, an accepted detection should carry the latest input timestamp, the model ID, the feature revision, and a validity flag. If a feature window is stale or partly corrupted, suppress the application action even if the classifier score is high. A continuous stream with no detected DMA errors does not prove a valid stream unless counter wrap and buffer ownership have been analyzed.
+
+## Chapter design review
+
+Treat a result as a tuple of **claim, configuration, evidence, uncertainty, and provenance**. Every high-level engineering decision should be traceable to such a tuple. Successful host unit tests establish that the example code implements its stated contracts on the tested host configurations; they do not establish embedded deadline compliance, energy consumption, end-user accuracy, or resistance to adversarial inputs. Those require separate evidence.
+
+**Exercises**
+
+1. Derive a response-time bound for a 25-ms inference task with $C=6$ ms, $B=0.7$ ms, and higher-priority tasks $(C,T)=(0.3,2)$ ms and $(0.8,10)$ ms. State the assumptions.
+2. Compare two hypothetical implementations: 7 ms at 12 mA and 12 ms at 6 mA, each at 3.3 V. Which uses less active energy? What other energy is missing?
+3. Design a fault-injection test that establishes bounded rejection of stale audio, including queue ownership, timestamps, and the signal used to measure stop latency.
+
+
+# A Tested INT8 Reference: From Algebra to C++20
+
+## The contract before the implementation
+
+The companion directory `examples/int8_reference/` contains complete C++20 source for three narrowly scoped primitives: deterministic fixed-point requantization, a row-major dense layer, and a one-dimensional cross-correlation. `CMakeLists.txt` builds the library, a console demonstration, and a host test program. This deliberately modest implementation is **original educational reference software**. It is not a FlatBuffer interpreter, not a trained keyword-spotting network, and not a drop-in replacement for CMSIS-NN or TFLM.
+
+Such restraint is useful. A correct dense or convolution kernel has an independently testable algebraic contract. An interpreter also needs model compatibility, operator versions, tensor metadata, memory planning, and multiple backend interfaces; introducing all those concerns at once makes it difficult to diagnose an arithmetic error. Build a small trusted layer first, then expand the graph only as real requirements demand.
+
+The reference implementation uses signed INT8 activations, symmetric signed INT8 weights (weight zero point is zero), signed INT32 biases, wide INT64 intermediate accumulation, and output zero-point adjustment followed by activation-domain clipping. Its multiplication scale is an explicit rational number $n/2^k$ with $n>0$ and $0\le k\le31$. This is intentionally **not** the requantization representation used by CMSIS-NN. Matching an established runtime byte-for-byte requires adopting that runtime's exact multiplier normalization and rounding contract.
+
+## The fixed-point rounding derivation
+
+For an accumulator $A\in\mathbb Z$ and positive multiplier $M=n/2^k$, define the mathematical reference
+
+$$r=\operatorname{round}_{\rm ties\ away}(AM).$$
+
+Let $P=An$ be evaluated in signed 64-bit arithmetic and $D=2^k$. If $P\ge0$, the desired result is
+
+$$r=\left\lfloor\frac{P+D/2}{D}\right\rfloor$$
+
+for $D\ge2$; for $D=1$ the expression reduces to $r=P$. For negative $P$, apply the same formula to $|P|$ and restore the negative sign. This implements nearest-integer rounding with exact half-integer ties away from zero. The domain restrictions matter. Given signed INT32 $A$ and positive signed INT32 $n$, $|P|\le2^{31}(2^{31}-1)<2^{62}$; therefore the product and its magnitude fit signed INT64. Adding $D/2\le2^{30}$ remains safe. When $k=0$, the divisor is one, and the rounding correction is zero.
+
+A common but incorrect shortcut is `(acc * multiplier) >> shift` with a 32-bit intermediate. It can overflow before the shift. It also relies on implementation-defined signed right-shift behavior for negative integers in older C++ language versions, and does not implement the declared tie rule. The reference code uses positive-magnitude division to make all these semantics explicit.
+
+The result after rounding may still exceed INT32, so `requantize()` **saturates** to the INT32 range before adding the output zero point. A model builder should reject scales that yield unacceptable saturation, rather than relying on saturation to conceal a bad scale. Since the outer output is INT8, the final activation range is constrained to $[-128,127]$.
+
+## Worked dense-layer vector
+
+Consider a four-element input
+
+$$x=[1,2,3,4]^T$$
+
+and three output channels with row-major weights
+
+$$W=\begin{bmatrix}1&1&1&1\\2&0&-2&0\\-1&1&-1&1\end{bmatrix},\quad b=[0,0,2]^T.$$
+
+Let both zero points be zero and use per-output multipliers $(1/2,1/2,1)$. The three accumulators are
+
+$$A_0=10,\qquad A_1=2-6=-4,\qquad A_2=-1+2-3+4+2=4.$$
+
+Requantization gives
+
+$$q_y=[5,-2,4]^T.$$
+
+The runnable example prints `dense output = [5, -2, 4]`. The host test independently asserts these exact values. If these expected results change after an optimization, the optimization is wrong for this documented contract or the contract itself was intentionally revised. Neither should happen silently.
+
+### Zero point as an offset, not a cosmetic field
+
+Suppose an input tensor stores $[10,11]$ with $z_x=10$ and weights $[1,2]$. The centered input is $[0,1]$, and its dot product is 2, **not** $10+22=32$. The test verifies that output. The same rule governs padding: a sample outside the valid input region corresponds to real zero, so the stored padding code is $z_x$, whose centered value is zero. Treating the padding byte as numerical zero introduces a systematic border error whenever $z_x\ne0$.
+
+## A one-dimensional convolution with explicit layout
+
+The reference 1-D convolution accepts input shape $[T,C_{\rm in}]$, weight shape $[C_{\rm out},K,C_{\rm in}]$, and output shape $[T_{\rm out},C_{\rm out}]$. For kernel width $K$, left and right pads $P_l,P_r$, and stride $S$, the output time extent is
+
+$$T_{\rm out}=\left\lfloor\frac{T+P_l+P_r-K}{S}\right\rfloor+1$$
+
+provided the padded extent is at least $K$. The operator computes *cross-correlation*, meaning the learned kernel is not reversed. For an output channel $o$ and output time $t$,
+
+$$A_{t,o}=b_o+\sum_{k=0}^{K-1}\sum_{c=0}^{C_{\rm in}-1} \tilde x_{tS+k-P_l,c}w_{o,k,c},$$
+
+where $\tilde x$ is the centered input inside valid bounds and zero outside. This is the convention used by contemporary machine-learning libraries even when their operator is named `Conv1D` or `Conv2D`.
+
+A golden case uses $x=[1,2,3,4]$, kernel $[1,2,1]$, stride one, and one sample of padding on both ends. The expected outputs are
+
+$$y=[4,8,12,11].$$
+
+At the first position, the receptive field is $[0,1,2]$ and the sum is $0+2+2=4$. At the last, it is $[3,4,0]$ and the sum is $3+8=11$. The test repeats the entire calculation after adding 5 to every input and setting $z_x=5$; the output must remain unchanged. This proves something concrete about the padding semantics.
+
+For a true 2-D convolution, extend the indexing to $[H,W,C_{\rm in}]$ and $[C_{\rm out},K_H,K_W,C_{\rm in}]$, with separate height and width strides, dilation, and padding. The same dot-product and requantization rules apply. A real kernel needs careful shape validation and scratch-memory planning before replacing this educational 1-D core.
+
+## Shape safety and arithmetic safety are distinct
+
+Checking `weights.size()==outputs*inputs` using an unchecked multiplication is unsafe if the dimension product overflows the host integer type. The reference uses a checked product helper, returning a non-success status on overflow or mismatched extents. Quantization parameters and output activation limits are validated as well. This is especially important when model metadata comes from a file or firmware update rather than from audited compile-time constants.
+
+Within each dot product, the implementation uses a signed 64-bit intermediate and checks whether the final accumulator fits signed INT32 before narrowing. A host test constructs a 140,000-term dot product whose mathematical value exceeds INT32 and confirms that `accumulator_overflow` is reported. This illustrates *rejection rather than silent wraparound*. The compiler's type widths and application memory limits still matter; the educational example does not claim a universal proof of 64-bit accumulation safety for arrays so large that the sum itself could exceed INT64. An embedded product should constrain tensor dimensions before invocation.
+
+These routines deliberately do not support buffer aliasing beyond the documented contracts. Aliasing mutable output with the read-only input would change the meaning of a streaming operator. Where in-place operations are desired, the developer must prove their traversal order and lifetimes are safe. `std::span` gives a view, not ownership and not an anti-aliasing guarantee.
+
+## Host test process and provenance
+
+Build and execute in a checked development configuration:
+
+```sh
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+ctest --test-dir build --output-on-failure
+./build/tinyml_demo
+```
+
+To use runtime sanitizers on a compatible Clang/GCC host:
+
+```sh
+cmake -S . -B build-san -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_CXX_FLAGS='-fsanitize=address,undefined -fno-omit-frame-pointer' \
+  -DCMAKE_EXE_LINKER_FLAGS='-fsanitize=address,undefined'
+cmake --build build-san
+ctest --test-dir build-san --output-on-failure
+```
+
+The reference tests include exact half-tie rounding in both signs; invalid scale parameters; a seeded randomized comparison against a higher-precision oracle; shape mismatch rejection; nonzero input zero points; zero-point-correct convolution padding; and accumulator overflow rejection. These tests were run successfully on the development host during manuscript preparation. They do **not** establish that the example is production-grade, thoroughly fuzzed, ARM cross-compiled, compatible with CMSIS-NN bit-exact arithmetic, or safe under all hypothetical enormous tensor sizes.
+
+`CMakeLists.txt` builds the library with `-Wall -Wextra -Wpedantic -Werror` for supporting GNU/Clang toolchains. A firmware port should also compile with the Arm cross-compiler and the target's actual ABI and optimization flags, and run the same golden vectors on the microcontroller before attempting performance claims.
+
+## Why not implement the entire neural-network runtime here?
+
+A complete production runtime needs a model format with schema validation, a deterministic operator registry, multidimensional tensor metadata, static arena planning, scratch contracts, quantization versioning, extensible dispatch, and a supported set of fused operations. More source code is not automatically better pedagogy. A small, completed kernel implementation establishes the *inner numerical contract* in a way a ten-thousand-line interpreter would obscure.
+
+Consider a three-layer inference graph with a 1-D convolution, a rectified activation, and a dense classifier. Each layer can use the primitives in the reference project, but the surrounding model still needs a legitimate training/export process. The test vectors shipped with the book are synthetic fixed weights, not a trained audio recognizer. Never use their output as evidence of classification accuracy.
+
+An application can instead integrate a mature runtime such as TFLM and its CMSIS-NN backend. That shifts the engineering focus from implementing all kernels to correctly exporting the graph, selecting operator registrations, allocating the tensor arena, integrating input DSP, handling errors, benchmarking the executable, and preserving regression vectors across compiler updates. The reference code remains a valuable oracle for a small subset of arithmetic decisions.
+
+## Cross-runtime parity is a separate test objective
+
+Two mathematically equivalent quantized kernels may disagree by one integer count because they implement different tie rounding, high-multiply saturation, or shift semantics. That discrepancy should not be dismissed without analysis, but neither does it automatically establish a bug. To claim TFLM/CMSIS-NN parity, freeze exact operator versions and apply those kernels' documented quantization contracts. Compare outputs for positive and negative half-way cases, extreme accumulators, all relevant zero points, and per-channel scale sets. If performance code must reproduce an existing runtime exactly, the original runtime's reference implementation—not this educational one—is the bit-exact oracle.
+
+This distinction also affects claims made about the author's NetKit inference engine. A measured speedup is meaningful only for a specific hardware/graph/kernel combination with identical requested semantics and quality constraints; the example in this chapter does not assert a new, independent benchmark against any external runtime.
+
+## A realistic next build increment
+
+An engineer extending this reference could implement a small static graph described by a compile-time array of nodes. Each node would declare input and output tensor extents, scratch requirements, and an operator version. The initializer would reject unsupported types and compute tensor lifetimes before reserving an aligned arena. The execution loop would execute a deterministic schedule without allocation or I/O, returning a status plus timing counters. Each operator could then be dispatched to a portable implementation, a CMSIS-NN backend, or another validated MCU backend.
+
+The important sequence is **correctness, memory accounting, schedulability, optimization, then deployment validation**. Reversing that order often produces an impressive demo that is difficult to maintain or audit.
+
+## Chapter design review
+
+The example distinguishes four requirements frequently conflated in discussions of TinyML: (1) a mathematical function, (2) a numerical fixed-point contract, (3) a memory-safe executable, and (4) a real-time deployed system. The companion repository exercises the first three in a limited, explicit domain. Only hardware deployment and full system verification can establish the fourth.
+
+**Exercises**
+
+1. Replace a per-tensor multiplier with a separate rational multiplier for each output channel and construct a test where the outputs differ by at least two counts.
+2. Extend the 1-D reference to support dilation and derive the resulting output-length equation. What dimensions must be checked before the execution loop begins?
+3. Estimate the worst accumulator magnitude for a convolution with kernel $3\times3$, 64 input channels, $|q_x-z_x|\le255$, and $|q_w|\le127$. Is an INT32 accumulator bound adequate before adding bias?
+4. Propose a compile-time static graph with memory reuse between two non-overlapping intermediate tensors. Prove there is no read-after-reuse violation.
+
+
+# MCU Integration Lab: A Repeatable Cortex-M Workflow
+
+## Scope and hardware boundary
+
+This chapter turns the book's abstractions into a concrete engineering plan for an STM32-class Cortex-M4F development board. It is a **lab procedure and reference architecture**, not a claim that the complete microphone-to-decision system has been wired, flashed, timed, or acoustically validated for this book. The source repository's C++20 reference functions run on the host and can be compiled into MCU firmware after platform integration; they are not themselves a speech-recognition model.
+
+A suitable first development platform is the NUCLEO-F446RE, which offers a Cortex-M4F CPU and ordinary timer, DMA, debug, and communication peripherals. The particular audio microphone, its electrical interface, and the available peripheral pins must be selected from their datasheets and verified against the board schematic before wiring. The Nucleo board by itself does not provide a microphone. An external digital microphone (PDM or I$^2$S, where supported and correctly wired) or a conditioned analog microphone with ADC sampling is needed for a live audio demonstration.
+
+The goal is to provide an implementation sequence that an engineer could reproduce on many Cortex-M boards. It intentionally keeps the inference runtime independent of the HAL. Only the board-support layer should know whether incoming samples came from ADC+DMA, I$^2$S DMA, or a vendor audio peripheral.
+
+![Signal path from acquisition to application decision.](figures/pipeline.png){width=4.65in}
+
+## Stage 0: define one unambiguous data contract
+
+Start by writing a small data contract and enforcing it in every module:
+
+| Contract item | Lab choice | Reason |
+|:--|:--|:--|
+| Sample rate | 16,000 samples/s | Familiar low-rate speech front end |
+| PCM | Signed 16-bit, mono | Compact and easy to validate |
+| Frame length | 512 samples | 32-ms analysis window |
+| Hop length | 320 samples | 20-ms new-feature period |
+| FFT implementation | Real-input transform | Avoids redundant complex-input work |
+| Feature representation | Explicit, versioned log-mel | Prevents training/firmware mismatch |
+| Inference input | Quantized INT8 tensor | Fits common MCU inference kernels |
+| Timestamp | Monotonic capture sample counter | Separates data age from task wakeup |
+| Failure response | Invalid result, application action disabled | Makes stale-data behavior observable |
+
+These are proposed lab values, not requirements of every keyword-spotting model. A deployed model may require a different frame length, preprocessing normalization, FFT size, or feature count. The model file and firmware must describe the *same* choices. It is an error to accept a neural network's plausible output as proof that its DSP preprocessing matches training.
+
+## Stage 1: validate acquisition without ML
+
+Configure the sampling timer or audio peripheral so that the transfer clock is derived from a known, documented clock tree. Use circular DMA into two halves of a statically allocated sample buffer; a completion ISR marks each half available. The interrupt path must be bounded: it updates an index or sequence number, records capture time, and signals a worker task. The worker task claims ownership of that half before DSP touches it.
+
+A common conceptual pattern is
+
+```text
+DMA half-transfer -> publish block A -> wake acquisition worker
+DMA full-transfer -> publish block B -> wake acquisition worker
+acquisition worker -> copy to application ring -> release block
+```
+
+The two-half design is not automatically safe. If a slow worker still reads half A when DMA returns to that half, the producer can overwrite data. The buffer ownership policy must either guarantee processing is finished before reuse or detect, count, and safely discard overruns. A sequence counter is useful because a binary flag cannot distinguish one event from three events that occurred before the consumer woke.
+
+Before adding inference, acquire many minutes of data while sweeping CPU load. Verify the sample count against a time reference, observe DMA callbacks, check for lost halves, and inspect a recorded waveform. Feed a known tone and verify that its FFT bin appears at the expected frequency. If the sample rate is in error by 1%, every frequency-dependent feature will be biased by 1% too.
+
+## Stage 2: implement the overlapping frame builder
+
+A streaming 512-sample frame updated every 320 samples requires 192 samples of overlap. One implementation keeps a 512-element frame buffer and, at each hop, moves the last 192 samples to the beginning before appending the new 320 samples. For a small fixed frame this is simple and testable. An alternative circular buffer eliminates the copy but makes contiguous FFT input generation and wrap handling more complex. Neither option is universally superior: choose based on measured copy cost and maintainability.
+
+A frame always carries the monotonic sample index of its newest sample. If the consumer discovers a gap in the producer's sequence count, mark all affected frames invalid. Filling missing samples silently with previous audio may create plausible but misleading classifier outputs. A controlled dropout-handling policy should be part of the signal contract, not an undocumented convenience.
+
+The frame producer need not run a full RTOS. A bare-metal superloop with a DMA ISR and a deterministic main-loop worker is valid if latency and responsiveness requirements are satisfied. The key property is clearly assigned buffer ownership, not the choice of scheduler API.
+
+## Stage 3: reproduce preprocessing exactly
+
+The front end applies a window $w[n]$, computes a transform $X[k]$, constructs a power or magnitude spectrum according to the model contract, applies a mel filter matrix $M_{j,k}$, and logs the result with a frozen floor $\epsilon>0$:
+
+$$F_j=\log\left(\max\left(\epsilon,\sum_k M_{j,k}|X[k]|^2\right)\right).$$
+
+If the model was trained with magnitude rather than power, using $|X[k]|^2$ changes its input distribution. Likewise, a $\log_{10}$ instead of a natural logarithm introduces a factor of $\ln 10$ before any normalization. An engineer should treat each preprocessing constant as part of the model artifact, not as a tunable firmware preference.
+
+Test the DSP in isolation with synthetic vectors: silence, DC offset, bin-centered sine waves, a tone halfway between FFT bins, deterministic wideband noise, and near-full-scale impulses. Compare the target output to a high-precision offline implementation with explicitly documented tolerance. The floating-point CMSIS-DSP library is a sensible baseline when the target has an FPU; a quantized or fixed-point pipeline becomes attractive only when measurements justify its added numerical complexity.
+
+## Stage 4: freeze quantization and graph metadata
+
+The model artifact should include an integer version identifier, tensor shapes and layout, input/output scale and zero point, preprocessing revision, required operator list, and a content hash. Validate all these fields before allocating an arena or enabling the application action. Do not use an input tensor if its declared size exceeds its buffer or if the product of dimensions overflows `size_t`.
+
+For an exported INT8 network, use the *actual* model's input scale and zero point when converting features:
+
+$$q_{\rm feature}=\operatorname{clip}_{[-128,127]}\left(\operatorname{round}\left(\frac{F}{s_{\rm input}}\right)+z_{\rm input}\right).$$
+
+An apparently harmless normalization change, such as subtracting a dataset mean twice, can destroy recognition accuracy. Golden test vectors should pin exact intermediate feature arrays as well as final classifier output. Those vectors are inexpensive to retain in a test fixture and dramatically reduce integration uncertainty.
+
+## Stage 5: execute the model and report errors
+
+Run inference from a worker context, not a DMA ISR. Separate the model invocation from detection policy. The inference result should contain at least:
+
+```text
+status / model revision / feature timestamp / invocation cycles
+output logits or probabilities / validity / sequence number
+```
+
+This interface lets a supervisor suppress stale or invalid outputs without needing to understand operator internals. It also allows a developer to log a candidate detection without actuating a physical device. That separation is important for industrial products, where a false trigger might move machinery, open a valve, or cause an unsafe control transition.
+
+A robust application may maintain separate states for stopped, learning/calibration, running, and faulted. In a faulted state, no classifier output should be authorized to cause an action. Recovery may require reinitializing the sensor stream and discarding partial windows. Simply zeroing a tensor is not necessarily safe: a learned network can assign high confidence to an all-zero input if the model is wrong or its distribution differs from training.
+
+## Stage 6: a deterministic scheduling arrangement
+
+![Recommended ownership and notification flow for MCU keyword spotting.](figures/scheduler.png){width=4.6in}
+
+An RTOS is useful if acquisition, inference, telemetry, and other application work have different blocking behavior. The acquisition task typically has a higher effective urgency than telemetry, while the inference task must complete inside the time remaining after capture and DSP. A direct task notification can be cheaper than a queue when the event is only “new block ready,” but a notification alone does not carry a whole buffer ownership protocol. If multiple buffers can be pending, pair the notification with a protected ring of descriptors and an overrun counter.
+
+With FreeRTOS, interrupt priority rules matter. An ISR calling `vTaskNotifyGiveFromISR()` must run at a priority allowed to call the kernel's FromISR API on that configured port. A more urgent ISR may deliberately avoid all kernel calls, but it then needs a different safe path for communicating with tasks. All the buffer transitions must be verified under back-to-back interrupt events, not just a leisurely debugger session.
+
+Make the control/status task publish compact telemetry no faster than the transport can handle. At 115,200 bit/s UART, a nominal eight-N-one character costs ten serial bits, so a 100-byte line takes about 8.7 ms *on the wire*. Logging dozens of such lines each 20-ms hop is not benign background activity. A ring buffer plus low-priority draining task lets the real-time code drop optional telemetry rather than block and miss a deadline.
+
+## Stage 7: instrument timing from first principles
+
+Set up a counter or trace channel to record at least five boundaries: DMA block complete, frame ready, DSP complete, inference complete, and decision emitted. A timestamp associated with the original capture sample must survive every stage. Then compute
+
+$$L_{\rm end\ to\ end}=t_{\rm decision}-t_{\rm newest\ sample}.$$
+
+This excludes the age of the oldest samples in the analysis window; report both if the product requirement concerns the age of information used. A high-throughput implementation can still have poor worst-observed latency if its feature queue occasionally accumulates old windows. A queue depth of eight may conceal a transient overload while delivering stale detections long after the acoustic event.
+
+Measure multiple system states: quiet idle, telemetry saturated, DMA continuous, nearby interrupt activity, and any low-power clock changes. Record compiler optimization and frequency. Treat p95 and observed maximum as measurements over the tested runs, not an unbounded WCET guarantee.
+
+## Stage 8: acceptance criteria before a live demonstration
+
+A release candidate should meet explicit gates:
+
+- **Acquisition gate:** zero unexplained gaps over the chosen stress interval, or defined safe invalidation on each injected gap.
+- **Feature gate:** documented error tolerance against the independent DSP reference for silence, tones, and representative recordings.
+- **Numeric gate:** model output agrees with selected runtime reference on pinned tensors, including saturation and difficult integer endpoints.
+- **Memory gate:** static image, arena, DMA, task stacks, and interrupts fit with an explicit engineering margin.
+- **Timing gate:** measured response-time distributions and any formal/analytic bounds meet the stated product deadline under the specified conditions.
+- **Detection gate:** representative false-alarm and miss rates, evaluated with the final deployed preprocessing and threshold logic.
+- **Fault gate:** sensor dropout, stale model outputs, corrupted model metadata, and deadline faults all suppress unauthorized application actions.
+- **Reproducibility gate:** exact model, toolchain, board revision, and test corpus identifiers accompany the result.
+
+The author recommends saving these records alongside firmware release artifacts so a future engineer can distinguish a true regression from a toolchain, model, or laboratory change.
+
+## From an STM32 lab to portable MCU code
+
+Only a few modules need to change when porting from a Cortex-M4 to an ESP32 or RISC-V microcontroller: acquisition drivers, timer/interrupt primitives, memory-section placement, and the optimized kernel backend. Mathematical semantics, the reference test vectors, model schema validation, data freshness rules, and most C++ signal-processing code can remain platform independent. Keeping those boundaries visible is a major reason for using a host-testable design.
+
+An application processor may be the better choice when a product needs large models, image pipelines, richer operating-system services, or significant dynamic workloads. That observation belongs in the system-selection discussion; it does not require the book to teach Cortex-A Linux deployment. This book's central subject is the discipline of producing reliable learned functions on the microcontroller itself.
+
+## Chapter design review
+
+The finished lab is not “neural network runs on a board.” It is a reproducible chain from timed sensor acquisition through testable numerical operations to bounded, fault-aware application behavior. Only when the entire chain is measured on the intended hardware do performance, power, and reliability claims become meaningful. The code supplied with the book is a starting point for the numerical layer, while the procedure here specifies the hardware integration work a real engineering project still needs to perform.
+
+**Exercises**
+
+1. At 16 kHz with a 512-point frame and 320-point hop, calculate the overlap in samples and milliseconds. What is the worst frame backlog after three delayed hops if each frame is queued instead of replaced?
+2. Design a two-half DMA ownership state machine that cannot silently overwrite an unprocessed block. State how a fault is reported.
+3. Compare an ISR+superloop implementation with a FreeRTOS implementation for the same pipeline. Which specific product requirements justify the added scheduler?
+4. Propose a benchmark CSV schema that includes sensor timestamp, capture-to-feature latency, inference cycles, classifier scores, and fault counters, without causing blocking UART work in the critical path.
+
+
+\appendix
+
+
+# Essential Formulas
 
 **Affine INT8 value:** $r\approx s(q-z)$; **inverse:** $q=\operatorname{clamp}(\operatorname{round}(r/s)+z)$.
 
@@ -1266,11 +1687,11 @@ If those questions can be answered with repository evidence, a small neural netw
 
 **Energy:** $E=\int P(t)dt$; **MAC utilization:** $U\approx C/T$ (subject to task-model assumptions).
 
-## B. Quick glossary
+# Glossary
 
 **Activation:** a tensor produced by an operator (usually transient). **Arena:** a statically reserved region used for tensor/runtime storage. **CMSIS-DSP:** Arm's optimized numerical/DSP kernel library. **CMSIS-NN:** Arm's optimized neural-network kernels for Cortex-M. **Depthwise convolution:** per-input-channel spatial filtering. **DSP front end:** deterministic transform from sensor samples to model input features. **INT8:** signed 8-bit integer inference representation. **Log-mel:** logarithm of mel-spaced spectral-band energies. **MAC:** multiply-accumulate operation. **NHWC:** batch-height-width-channel tensor order. **Per-channel quantization:** distinct weight scales per output channel. **PTQ:** post-training quantization. **QAT:** quantization-aware training. **Requantization:** converting an integer accumulator into another tensor's scale and zero point. **SPSC:** single-producer/single-consumer. **WCET:** worst-case execution time, which ordinary profiling does not prove.
 
-## C. Board bring-up checklist
+# MCU Bring-Up Checklist
 
 1. Record exact MCU, board revision, pin/clock/power settings and toolchain SHA/version.
 2. Prove peripheral capture timing and sample continuity before inference.
@@ -1283,7 +1704,7 @@ If those questions can be answered with repository evidence, a small neural netw
 9. Verify outputs are rejected after expiry or stream generation reset.
 10. Archive release hashes, recordings, telemetry and test procedure.
 
-## D. Reading and references
+# References and Further Reading
 
 The sources below are normative only for their own documented library versions; exact APIs, operator versions and compiler behavior must be checked against the revision used for a build.
 
@@ -1298,6 +1719,36 @@ The sources below are normative only for their own documented library versions; 
 9. S. Haykin. *Adaptive Filter Theory.* An engineering reference for filtering and numerical methods.
 10. A. V. Oppenheim and R. Schafer. *Discrete-Time Signal Processing.* A foundational reference for DFT, windowing, and spectrum estimation.
 
-## E. Publication and validation status
+11. Arm. *CMSIS-NN 8.0.0 release notes*, 21 August 2026. <https://github.com/ARM-software/CMSIS-NN/releases/tag/v8.0.0>. Experimental floating-point kernels and existing integer contracts must not be conflated.
+12. Arm. *CMSIS-NN Convolution Functions.* <https://arm-software.github.io/CMSIS-NN/latest/group__NNConv.html>. Review the selected wrapper's scratch requirements.
+13. Arm. *CMSIS-DSP Real FFT Functions.* <https://arm-software.github.io/CMSIS-DSP/latest/group__RealFFT.html>. Check signatures and buffer requirements for the selected architecture.
+14. NetKit Labs. *KWSKit Zephyr hardware validation.* <https://github.com/NetKit-Labs/kwskit/blob/main/docs/validation.md>. Records the normal-run timing and buffer measurements cited in this book.
+15. NetKit Labs. *NetKit MNIST-CNN STM32 peer comparison.* <https://github.com/NetKit-Labs/netkit/blob/main/docs/MNIST_CNN.md>. Reports accelerated and reference-kernel comparisons separately.
 
-**Draft dated 26 October 2026.** This is an original technical manuscript. The author has not claimed to run the chapter's illustrative C++ skeletons as a complete firmware build. Code requiring `requantize(...)` has an explicitly unspecified implementation to be filled and tested against a chosen runtime contract; it is intentionally not presented as a finished library. Hardware metrics appearing in Chapters 1, 8, and 10 are externally documented observations from the author's named public repositories. Revalidate repository data, figures, citation links, source-code samples, numerical rounding rules, and all print proofs before final paperback publication.
+# Validation and Publication Status
+
+**Expanded manuscript, 26 October 2026.** The companion C++20 reference functions in `examples/int8_reference/` compile and pass deterministic and seeded randomized host tests, including a sanitizer run in the preparation environment. Chapter 4 preserves a separate pedagogical interface skeleton; Chapter 12 documents a completed educational implementation with an explicit rational requantization contract. It is *not* claimed bit-exact against CMSIS-NN or TFLM, is not a trained model, and is not a complete firmware product. Hardware measurements in Chapters 1, 8 and 10 come from the author's independently recorded public-project sessions; no new MCU hardware timing, energy, or acoustic measurements have been obtained for this manuscript. Independent technical review, thorough code auditing, copyediting, target-board testing, and a physical print proof should precede commercial publication.
+
+# Worked Arithmetic Examples
+
+**F.1 Per-channel quantization.** For input $x=(1,2)$, weights $w_0=(3,-1)$ and $w_1=(-2,4)$, zero bias, and zero input point, the accumulators are $A_0=1$ and $A_1=6$. For channel multipliers $M_0=1/2$ and $M_1=1/4$, and output zero point $z_y=-3$, nearest ties-away gives outputs $q_0=-2$ and $q_1=-1$. This example shows that per-channel multipliers matter even when the input scale is shared.
+
+**F.2 Zero-point-correct convolution.** For $x=(1,2,3,4)$, kernel $(1,2,1)$, and one sample of zero padding at both ends, the output is $(4,8,12,11)$. Shifting the stored input to $(6,7,8,9)$ and assigning zero point $z_x=5$ leaves the centered signal unchanged. The padding code must also be 5, not a zero byte.
+
+**F.3 Scheduling utilization.** A model invoked every 20 ms with execution demand 5 ms contributes nominal task utilization 25%. That is not itself proof of a 20-ms response bound; blocking, interrupt time, other tasks and release jitter must be included.
+
+**F.4 Memory placement.** A 60-KiB constant model mapped into program flash does not automatically consume 60 KiB of SRAM. A loader that copies the same weights into a mutable tensor does. Check the link map and startup image; a C++ storage qualifier alone does not prove where bytes reside.
+
+# Build and Test Provenance
+
+Build the reference kernels from the book root:
+
+```sh
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+`std::span` presents non-owning buffer views; it does not allocate. The reference execution routines do not use dynamic allocation, but the surrounding application still needs to validate model metadata, tensor lifetimes, and output freshness. Host execution of golden vectors does not certify embedded timing, safety, or device compatibility.
+
+Rebuild the document using `./build.sh` with Pandoc and XeLaTeX. The current PDF uses a 6-by-9-inch page. A print-on-demand provider may require separate checks for trim, margins, fonts, cover layout, metadata, and proofing. A technically complete *manuscript* is not identical to a professionally printed, validated product.

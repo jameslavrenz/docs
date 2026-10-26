@@ -1,0 +1,11 @@
+digraph lifetime {
+ graph [rankdir=LR,bgcolor="white",pad=".2",nodesep=".22",ranksep=".34",fontname="DejaVu Sans"];
+ node [shape=box,style="rounded,filled",fillcolor="#f0f4f8",color="#375a70",fontname="DejaVu Sans",fontsize=11,margin=".13,.08"];
+ edge [color="#375a70",arrowsize=.6];
+ x[label="Input\n1,024 B"];
+ c[label="Conv1\n2,048 B"];
+ r[label="ReLU /\npool"];
+ h[label="Hidden\n512 B"];
+ y[label="Output\n16 B"];
+ x->c->r->h->y;
+}

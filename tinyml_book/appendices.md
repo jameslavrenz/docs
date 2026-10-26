@@ -1,6 +1,7 @@
-# Appendices
+\appendix
 
-## A. Essential formulas
+
+# Essential Formulas
 
 **Affine INT8 value:** $r\approx s(q-z)$; **inverse:** $q=\operatorname{clamp}(\operatorname{round}(r/s)+z)$.
 
@@ -22,11 +23,11 @@
 
 **Energy:** $E=\int P(t)dt$; **MAC utilization:** $U\approx C/T$ (subject to task-model assumptions).
 
-## B. Quick glossary
+# Glossary
 
 **Activation:** a tensor produced by an operator (usually transient). **Arena:** a statically reserved region used for tensor/runtime storage. **CMSIS-DSP:** Arm's optimized numerical/DSP kernel library. **CMSIS-NN:** Arm's optimized neural-network kernels for Cortex-M. **Depthwise convolution:** per-input-channel spatial filtering. **DSP front end:** deterministic transform from sensor samples to model input features. **INT8:** signed 8-bit integer inference representation. **Log-mel:** logarithm of mel-spaced spectral-band energies. **MAC:** multiply-accumulate operation. **NHWC:** batch-height-width-channel tensor order. **Per-channel quantization:** distinct weight scales per output channel. **PTQ:** post-training quantization. **QAT:** quantization-aware training. **Requantization:** converting an integer accumulator into another tensor's scale and zero point. **SPSC:** single-producer/single-consumer. **WCET:** worst-case execution time, which ordinary profiling does not prove.
 
-## C. Board bring-up checklist
+# MCU Bring-Up Checklist
 
 1. Record exact MCU, board revision, pin/clock/power settings and toolchain SHA/version.
 2. Prove peripheral capture timing and sample continuity before inference.
@@ -39,7 +40,7 @@
 9. Verify outputs are rejected after expiry or stream generation reset.
 10. Archive release hashes, recordings, telemetry and test procedure.
 
-## D. Reading and references
+# References and Further Reading
 
 The sources below are normative only for their own documented library versions; exact APIs, operator versions and compiler behavior must be checked against the revision used for a build.
 
@@ -54,6 +55,36 @@ The sources below are normative only for their own documented library versions; 
 9. S. Haykin. *Adaptive Filter Theory.* An engineering reference for filtering and numerical methods.
 10. A. V. Oppenheim and R. Schafer. *Discrete-Time Signal Processing.* A foundational reference for DFT, windowing, and spectrum estimation.
 
-## E. Publication and validation status
+11. Arm. *CMSIS-NN 8.0.0 release notes*, 21 August 2026. <https://github.com/ARM-software/CMSIS-NN/releases/tag/v8.0.0>. Experimental floating-point kernels and existing integer contracts must not be conflated.
+12. Arm. *CMSIS-NN Convolution Functions.* <https://arm-software.github.io/CMSIS-NN/latest/group__NNConv.html>. Review the selected wrapper's scratch requirements.
+13. Arm. *CMSIS-DSP Real FFT Functions.* <https://arm-software.github.io/CMSIS-DSP/latest/group__RealFFT.html>. Check signatures and buffer requirements for the selected architecture.
+14. NetKit Labs. *KWSKit Zephyr hardware validation.* <https://github.com/NetKit-Labs/kwskit/blob/main/docs/validation.md>. Records the normal-run timing and buffer measurements cited in this book.
+15. NetKit Labs. *NetKit MNIST-CNN STM32 peer comparison.* <https://github.com/NetKit-Labs/netkit/blob/main/docs/MNIST_CNN.md>. Reports accelerated and reference-kernel comparisons separately.
 
-**Draft dated 26 October 2026.** This is an original technical manuscript. The author has not claimed to run the chapter's illustrative C++ skeletons as a complete firmware build. Code requiring `requantize(...)` has an explicitly unspecified implementation to be filled and tested against a chosen runtime contract; it is intentionally not presented as a finished library. Hardware metrics appearing in Chapters 1, 8, and 10 are externally documented observations from the author's named public repositories. Revalidate repository data, figures, citation links, source-code samples, numerical rounding rules, and all print proofs before final paperback publication.
+# Validation and Publication Status
+
+**Expanded manuscript, 26 October 2026.** The companion C++20 reference functions in `examples/int8_reference/` compile and pass deterministic and seeded randomized host tests, including a sanitizer run in the preparation environment. Chapter 4 preserves a separate pedagogical interface skeleton; Chapter 12 documents a completed educational implementation with an explicit rational requantization contract. It is *not* claimed bit-exact against CMSIS-NN or TFLM, is not a trained model, and is not a complete firmware product. Hardware measurements in Chapters 1, 8 and 10 come from the author's independently recorded public-project sessions; no new MCU hardware timing, energy, or acoustic measurements have been obtained for this manuscript. Independent technical review, thorough code auditing, copyediting, target-board testing, and a physical print proof should precede commercial publication.
+
+# Worked Arithmetic Examples
+
+**F.1 Per-channel quantization.** For input $x=(1,2)$, weights $w_0=(3,-1)$ and $w_1=(-2,4)$, zero bias, and zero input point, the accumulators are $A_0=1$ and $A_1=6$. For channel multipliers $M_0=1/2$ and $M_1=1/4$, and output zero point $z_y=-3$, nearest ties-away gives outputs $q_0=-2$ and $q_1=-1$. This example shows that per-channel multipliers matter even when the input scale is shared.
+
+**F.2 Zero-point-correct convolution.** For $x=(1,2,3,4)$, kernel $(1,2,1)$, and one sample of zero padding at both ends, the output is $(4,8,12,11)$. Shifting the stored input to $(6,7,8,9)$ and assigning zero point $z_x=5$ leaves the centered signal unchanged. The padding code must also be 5, not a zero byte.
+
+**F.3 Scheduling utilization.** A model invoked every 20 ms with execution demand 5 ms contributes nominal task utilization 25%. That is not itself proof of a 20-ms response bound; blocking, interrupt time, other tasks and release jitter must be included.
+
+**F.4 Memory placement.** A 60-KiB constant model mapped into program flash does not automatically consume 60 KiB of SRAM. A loader that copies the same weights into a mutable tensor does. Check the link map and startup image; a C++ storage qualifier alone does not prove where bytes reside.
+
+# Build and Test Provenance
+
+Build the reference kernels from the book root:
+
+```sh
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+`std::span` presents non-owning buffer views; it does not allocate. The reference execution routines do not use dynamic allocation, but the surrounding application still needs to validate model metadata, tensor lifetimes, and output freshness. Host execution of golden vectors does not certify embedded timing, safety, or device compatibility.
+
+Rebuild the document using `./build.sh` with Pandoc and XeLaTeX. The current PDF uses a 6-by-9-inch page. A print-on-demand provider may require separate checks for trim, margins, fonts, cover layout, metadata, and proofing. A technically complete *manuscript* is not identical to a professionally printed, validated product.

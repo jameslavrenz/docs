@@ -1,0 +1,12 @@
+digraph sched {
+ graph [rankdir=LR, bgcolor="white", pad=".13", nodesep=".14", ranksep=".22",fontname="DejaVu Sans"];
+ node[shape=box,style="rounded,filled",fillcolor="#f3f7fa",color="#315879",fontsize=10,fontname="DejaVu Sans",margin=".09,.07"];
+ edge[color="#315879",arrowsize=.5];
+ a[label="DMA ISR\n20-ms hop"];
+ b[label="DSP task\nfeature frame"];
+ c[label="Inference task\nmodel invoke"];
+ d[label="Detector\nconfidence / stale"];
+ e[label="Telemetry\nbackground"];
+ a->b->c->d;
+ d->e [style=dashed];
+}

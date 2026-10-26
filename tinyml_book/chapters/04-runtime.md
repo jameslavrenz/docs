@@ -130,7 +130,7 @@ Status dense_i8_reference(
 }
 ```
 
-This example assumes symmetric weights (`weight_zero_point = 0`) and output activation spanning all signed INT8 codes; real model formats may require other conventions. The declared `requantize` must be implemented and verified before calling this a working, bit-exact kernel. The code is a **reference skeleton**, not a fully linkable complete sample. `INT32_MIN`/`INT32_MAX` require the appropriate integer-limit header or an equivalent `std::numeric_limits`-based check.
+This example assumes symmetric weights (`weight_zero_point = 0`) and output activation spanning all signed INT8 codes; real model formats may require other conventions. This listing illustrates one operator interface but deliberately does not define `requantize`. **Chapter 12 and the companion `examples/int8_reference/` directory provide a separate, complete and host-tested reference implementation** with an explicit rational-multiplier convention. That convention is educational rather than TFLM/CMSIS-NN bit-exact; do not substitute the chapter 12 function in this skeleton without adapting the interface and quantization contract. `INT32_MIN`/`INT32_MAX` require the appropriate integer-limit header or an equivalent `std::numeric_limits`-based check.
 
 ## What a fixed-point requantizer must specify
 
