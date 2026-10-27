@@ -25,26 +25,49 @@ def normal(text):
     return re.sub(r"[^a-z0-9]+", " ", text.casefold()).strip()
 
 
-def section_bounds(pages):
+def section_bounds(pages, finder):
+    """Find only the actual manuscript H1 titles, not numbered list items.
+
+    Reading a printed page's first line as a chapter number is insufficient:
+    an ordinary numbered list can begin a new page (for example "2. Types:").
+    Compare with the authored H1 titles and reject ambiguous/missing headings.
+    """
+    book = finder.parent.parent
+    chapter_files = sorted((book / "chapters").glob("[0-9][0-9]-*.md"))
+    appendix_files = sorted((book / "appendices").glob("[A-F]-*.md"))
+    if len(chapter_files) != 19 or len(appendix_files) != 6:
+        raise ValueError("Unexpected manuscript chapter or appendix count")
+
+    expected = {}
+    for file in chapter_files + appendix_files:
+        heading = file.read_text(encoding="utf-8").splitlines()[0]
+        if not heading.startswith("# "):
+            raise ValueError(f"Missing manuscript H1 in {file}")
+        key = ("Ch" + str(int(file.name[:2])) if file in chapter_files
+               else "App" + file.name[0])
+        expected[key] = normal(heading[2:])
+
     starts = {}
-    for i, page in enumerate(pages):
-        first = page.strip().splitlines()[0].strip()
-        ch = re.fullmatch(r"(\d+)\.\s+.+", first)
-        ap = re.fullmatch(r"Appendix\s+([A-F])\.\s+.+", first)
-        if ch:
-            starts[f"Ch{int(ch[1])}"] = i + 1
-        if ap:
-            starts[f"App{ap[1]}"] = i + 1
-    if sorted(int(k[2:]) for k in starts if k.startswith("Ch")) != list(range(1, 20)):
-        raise ValueError(f"Missing chapter headings: {starts}")
-    if sorted(k[3:] for k in starts if k.startswith("App")) != list("ABCDEF"):
-        raise ValueError(f"Missing appendix headings: {starts}")
-    keys = sorted(starts, key=starts.get)
+    for number, page in enumerate(pages, 1):
+        first = normal(page.strip().splitlines()[0])
+        for key, title in expected.items():
+            if first == title:
+                if key in starts:
+                    raise ValueError(f"Duplicate chapter/appendix title {key} on page {number}")
+                starts[key] = number
+    if set(starts) != set(expected):
+        missing = sorted(set(expected) - set(starts))
+        raise ValueError(f"Missing PDF chapter/appendix titles: {missing}")
+    keys = ["Ch" + str(n) for n in range(1, 20)] + [
+        "App" + c for c in "ABCDEF"
+    ]
+    positions = [starts[k] for k in keys]
+    if positions != sorted(positions) or len(set(positions)) != len(positions):
+        raise ValueError(f"Out-of-order PDF chapter/appendix titles: {starts}")
     return {
-        key: (starts[key], starts[keys[i+1]]-1 if i+1 < len(keys) else len(pages))
+        key: (starts[key], positions[i+1]-1 if i+1 < len(keys) else len(pages))
         for i, key in enumerate(keys)
     }
-
 
 def chapter_refs(description):
     refs = []
@@ -61,7 +84,9 @@ def chapter_refs(description):
 
 def main(pdf, finder, output):
     pages = pages_in(pdf)
-    bounds = section_bounds(pages)
+    bounds = section_bounds(pages, finder)
+    print("Verified title page map: " + ", ".join(
+        f"{name}={first}" for name, (first, _) in bounds.items()))
     normalized_pages = [normal(page) for page in pages]
     rows = []
     for line in finder.read_text(encoding="utf-8").splitlines():
