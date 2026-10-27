@@ -1,26 +1,29 @@
-# Editorial and Verification Status — October 2026
+# Modern C23 — Editorial and Verification Status
 
-## Manuscript
+## Source inventory
 
-- 19 chapters, five appendices, and a preface
-- Approximately 61,000 source words including code listings and exercises
-- 29 standalone examples integrated with `make check`
-- Latest additions: checked function contracts, robust line reading, hosted atomic threads, C23 feature probing, and corresponding worked solutions
+- 19 chapters and a preface
+- Six appendices, including worked solutions and an alphabetical topic finder
+- 66,968 Markdown words including code and exercises
+- 31 standalone C examples in the Makefile and regression script
+- Structural checks of chapter numbers, appendix letters, Markdown fences, README links, and executable-test references
 
-## Source and tests
+## Latest technical additions
 
-The expanded manuscript and complete examples are committed to `main` under `modernc_book/`. The GitHub Actions matrix builds examples under GCC 14 and Clang 18 using an explicit C23 dialect and strict warnings. See the workflow's latest run for the current result.
+The strict incremental UTF-8 decoder (`examples/utf8_stream.c`) distinguishes incomplete, complete and invalid sequences and preserves the previous scalar on non-success. The bounded TLV decoder (`examples/tlv_decode.c`) validates headers and lengths before reading, rejects records beyond fixed resource limits, and publishes the result only after validating the whole input.
 
-The two new examples have specific limits. `line_reader.c` uses hosted `FILE *` streams and enforces bounded **storage**, not bounded time spent draining a long record. `thread_counter.c` requires the optional hosted C threads facility and does not establish interrupt safety or an RTOS timing guarantee.
+Chapters 18 and 10 contain the detailed explanations, with related worked solutions in Appendix C. Appendix F improves navigation during the draft phase.
 
-## PDF publication
+## Verification
 
-The PDF workflow includes the preface, 19 chapters and five appendices, then measures the actual resulting PDF. The previous confirmed PDF was 124 pages; newer source changes must not be assumed typeset until a later successful publication is verified.
+GitHub Actions runs C23 examples using GCC 14 and Clang 18 with warnings as errors (with one targeted Clang 18 workaround for its C23 binary literal diagnostic). The new source examples have passed intermediate runs. Refer to the latest workflow result for confirmation of the final editorial commit.
 
-## Outstanding acceptance criteria
+The new manuscript checker passed its initial CI test after integration. It detects structural issues, not semantic errors in all prose fragments.
 
-- Technical audit of all illustrative fragments and standard-library portability claims
-- Cross-compiler tests for advanced optional C23 features
-- Visual inspection of the generated PDF and page-break quality
-- Useful book index, complete cross-references, and editorial consistency pass
-- Expansion toward the intended roughly 200–230-page reading edition without padding or redundant prose
+## PDF status
+
+A confirmed PDF published earlier in this session contains **156 pages**. The newest manuscript changes may not yet be reflected in the tracked PDF while its workflow is building. The exact new page count must come from the next completed PDF job.
+
+## Remaining acceptance criteria
+
+Complete code-listing audit; visual PDF inspection; cross-reference cleanup; final index with page numbers; full compatibility matrix for optional C23 language/library features; and enough substantive development to reach the approximately 200–230-page target.
