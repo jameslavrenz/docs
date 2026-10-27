@@ -1,3 +1,8 @@
 % Keep listings inside the printable area without silently truncating code.
 \usepackage{listings}
 \lstset{breaklines=true,breakatwhitespace=false,breakautoindent=true,columns=fullflexible,keepspaces=true,basicstyle=\ttfamily\footnotesize}
+
+% Permit gentler interword stretch before TeX lets prose protrude beyond the page.
+% This does not suppress the off-page bounding-box check in CI.
+\setlength{\emergencystretch}{4em}
+\Urlmuskip=0mu plus 1mu\relax
