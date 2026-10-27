@@ -199,3 +199,111 @@ A reusable interface should specify whether a callback may call back into the sa
 ### Exercises
 
 **17.6** Modify the sink to report 'would block' separately from a permanent error. **17.7** Write a wrapper that resumes a partially sent message on a later call. **17.8** Design a byte sink with a maximum record length and checked capacity. **17.9** Explain what the caller must guarantee about the lifetime of its context object.
+
+
+## 17.18 Sorting records with more than one key
+
+The simplest `qsort` example compares two integers. Real software often sorts records according to a hierarchy of keys. A telemetry log might order events by priority, then source identifier, then the order in which they arrived.
+
+The companion `examples/sort_records.c` defines records with three fields:
+
+```c
+struct record {
+    unsigned priority;
+    char name[16];
+    size_t arrival;
+};
+```
+
+Its contract is that `name` contains a valid, zero-terminated byte string within its array. The sort orders priority numerically from low to high, then names according to `strcmp`, then arrival number numerically.
+
+The last field is useful because the standard `qsort` interface does not promise a stable sort. When two elements compare equal, their relative order need not remain the same as it was originally. Including a unique, order-preserving arrival field can produce the desired deterministic result through the comparator itself.
+
+A deterministic tie-breaker does not make the underlying algorithm a stable sorting algorithm. It defines a different total order that distinguishes records the earlier keys regarded as equal.
+
+## 17.19 A comparator is a mathematical relation
+
+The comparator receives two `const void *` values pointing at objects in the array. It converts them to pointers to the actual element type and returns a negative result, zero, or a positive result according to the selected ordering.
+
+A correct comparison should be consistent. In particular, if it says `a` precedes `b`, it must not also say that `b` precedes `a`. Equal values should compare equal, and comparisons should not depend on changing global state.
+
+The record comparator first checks priority. When that key differs, the remaining keys are irrelevant. Only when the priorities match does it compare names; only when names also match does it compare arrival order. This is called *lexicographic ordering* by keys.
+
+The function need not calculate numerical differences to express the result. For integers, a useful three-way comparison is:
+
+```c
+return (a > b) - (a < b);
+```
+
+Each relational result is zero or one, so their difference is between minus one and one. It cannot overflow, regardless of how widely separated the original integer values are.
+
+By contrast, returning `a - b` for signed `int` keys can overflow when one key is `INT_MIN` and the other is `INT_MAX`. The comparator would then invoke undefined behavior in precisely the unusual cases an ordering routine should handle reliably.
+
+## 17.20 Why the callback has no context argument
+
+The standard `qsort` comparator type takes only two object pointers. It does not have a general-purpose user-context parameter. This differs from the byte-sink callbacks earlier in this chapter, which carry a context pointer alongside the function pointer.
+
+Suppose an application wants to sort based on a configuration object, such as ascending or descending priority chosen by a user. One portable option is to place the relevant ordering key inside each record or precompute it before sorting. Another is to write a small specialized sort operating on the application's own context.
+
+Some platforms provide `qsort_r`-style extensions with a context parameter, but signatures and availability differ among systems. Such an extension must not be presented as if it were part of portable ISO C.
+
+Global configuration used by a comparator can introduce reentrancy and concurrency problems. Two simultaneous sorts might require different ordering settings. Avoid using a mutable global merely to simulate a missing callback context unless the program explicitly controls access to it.
+
+## 17.21 The type of `void *` does not carry ownership
+
+A callback accepting `void *context` can be flexible, but the type does not tell the callback whether it may modify, retain, or release the pointed-to object. Those rules require a separate contract.
+
+In the byte-sink example, the context points to a fake output device that remains alive for the entire synchronous call. The callback may inspect or modify its state, but it does not own the structure or free it. If the sink stored the context pointer to use later, the caller would need to keep the object alive until that asynchronous operation finished.
+
+Casting a `void *` to the wrong object pointer type does not produce a dynamically checked conversion. A common pattern is to use a dedicated callback type alongside clear documentation that identifies the expected context structure.
+
+A C module can further reduce mistakes by hiding its context representation behind an opaque structure pointer and exposing initialization and operation functions.
+
+## 17.22 Return values for partial progress
+
+Consider a callback that accepts a requested byte count and returns how many bytes it consumed. The caller may need to retry with the unwritten suffix. A complete-write adapter can maintain the invariant `offset <= count` and call the sink with `data + offset` and `count - offset`.
+
+If the callback returns zero while bytes remain, blindly looping would cause a busy wait with no forward progress. If it returns more bytes than requested, the caller must reject the invalid result before adding it to the offset.
+
+This simple interface deliberately conflates permanent failure and temporary inability to accept data, treating both as failure when no bytes are accepted. An asynchronous or nonblocking writer generally benefits from a richer status:
+
+```c
+enum send_status {
+    SEND_PROGRESS,
+    SEND_WOULD_BLOCK,
+    SEND_CLOSED,
+    SEND_ERROR
+};
+```
+
+Such an API should return the accepted byte count separately or inside a small result structure. A `WOULD_BLOCK` result tells the caller to arrange another attempt when the device becomes ready, rather than spin continuously.
+
+## 17.23 Building a testable device adapter
+
+A callback with a context pointer is a powerful test seam. The production context may contain a UART handle, while a host test substitutes an in-memory sink. The shared algorithm need not contain conditional compilation for every device.
+
+A fake sink can accept at most two bytes per call, record them into a fixed local array, and count callbacks. When a five-byte message is sent through the complete-write adapter, the expected call count is three.
+
+Next configure the fake to accept zero bytes. The adapter should fail immediately without modifying the accepted-byte count. A final test can supply an invalid callback or a null byte pointer with a positive count.
+
+These tests exercise error contracts independently from UART drivers, DMA, or interrupt scheduling. They make the algorithm more reusable without claiming to test the target hardware.
+
+## 17.24 When a function pointer is the right abstraction
+
+A callback is useful when one component needs to invoke an operation whose implementation varies. Sorting, event handlers, output sinks, memory allocators, and parser visitors are examples.
+
+A function pointer is not necessarily the best choice for every tiny operation. If the set of behaviors is fixed at compile time, ordinary functions and static selection can be simpler and easier for a compiler to optimize. For a flexible library boundary, callbacks can reduce dependencies and permit tests to inject failures precisely.
+
+Performance claims should be measured on the real target. On some compilers a known callback may be inlined after optimization; on others an indirect call may impose measurable cost or complicate worst-case execution analysis. Correct lifetime and error semantics remain necessary in either case.
+
+## 17.25 A complete comparator test
+
+A strong comparator test should construct records whose keys exercise each tie-break level. The companion example includes priorities zero and three, names such as `alpha`, `gamma`, and `zeta`, and distinct arrival numbers.
+
+After `qsort`, verify the exact expected arrival sequence. Then compare every adjacent pair and confirm that the comparator considers the earlier element strictly less than the next. Testing only a single pair of records is insufficient to demonstrate multi-key ordering.
+
+A more comprehensive test can generate records and check antisymmetry and transitivity over triples, but these properties must be implemented carefully. A test oracle that repeats the exact comparator logic could share its defects, so hand-computed examples remain valuable.
+
+### Further exercises
+
+**17.10** Extend the record comparator with a timestamp field and state the complete key priority. **17.11** Explain why a unique arrival field can make the final output deterministic without `qsort` becoming a stable algorithm. **17.12** Design a context-aware sorting interface that uses only ISO C and does not rely on mutable globals. **17.13** Add a fake sink mode that returns `WOULD_BLOCK` and explain how the caller resumes a partial write. **17.14** Prove that a three-way comparison built from relational operators cannot overflow as an `int`.
