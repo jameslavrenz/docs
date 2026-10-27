@@ -104,3 +104,71 @@ Use recursion when it reflects a bounded structure clearly. Prefer iteration whe
 ## 3.8 Exercises
 
 **3.4** Design a `parse_temperature` interface distinguishing invalid text from out-of-range input. **3.5** Implement a checked sum for signed `int` elements. **3.6** Split `sum_nonnegative` into a public header, implementation, and executable tests. **3.7** Show how to preserve the output argument's value after each error. **3.8** Explain the difference between linkage and storage duration.
+
+
+## 3.9 Choose the shape of an interface
+
+Consider three interfaces for parsing a decimal value:
+
+```c
+unsigned parse(const char *text);
+bool parse(const char *text, unsigned *out);
+enum parse_status parse(const char *text, unsigned *out);
+```
+
+The first has no unambiguous error channel if every `unsigned` value is valid. The second distinguishes success from failure, and the third can explain why parsing failed. Their usefulness depends on the caller's needs. A library for configuration files might distinguish empty input, invalid character, and range error; a tiny internal helper might only require a boolean result.
+
+An out-parameter contract should explicitly say what happens on failure. A practical convention is *strong failure safety*: validate into local state and assign to `*out` only after success. That avoids forcing callers to guess whether they can reuse a previous result following an error. It does not protect against invalid pointers supplied by callers.
+
+## 3.10 Function declarations are contracts across files
+
+Imagine `parse.c` defines a function but `main.c` has copied its declaration incorrectly. Separate compilation may not catch a mismatch without a shared header. Include the public header in the implementation file as well as at call sites.
+
+```c
+/* parse.h */
+#ifndef PARSE_H
+#define PARSE_H
+#include <stdbool.h>
+bool parse_unsigned(const char *text, unsigned *out);
+#endif
+```
+
+The header describes the interface; it does not allocate storage or call the function. A linker can find the definition later when both translation units are linked. Be cautious about external variables in headers: `extern int errors;` is a declaration; `int errors;` can be a tentative definition and should not be duplicated indiscriminately across source files.
+
+`static` at file scope gives helper functions internal linkage. Its purpose is not to make a function execute faster. `inline` also does not compel a compiler to substitute the body at call sites; it is part of the language's definition and linkage rules, not a measured performance guarantee.
+
+## 3.11 A fully checked factorial
+
+The earlier recursive factorial demonstrates recurrence, not a production overflow policy. A robust iterative version has to guard the multiplication and consider the loop-counter's boundary:
+
+```c
+#include <limits.h>
+#include <stdbool.h>
+
+bool factorial_checked(unsigned n, unsigned long *out)
+{
+    if (out == nullptr)
+        return false;
+    unsigned long value = 1;
+    for (unsigned i = 2; i <= n; ) {
+        if (value > ULONG_MAX / i)
+            return false;
+        value *= i;
+        if (i == n)
+            break;
+        ++i;
+    }
+    *out = value;
+    return true;
+}
+```
+
+The explicit final-iteration break prevents an unsigned loop counter from wrapping when `n == UINT_MAX`. In practice the multiplication check will reject very large values long before that, but the loop's correctness should not depend on an unrelated range fact when a simple structure makes termination obvious.
+
+## 3.12 Functions and test seams
+
+A routine that mixes input reading, parsing, allocation, and printing is harder to test than four smaller operations with explicit contracts. The goal is not an arbitrary number of functions. It is to isolate decisions: one function transforms input bytes; one validates values; one stores them; a boundary function handles the operating environment.
+
+For host-based firmware tests, a function that accepts a byte buffer and a length can be tested without a UART peripheral. A thin UART adapter may read bytes on the device and forward them to the parser. This separation is useful because transport errors and parsing errors have different causes and remedies.
+
+**Further problems:** Write a header and implementation for a checked decimal parser. Define a status enumeration for invalid syntax versus overflow. Test that failure preserves the output. Explain why a static local variable may complicate recursion and concurrent calls.
