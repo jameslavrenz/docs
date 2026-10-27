@@ -18,6 +18,7 @@ An original, example-first introduction to the C programming language as standar
 10. [Reliable Systems Programming](chapters/10-reliability.md)
 11. [An Extended Example: Word Index](chapters/11-word-index.md)
 12. [Exercises and Further Reading](chapters/12-exercises.md)
+13. [Testing, Diagnostics, and Portability](chapters/13-testing.md)
 
 ### Appendices
 
@@ -32,7 +33,7 @@ Chapters 3–6 now include expanded treatment of contracts, arrays, bounded queu
 
 Use a C23-capable compiler, e.g. `gcc -std=c23 -Wall -Wextra -Wpedantic -O2 program.c -o program`. GCC 15 and newer select C23 by default; Clang 18 and newer recognize `-std=c23`. Individual standard-library facilities can lag behind language support. Check the specific toolchain and C library.
 
-The intended finished book is roughly **200–230 typeset pages**, comparable in scale to the first edition of the classic text. This repository currently contains an **initial, deliberately shorter manuscript**, not a claim that the final page target has already been met. Content is written in original language; exercises emphasize reasoning and building small programs.
+The intended finished book is roughly **200–230 typeset pages**, comparable in scale to the first edition of the classic text. This repository currently contains an **expanded, still shorter manuscript**, not a claim that the final page target has already been met. Content is written in original language; exercises emphasize reasoning and building small programs.
 
 ## Sources for language conformance
 
