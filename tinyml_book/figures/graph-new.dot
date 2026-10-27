@@ -1,0 +1,2 @@
+digraph G {graph [rankdir=LR,bgcolor="white",nodesep="0.3"];node [shape=box, style=rounded, fontname="DejaVu Sans",fontsize=10]; x [label="2 inputs"];h [label="Dense (2)
+ReLU"]; y [label="Dense (2)"]; z [label="Argmax"];x->h->y->z;}

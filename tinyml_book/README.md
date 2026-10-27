@@ -5,7 +5,7 @@
 ## Read the book
 
 - [`TinyML_for_Embedded_Software_Engineers.pdf`](TinyML_for_Embedded_Software_Engineers.pdf) — current complete reader/print-layout manuscript.
-- [`chapters/`](chapters/) — 13 chapters covering feasibility, inference mathematics, INT8, runtime design, arenas, DSP, real-time firmware, optimization, model workflow, KWS systems, verification, tested reference code, and STM32-class integration.
+- [`chapters/`](chapters/) — 15 numbered chapters plus a manager briefing, covering feasibility, inference mathematics, INT8, runtime design, arenas, DSP, real-time firmware, optimization, model workflow, KWS systems, verification, tested reference code, and STM32-class integration.
 - [`MANUSCRIPT.md`](MANUSCRIPT.md) — concatenated editable manuscript, generated from sources (do not edit separately).
 - [`examples/int8_reference/`](examples/int8_reference/) — original, complete C++20 examples of dense inference, 1-D convolution and a documented rational fixed-point requantizer.
 - [`tests/`](tests/) — executable host regression tests with exact and randomized vectors.
@@ -42,8 +42,12 @@ ctest --test-dir build-san --output-on-failure
 
 ## Scope and evidence
 
-- The reference C++20 code was compiled and tested in the authoring environment; it is **educational** and uses an explicitly documented rounding convention, not CMSIS-NN/TFLM bit-exact quantization semantics.
+- The reference C++20 code and hand-weighted full classifier were compiled and tested in the authoring environment; it is **educational** and uses an explicitly documented rounding convention, not CMSIS-NN/TFLM bit-exact quantization semantics.
 - The PDF cites hardware observations already recorded in public KWSKit and NetKit reports. It does **not** claim new board measurements, product-level real-time guarantees, acoustic accuracy, or safety certification.
 - Hardware bring-up, end-to-end deployment, independent technical review, professional copyediting, and printed proof remain necessary before calling this a validated commercial edition.
 
 The content is original explanatory writing and illustrative code; external libraries and reference materials remain governed by their own licenses. The material has not yet been independently peer reviewed.
+
+## Publication extension
+
+The additional manager briefing, two-layer end-to-end deterministic inference example, measured case-study analysis, benchmark template, and reproducibility tests are under `chapters/00-manager.md`, `chapters/14-complete-classifier.md`, `chapters/15-case-studies.md`, `examples/full_classifier/`, and `benchmarks/`. The small classifier has **hand-selected weights**, not trained weights; see `PRINT_CHECKLIST.md` for limitations and steps before commercial publication.

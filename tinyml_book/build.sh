@@ -8,6 +8,7 @@ tex="$work_dir/TinyML_for_Embedded_Software_Engineers.tex"
 
 pandoc --metadata-file=metadata.yaml \
   preface.md \
+  chapters/00-manager.md \
   chapters/01-why-tinyml.md \
   chapters/02-mathematics.md \
   chapters/03-quantization.md \
@@ -21,6 +22,8 @@ pandoc --metadata-file=metadata.yaml \
   chapters/11-verification.md \
   chapters/12-reference.md \
   chapters/13-mcu-lab.md \
+  chapters/14-complete-classifier.md \
+  chapters/15-case-studies.md \
   appendices.md \
   --from=markdown+tex_math_dollars+raw_tex \
   --standalone --toc --toc-depth=1 --number-sections \

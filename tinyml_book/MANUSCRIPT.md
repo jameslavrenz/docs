@@ -8,12 +8,42 @@ An original reference kernel is valuable pedagogically even when an optimized pr
 
 **Evidence conventions.** Equations and illustrative calculations are distinguished from measured device observations. Any observed numbers are attributed to a specified repository's recorded test session. A benchmark from one build is never called a worst-case execution-time guarantee, and an offline training accuracy is never called deployed field accuracy. The manuscript is a technical draft, not a safety certification or validated product design.
 
-**Reading path.** Chapters 1--3 establish requirements, mathematical semantics, and quantization. Chapters 4--5 address an original integer runtime and static memory planning. Chapters 6--8 cover audio DSP, system scheduling, and performance optimization. Chapters 9--10 complete the training-to-firmware workflow and reproducible verification. Appendices provide a bring-up checklist, glossary, and a compact design worksheet.
+**Reading path.** Chapters 1--3 establish requirements, mathematical semantics, and quantization. Chapters 4--5 address an original integer runtime and static memory planning. Chapters 6--8 cover audio DSP, system scheduling, and performance optimization. Chapters 9--10 explain the training-to-firmware workflow and complete system design. Chapters 11--13 address verification, a tested integer implementation, and board integration. Chapter 14 provides a reproducible end-to-end classifier; Chapter 15 discusses measured portfolio case studies and the limits of the evidence. Appendices provide a bring-up checklist, glossary, and a compact design worksheet.
 
 **Notation.** Unless qualified, tensor indices are zero-based, convolution is cross-correlation as implemented in contemporary ML libraries, and an INT8 inference tensor uses signed integers in $[-128,127]$. 'Latency' refers to elapsed wall-clock execution time; 'cycles' refers to counted core cycles, which must be qualified by the clock and measurement boundary.
 
 \newpage
 
+# TinyML: An Engineering Manager's Briefing
+
+
+![The decision gate ties statistical improvement to explicit embedded budgets.](figures/decision-new.png){width=4.45in}
+
+## The product decision, not the buzzword
+
+TinyML means deploying a learned function in a microcontroller's ordinary firmware execution environment. It is worth evaluating when rules, thresholds, and conventional estimators are not sufficiently robust across real operating conditions, and when a representative labeled data set can be collected and maintained. A neural network does not remove the need for requirements, observability, reliability, or configuration management: it adds a second controlled artifact, the model, to the software product.
+
+A manager should ask for **three alternatives** before funding a TinyML implementation: a classical DSP/threshold baseline; a compact feature-based statistical model; and the proposed neural network. Compare all three against the same operating envelope and held-out data, using false alarms per operating hour, missed events, energy, RAM, flash, full-system latency, and maintenance cost rather than classification accuracy alone.
+
+## Engineering scope and staffing
+
+The embedded team owns sensor acquisition, timing, memory layout, model compatibility, fault behavior, firmware updates, and post-deployment measurement. Data/model specialists, whether internal or external, own dataset quality, training, and statistical evaluation. The handoff is a *versioned executable contract*: sampling rate, preprocessing coefficients, tensor layout, quantization parameters, model hash, operator set, acceptance vectors, and permissible input domain.
+
+A useful first deliverable is not a demonstration video. It is a four-page feasibility record: model-versus-baseline accuracy by operating subgroup; measured on-target CPU/energy budgets; memory map and stack/arena high-water marks; and a test report for stale/corrupt/missing input behavior. Only after those gates should integration complexity increase.
+
+## Typical failure modes
+
+- **Dataset shortcut learning:** the model learns microphone, machine, or recording-session identity instead of the intended signal.
+- **Train/deploy skew:** windowing, log base, integer scaling, or sensor gain differs between Python and firmware.
+- **Unbounded background load:** profiling covers a standalone kernel but not DMA, interrupts, queues, and telemetry.
+- **Unsafe confidence semantics:** an argmax label is treated as permission to actuate; stale outputs are not rejected.
+- **Undocumented retraining dependencies:** a preprocessing or sensor revision silently invalidates the model.
+
+## Decision gate
+
+Approve the architecture only when a documented baseline underperforms, an evaluation set represents foreseeable deployment conditions, MCU memory/latency margins are measured, and ownership of model updates is assigned. Reject or defer it if none of these conditions can be established. For safety-relevant actions, the learned classifier should normally inform a separately verified deterministic safety policy rather than act as the sole authority.
+
+**For an interview discussion:** the most interesting engineering question is rarely "Can this MCU run a neural network?" It is "Can this product justify a learned function and operate it predictably for years?"
 
 # The Engineering Case for TinyML
 
@@ -117,7 +147,6 @@ Before selecting an MCU inference architecture, write down: the false-positive/f
 1. For $f_s=16$ kHz and $H=160$, calculate the hop period. Can a 38-ms inference run each hop on a single non-overlapping worker?
 2. Given 128 KiB SRAM, reserve 24 KiB for stacks/RTOS, 16 KiB for DMA/audio, and 8 KiB margin. What is the maximum combined activation plus persistent model allocation?
 3. Propose a classical alternative to a neural wake-word classifier, including the experiment needed to compare them fairly.
-
 
 # Mathematics of Inference on an MCU
 
@@ -232,8 +261,10 @@ A good model handoff for MCU deployment includes input dimensions and physical u
 2. Show precisely how the output changes if one mistakenly uses NCHW addresses for an NHWC tensor.
 3. Prove that argmax is invariant under softmax, assuming exact arithmetic and finite logits. Explain why output calibration is not invariant.
 
-
 # Quantization and Fixed-Point Arithmetic
+
+
+![The integer path includes the accumulator, a specified rounding step, and output clamping.](figures/quant-new.png){width=4.45in}
 
 ## What INT8 represents
 
@@ -367,7 +398,6 @@ The device receives a *quantized numerical contract*, not just a collection of I
 1. Given $s_x=0.02$, $s_w=0.015$, and $s_y=0.01$, compute $M$ and the ideal unrounded output for $A=-37$, $z_y=-4$.
 2. Derive the integer padding value for a tensor with $z_x=-12$, and explain why a zero byte would be incorrect.
 3. Bound a length-4096 accumulation given $|q_x-z_x|\le255$ and $|q_w|\le127$. Does the bound exceed signed INT32?
-
 
 # Building a Small Inference Runtime in C++
 
@@ -559,7 +589,6 @@ When introducing an optimized backend, run the same graph and test vectors throu
 2. Specify a `TensorView` using explicit strides and demonstrate a transposed view with no allocation.
 3. Create three quantized dense test vectors: zero-point padding, negative bias, and saturated positive output.
 
-
 # Memory Planning, Arenas, and Tensor Lifetimes
 
 ## Why counting weights is insufficient
@@ -686,7 +715,6 @@ The allocator must refuse out-of-range requests and propagate an explicit failur
 2. Extend the interval allocator to handle a residual connection and prove that two overlapping live tensors cannot alias.
 3. Estimate the real SRAM obligation of a 24-KiB used arena inside a statically reserved 64-KiB array.
 
-
 # DSP Front Ends for Embedded Audio
 
 ## Why preprocessing is part of the model
@@ -806,7 +834,6 @@ Build a reference vector corpus containing silence, DC offset, a sinusoid aligne
 2. Explain how a periodic versus symmetric Hann window changes the first and last samples.
 3. A feature extractor takes 2.5 ms per 16-ms hop. Is that alone sufficient to guarantee no ring overflow? Identify the missing scheduling assumptions.
 
-
 # Real-Time Firmware Integration
 
 ## Throughput and deadlines are different properties
@@ -896,7 +923,6 @@ The discipline is to fill every cell with an actual system requirement or measur
 1. Calculate the nominal utilization of a 35-ms inference invoked every 80 ms. Then explain why it does not prove deadline satisfaction.
 2. Design a minimal event record whose fields detect stale scores, lost samples, and stream resets.
 3. Identify a priority inversion scenario involving telemetry and a shared log mutex; propose a bounded remedy.
-
 
 # Optimizing Kernels on Cortex-M
 
@@ -994,7 +1020,6 @@ Every such modification can affect model accuracy or streaming response latency.
 2. Design an A/B test that distinguishes CMSIS-NN kernel performance from interpreter overhead.
 3. Estimate energy for a constant 35 mW compute load during a 60-ms inference. What information is needed to claim device energy savings?
 
-
 # From Model Training to Firmware Release
 
 ## The reproducibility boundary
@@ -1090,7 +1115,6 @@ Publish a compact model card that describes the intended input domain, training 
 1. Describe a leakage-free split for a multi-device vibration-monitor dataset.
 2. Explain why 98% test-window accuracy does not directly predict false triggers per hour in a wake-word product.
 3. Design a compatibility check preventing an outdated model from running against a newer preprocessing pipeline.
-
 
 # A Complete Design Walkthrough: Keyword Spotting
 
@@ -1241,7 +1265,6 @@ If those questions can be answered with repository evidence, a small neural netw
 2. List three changes that require retraining or at least renewed model validation even if C++ operator code is untouched.
 3. Write a requirements-to-test traceability matrix for a wake-word device that includes acquisition continuity, stale score rejection, and a false-activation ceiling.
 
-
 # Verification, Benchmarking, and Deployment Evidence
 
 ## A performance number is a claim with a scope
@@ -1385,7 +1408,6 @@ Treat a result as a tuple of **claim, configuration, evidence, uncertainty, and 
 2. Compare two hypothetical implementations: 7 ms at 12 mA and 12 ms at 6 mA, each at 3.3 V. Which uses less active energy? What other energy is missing?
 3. Design a fault-injection test that establishes bounded rejection of stale audio, including queue ownership, timestamps, and the signal used to measure stop latency.
 
-
 # A Tested INT8 Reference: From Algebra to C++20
 
 ## The contract before the implementation
@@ -1520,7 +1542,6 @@ The example distinguishes four requirements frequently conflated in discussions 
 2. Extend the 1-D reference to support dilation and derive the resulting output-length equation. What dimensions must be checked before the execution loop begins?
 3. Estimate the worst accumulator magnitude for a convolution with kernel $3\times3$, 64 input channels, $|q_x-z_x|\le255$, and $|q_w|\le127$. Is an INT32 accumulator bound adequate before adding bias?
 4. Propose a compile-time static graph with memory reuse between two non-overlapping intermediate tensors. Prove there is no read-after-reuse violation.
-
 
 # MCU Integration Lab: A Repeatable Cortex-M Workflow
 
@@ -1661,6 +1682,76 @@ The finished lab is not “neural network runs on a board.” It is a reproducib
 3. Compare an ISR+superloop implementation with a FreeRTOS implementation for the same pipeline. Which specific product requirements justify the added scheduler?
 4. Propose a benchmark CSV schema that includes sensor timestamp, capture-to-feature latency, inference cycles, classifier scores, and fault counters, without causing blocking UART work in the critical path.
 
+# A Complete Tested Two-Layer Integer Classifier
+
+
+![Complete fixed-weight, two-layer inference example.](figures/graph-new.png){width=4.45in}
+
+## Bridging the gap between operators and inference
+
+The companion program `tinyml_classifier_demo` executes an entire *fixed-weight* two-layer classifier, including feature quantization, two dense layers, ReLU, and argmax. The dataset and coefficients are deliberately tiny and hand-checkable. This is a **reproducible inference demonstration**, not a trained, statistically validated product model. In particular, the weights below were chosen by hand. The distinction prevents an educational example from being mistaken for proof of trained-model accuracy.
+
+Let the two real-valued input features be $f_0,f_1$ with feature scale $s_x=0.25$ and zero point zero. Quantization is $q_i=\operatorname{clip}_{[-128,127]}(\operatorname{round}(4f_i))$. Here test features are exactly representable: $(f_0,f_1)=(1,0.5)$ becomes $(4,2)$. The first layer has two outputs, weights
+
+$$W_1=\begin{bmatrix}1&1\\1&-1\end{bmatrix},\qquad b_1=(0,0)^T,$$
+
+and integer multiplier $1/2$ with ties away from zero, followed by ReLU. Thus $a=(3,1)$. The second layer has weights
+
+$$W_2=\begin{bmatrix}1&-1\\-1&1\end{bmatrix},\qquad b_2=(0,0)^T,$$
+
+with unity requantization, producing logits $(2,-2)$. The winning class is index 0. Input $(-1,0.5)$ becomes $(-4,2)$; the hidden layer clips negative activations and the result is independently asserted in host tests. Run `ctest` to verify both vectors. These exact integer logits, not a probabilistic claim, are the contract.
+
+## Why this small example is still useful
+
+A complete inference program must specify what each tensor *means*, not simply connect operator pointers. The demo allocates every tensor in fixed-size `std::array` storage, does not allocate in the inference path, checks both operator statuses, and explicitly rejects failure before class selection. This illustrates how an MCU firmware component can expose a small deterministic API without a general interpreter or file parser.
+
+It is not equivalent to a trained wake-word network. For that next step, first freeze a real model's weights and every per-channel quantization parameter, export golden input/intermediate/output tensors from the production runtime, and prove parity at each layer on both host and target. Then compare detection error rates on held-out, field-representative recordings. The example's pedagogical rational requantizer intentionally differs from CMSIS-NN's exact fixed-point conventions; do not substitute kernels without numerical comparison.
+
+## Reproducibility contract
+
+From the book root run:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+ctest --test-dir build --output-on-failure
+./build/tinyml_classifier_demo
+```
+
+The test suite asserts two end-to-end classifications and intermediate results, alongside the existing arithmetic tests. This proves deterministic behavior for the specified inputs on the tested host; it proves neither generalization nor an STM32 timing bound. See the accompanying `examples/full_classifier/` source for the exact constants and the upgrade path to a trained, quantized model.
+
+# Measured MCU Case Studies and Engineering Interpretation
+
+
+![The system-level signal pipeline explains the required timing boundaries.](figures/pipeline-new.png){width=4.45in}
+
+## Evidence discipline
+
+The numbers below come from published project records in the author's open-source repositories. They were **not newly gathered for this edition**. The value is in interpreting what the records do and do not establish. A comparison is only fair when input tensors, operator versions, optimization choices, measurement boundary, clock, and backend are accounted for.
+
+## KWSKit: real-time audio on Cortex-M4F
+
+KWSKit's recorded Zephyr session used an nRF52840 Cortex-M4F at 64 MHz, 16-kHz streaming input, DSP feature computation and INT8 inference. Its normal-run telemetry reported **54.994 ms average and 55.054 ms observed maximum inference time**, a DSP average/maximum of **2.217/5.249 ms** per consumed hop, processing-step maximum **57.342 ms**, and audio-ring high-water **768 of 8192 samples**. The original validation note identifies the exact test session, its recording scope, and no observed losses in that session.
+
+The key system insight is that a 55-ms inference invocation cannot be repeated on every 16-ms data hop on a single core without overload. KWSKit instead runs model inference at a lower cadence with capture separated from processing; its recorded schedule attempts inference every eight new feature rows (128 ms), subject to readiness and backlog checks. The high-water statistic is a measured property of that run, not a proof for every combination of interrupt load and input environment.
+
+**Source:** [KWSKit validation](https://github.com/NetKit-Labs/kwskit/blob/main/docs/validation.md) and [inference notes](https://github.com/NetKit-Labs/kwskit/blob/main/docs/tinyml-inference.md). A rigorous reader should inspect the run logs and exact firmware revision before using these values as an external benchmark.
+
+## NetKit: kernel choice on STM32F446RE
+
+NetKit documents the same MNIST-CNN workload on an STM32 NUCLEO-F446RE with different inference backends. With CMSIS-NN enabled, **NetKit 95.3 ms** and **TFLM 95.5 ms** are essentially at parity; microTVM AOT is **112.3 ms** in the recorded comparison. With reference kernels, NetKit's recorded time is **336.2 ms**, while TFLM reference is **2593.5 ms** and microTVM reference **343.0 ms**. These reference/accelerated figures must not be mixed into a single speedup statement.
+
+An important interpretation is that *vendor-optimized kernels may dominate throughput*. If two interpreters invoke comparable CMSIS-NN routines, extremely different framework headlines may largely disappear. A runtime's real differentiation may then be arena management, graph handling, portability, binary size, or integration simplicity, not faster arithmetic. Conversely, the reference path is highly sensitive to implementation strategy and compiler behavior.
+
+**Source:** [NetKit STM32 peer comparison](https://github.com/NetKit-Labs/netkit/blob/main/docs/MNIST_CNN.md) and the [NetKit platform status](https://github.com/NetKit-Labs/netkit/blob/main/docs/STATUS.md). These are author-operated project comparisons, not independently replicated results.
+
+## Suggested figures for a defensible public performance comparison
+
+For every case, provide an image or trace of the timing boundaries, a compiler/version inventory, sample count, model and firmware hashes, clock tree, interrupt state, input vectors, arena high-water, and a power measurement where available. The book's companion `benchmarks/measurement_template.csv` deliberately leaves new measurement values blank. Use the actual hardware records rather than inserting estimates into a publication graphic.
+
+## A correct hardware experiment changes the conclusion
+
+It would be tempting to call 95.3 versus 95.5 ms a 0.2-ms framework victory. Without sufficient trial counts, jitter distributions, and identical build conditions, that is not a meaningful claim. The more robust observation is close accelerated parity. Similarly, a 55.054-ms *observed* maximum is not a worst-case execution-time guarantee. Good engineering communication preserves these distinctions even when stronger numbers would be more marketable.
 
 \appendix
 
@@ -1752,3 +1843,25 @@ ctest --test-dir build --output-on-failure
 `std::span` presents non-owning buffer views; it does not allocate. The reference execution routines do not use dynamic allocation, but the surrounding application still needs to validate model metadata, tensor lifetimes, and output freshness. Host execution of golden vectors does not certify embedded timing, safety, or device compatibility.
 
 Rebuild the document using `./build.sh` with Pandoc and XeLaTeX. The current PDF uses a 6-by-9-inch page. A print-on-demand provider may require separate checks for trim, margins, fonts, cover layout, metadata, and proofing. A technically complete *manuscript* is not identical to a professionally printed, validated product.
+
+# Subject Finder
+
+This concise subject finder gives chapter-level locations rather than fixed page numbers, so it remains stable across manuscript revisions. The final paperback should replace it with a page-numbered production index.
+
+| Subject | Principal chapter(s) |
+|:--|:--|
+| Accumulator overflow and rounding | 3, 12, 14 |
+| Acquisition timestamp and DMA ownership | 7, 10, 13, 15 |
+| Activation memory and tensor arenas | 4, 5 |
+| Audio framing and log-mel features | 6, 10, 13 |
+| CMSIS-NN comparisons | 8, 11, 15 |
+| Convolution and depthwise separation | 2, 3, 12 |
+| Dataset leakage and model updates | 9 |
+| Deterministic fixed-weight inference | 12, 14 |
+| Energy per inference and benchmark evidence | 8, 11, 15 |
+| Fixed-priority response time | 7, 11 |
+| Model/firmware versioning | 9, 10, 13 |
+| Quantization scales and zero points | 3, 12, 14 |
+| Requirements and architecture tradeoffs | Manager briefing, 1, 10 |
+| Runtime error handling | 4, 10, 13, 14 |
+| Testing and numerical parity | 3, 11, 12, 14 |

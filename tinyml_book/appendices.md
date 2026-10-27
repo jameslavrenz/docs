@@ -88,3 +88,25 @@ ctest --test-dir build --output-on-failure
 `std::span` presents non-owning buffer views; it does not allocate. The reference execution routines do not use dynamic allocation, but the surrounding application still needs to validate model metadata, tensor lifetimes, and output freshness. Host execution of golden vectors does not certify embedded timing, safety, or device compatibility.
 
 Rebuild the document using `./build.sh` with Pandoc and XeLaTeX. The current PDF uses a 6-by-9-inch page. A print-on-demand provider may require separate checks for trim, margins, fonts, cover layout, metadata, and proofing. A technically complete *manuscript* is not identical to a professionally printed, validated product.
+
+# Subject Finder
+
+This concise subject finder gives chapter-level locations rather than fixed page numbers, so it remains stable across manuscript revisions. The final paperback should replace it with a page-numbered production index.
+
+| Subject | Principal chapter(s) |
+|:--|:--|
+| Accumulator overflow and rounding | 3, 12, 14 |
+| Acquisition timestamp and DMA ownership | 7, 10, 13, 15 |
+| Activation memory and tensor arenas | 4, 5 |
+| Audio framing and log-mel features | 6, 10, 13 |
+| CMSIS-NN comparisons | 8, 11, 15 |
+| Convolution and depthwise separation | 2, 3, 12 |
+| Dataset leakage and model updates | 9 |
+| Deterministic fixed-weight inference | 12, 14 |
+| Energy per inference and benchmark evidence | 8, 11, 15 |
+| Fixed-priority response time | 7, 11 |
+| Model/firmware versioning | 9, 10, 13 |
+| Quantization scales and zero points | 3, 12, 14 |
+| Requirements and architecture tradeoffs | Manager briefing, 1, 10 |
+| Runtime error handling | 4, 10, 13, 14 |
+| Testing and numerical parity | 3, 11, 12, 14 |

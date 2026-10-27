@@ -1,0 +1,6 @@
+digraph G { graph [rankdir=LR, bgcolor="white", pad="0.2", nodesep="0.30"]; node [shape=box, style=rounded, fontname="DejaVu Sans", fontsize=11]; baseline [label="DSP / rules
+baseline"]; data [label="Representative
+field data"]; validation [label="Accuracy + false
+alarms / hour"]; budget [label="RAM / flash /
+energy / timing"]; gate [label="Deployment
+decision", shape=diamond]; baseline -> validation; data -> validation; validation -> budget -> gate; }

@@ -1,5 +1,8 @@
 # Quantization and Fixed-Point Arithmetic
 
+
+![The integer path includes the accumulator, a specified rounding step, and output clamping.](figures/quant-new.png){width=4.45in}
+
 ## What INT8 represents
 
 A quantized tensor stores integers $q$ that approximate real values $r$ using a positive scale $s$ and integer zero point $z$:

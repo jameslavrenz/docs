@@ -1,0 +1,13 @@
+name: TinyML book reference tests
+on: [push, pull_request]
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S tinyml_book -B /tmp/tinyml-build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build /tmp/tinyml-build -j2
+      - name: Test
+        run: ctest --test-dir /tmp/tinyml-build --output-on-failure

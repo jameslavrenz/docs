@@ -1,0 +1,6 @@
+digraph G {graph [rankdir=LR,bgcolor="white", nodesep="0.28"];node [shape=box, style=rounded, fontname="DejaVu Sans", fontsize=10]; a [label="ADC / DMA"]; b [label="Ring /
+frame"]; c [label="FFT /
+log-mel"]; d [label="INT8
+inference"]; e [label="Temporal
+policy"];f [label="Event +
+fault state"];a->b->c->d->e->f;}

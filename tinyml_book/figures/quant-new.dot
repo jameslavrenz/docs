@@ -1,0 +1,6 @@
+digraph G {graph [rankdir=LR, bgcolor="white", nodesep="0.35"];node [shape=box, style=rounded, fontname="DejaVu Sans",fontsize=11]; x [label="INT8 input
+scale + zero point"]; w [label="INT8 weights
+per-channel scale"]; acc [label="INT32/INT64
+accumulator"]; rq [label="Fixed-point
+requantization"]; y [label="INT8 output
+clamp + zero point"];x->acc; w->acc;acc->rq->y;}
