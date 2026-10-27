@@ -213,3 +213,98 @@ For concurrent code, atomics and synchronization express ordering requirements a
 ### Exercises
 
 **15.7** Draw the heap and stack objects involved in `vector_append`, then redraw them after successful growth. **15.8** Identify when pointer aliases become invalid. **15.9** Compare two structures semantically without reading padding bytes. **15.10** Transform a potentially overflowing length sum into a checked subtraction formulation.
+
+
+## 15.18 A pointer can be in bounds yet logically stale
+
+An out-of-bounds pointer is an obvious hazard. A subtler problem occurs when the pointer still designates storage inside a valid array but the application has reassigned that storage to another logical owner.
+
+Consider a fixed array of driver descriptors. A client acquires descriptor slot two, releases it, and later another client acquires the same slot. The original pointer might still address the slot's C object. A bounds checker may have no reason to complain. But the old client no longer owns that logical descriptor.
+
+The generation-tagged pool from Chapter 5 separates physical slot identity from logical allocation identity. Instead of trusting the raw address, an operation verifies the handle's slot index and generation against current pool metadata. The example is a reminder that a language-level memory safety argument and an application-level ownership argument are related but not identical.
+
+An object's *C lifetime* can remain active while its application-level role changes. Conversely, an allocated object's actual lifetime ends when its storage is released. The two cases must not be conflated: accessing an object after `free` is a language-level lifetime violation, whereas accessing a reused pool slot through an obsolete handle can be a logical protocol violation even though the array itself remains alive.
+
+## 15.19 Object representations and the character types
+
+C allows an object's representation to be inspected as bytes through character-type access. This is useful for checksums, diagnostics and controlled serialization, but raw object bytes are not automatically a stable wire format.
+
+Imagine a structure containing a `bool`, a 32-bit integer, and a pointer. Its representation can depend on padding, pointer format, alignment, and the target ABI. Writing its bytes to disk may also leak padding content or meaningless pointer addresses.
+
+For a portable external record, specify the exact fields and encode them explicitly. For example, store a 32-bit unsigned field into four eight-bit octets by shifting and masking unsigned values. Use `memcpy` for copying known valid object representations between properly sized regions, not as a substitute for format design.
+
+The distinction is particularly important when testing. A `memcmp` over two structures can report different padding bytes even when every meaningful member has equal value. Tests should compare the actual contract, not incidental representation.
+
+## 15.20 Effective type and aliasing
+
+A compiler reasons about which lvalue types may be used to access an object. Reinterpreting a `float` object by casting its address to an incompatible integer pointer and dereferencing it is not a general portable way to inspect floating-point bits.
+
+A representation-oriented operation can copy bytes into another object using `memcpy`, subject to both objects being valid and sufficiently large. For example, if an application needs the implementation's raw representation of a 32-bit floating type, it can copy those bytes into an array of `unsigned char`, then inspect the bytes. It must still avoid claiming the resulting sequence is the IEEE-754 format unless the target actually provides that representation.
+
+A compiler's optimizer may use the aliasing rules to transform memory operations. The fact that an invalid cast produces an expected value at optimization level zero is not evidence that the program is defined under optimization.
+
+## 15.21 `restrict` expresses a promise, not a check
+
+A restricted pointer can help an implementation optimize accesses when the programmer guarantees the required non-aliasing relationships for the relevant scope.
+
+Consider:
+
+```c
+void add_arrays(size_t count,
+                double *restrict result,
+                const double *restrict left,
+                const double *restrict right)
+{
+    for (size_t i = 0; i < count; ++i)
+        result[i] = left[i] + right[i];
+}
+```
+
+This is a fragment requiring `<stddef.h>` for `size_t`. Its caller must provide valid arrays with the necessary restricted-access relationships. It would be wrong to present `restrict` as a mechanism that checks whether the three pointers overlap. It does not.
+
+The exact C restrict association rules deserve careful reading before adding the qualifier to an existing public interface. Optimizing a small loop should not come at the cost of silently making common aliasing call patterns invalid.
+
+If an application must support in-place operations or partially overlapping buffers, design and test those behaviors explicitly instead of placing `restrict` on every pointer parameter.
+
+## 15.22 Provenance and hardware addresses
+
+A microcontroller may map device registers to fixed numeric addresses. The C language does not independently promise that converting a numeric constant into an arbitrary pointer and dereferencing it is portable across implementations.
+
+Embedded toolchains, vendor headers and the target ABI provide additional contracts for such operations. A well-structured driver isolates these assumptions and documents the hardware register layout, access width, and side effects.
+
+Ordinary C synchronization also does not necessarily control a device's memory ordering or DMA coherency. Appropriate barriers, cache maintenance and peripheral-specific read/write sequences must come from the target's documentation.
+
+Separating the portable algorithm from the hardware adaptation keeps the language rules easier to reason about and permits meaningful host-side tests.
+
+## 15.23 The optimizer cannot repair undefined arithmetic
+
+A particularly common anti-pattern performs an invalid operation and then tries to detect it:
+
+```c
+int result = a + b;
+if (result < a) { /* assumed overflow */ }
+```
+
+For signed integers, if the addition overflows, its behavior is already undefined. A compiler is permitted to reason under the assumption that valid programs do not execute undefined signed overflow and may transform code in ways that defeat the intended post hoc test.
+
+Instead, establish the result's representability before evaluating the addition or use an available checked arithmetic facility with the correct contract.
+
+The same ordering principle applies to pointers: check the input range before computing a potentially out-of-bounds address, and check divisor conditions before dividing. A later condition cannot undo an invalid earlier operation.
+
+## 15.24 A review sequence for low-level C
+
+For a suspicious expression, review in this order:
+
+1. **Objects:** Which actual objects exist, and are their lifetimes active?
+2. **Types:** What are the declared types, integer promotions, and conversions?
+3. **Ranges:** Are every index, size, shift count, and arithmetic result valid?
+4. **Aliasing:** Is the access permitted through this lvalue type, and do any restrict promises apply?
+5. **Sequencing:** Can two evaluations modify or read the same state without the required sequencing?
+6. **Concurrency:** Are potentially conflicting shared accesses synchronized?
+7. **Environment:** Does the operation rely on implementation-defined ABI or hardware behavior?
+
+This checklist is more reusable than memorizing a collection of undefined-behavior anecdotes. It directs attention to the conditions under which each expression is supposed to be correct.
+
+### Exercises
+
+**15.11** Explain why an obsolete pool handle is invalid under the API contract even if its index remains inside the array. **15.12** Replace a type-punning pointer cast with a representation copy and list the representation assumptions that remain. **15.13** Determine whether an array-addition routine may support `result == left` when its parameters are restricted. **15.14** Rewrite an overflow-after-addition test so no signed overflow is executed. **15.15** Design a driver adapter that isolates integer-to-pointer conversions and MMIO ordering from portable parsing code.
