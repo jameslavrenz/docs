@@ -200,11 +200,9 @@ For a 32-bit unsigned integer, rotating the hexadecimal pattern `0x12345678` lef
 
 A mathematical rotate-left can be expressed as the union of two shifted regions:
 
-\[
-\operatorname{rotl}_{32}(x,n)
-=
-(x \ll n)\;|\;(x \gg (32-n)),
-\]
+$
+\operatorname{rotl}_{32}(x,n) = (x \ll n)\;|\;(x \gg (32-n)),
+$
 
 for \(1 \le n \le 31\). But that range condition is essential. In C, shifting a 32-bit value by 32 or more is undefined behavior. Using an unsigned left operand avoids signed-left-shift problems, but it does not make an out-of-range count legal.
 
