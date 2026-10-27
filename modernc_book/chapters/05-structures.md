@@ -177,3 +177,65 @@ A linked list offers insertion without moving contiguous records, but each node 
 For an MCU message queue with a known maximum occupancy, the fixed array or ring buffer may be easier to justify than a heap-backed list. If the queue is shared with an interrupt, however, a nonconcurrent ring implementation remains unsafe without a synchronization design. Capacity, ownership, timing, and concurrency are separate requirements.
 
 **Further problems:** Implement a deep-copy operation for a record owning a dynamically allocated string. Show how to reject a flexible-array allocation whose size calculation overflows. Write an encoder and decoder for the three-octet header, testing both directions and malformed lengths.
+
+
+## 5.13 A structure is a value with invariants
+
+A structure gives related fields one type, but the programmer decides which combinations of fields are meaningful. Imagine a temperature reading containing a numeric value, a unit identifier, and a validity flag. A declaration permits all combinations; the interface should say which represent actual measurements.
+
+One design creates values through a constructor-like function that validates the inputs. An alternative stores an explicit status enumeration instead of a boolean flag so it can represent sensor-not-ready, disconnected, and measured states separately. The point is not to make every structure opaque; it is to choose a representation whose invariants are easy to state and preserve.
+
+Designated initialization helps when a structure evolves because it names the intended members. A missing member is initialized according to the appropriate language rules, which may or may not express a valid application value. A status enumeration whose zero value has no defined meaning can produce a logically invalid initialized object despite being a perfectly valid C object.
+
+## 5.14 Padding and equality
+
+Two structures can have equal corresponding members while their padding bytes differ. Using \`memcmp(&a, &b, sizeof a)\` to test semantic equality is therefore not a general solution. Compare the meaningful fields instead:
+
+\`\`\`c
+struct measurement { unsigned id; double value; };
+
+bool same_measurement(struct measurement a, struct measurement b)
+{
+    return a.id == b.id && a.value == b.value;
+}
+\`\`\`
+
+The floating comparison here deliberately treats NaNs as unequal; whether this is appropriate depends on the application's data model. If bitwise reproducibility matters, define representation-specific behavior rather than assuming the members' \`==\` operators implement it.
+
+For serialization, encode only documented fields in a documented order. Writing \`sizeof(struct measurement)\` bytes to a file can unintentionally expose padding bytes and platform-specific floating representations.
+
+## 5.15 Tagged unions and exhaustiveness
+
+A union can store one of several representations in shared storage. It does not automatically record which interpretation is active. A common approach pairs the union with a tag:
+
+\`\`\`c
+enum value_kind { VALUE_INT, VALUE_FLOAT };
+struct value {
+    enum value_kind kind;
+    union { int integer; double real; } data;
+};
+\`\`\`
+
+A function consuming \`struct value\` should examine the tag before accessing the corresponding member. C23 does not provide algebraic data types with exhaustive pattern matching; a \`switch\` over an enum can still have invalid values due to corrupted input or casts. An explicit default error path is useful at trust boundaries.
+
+A tagged union is particularly effective for a parser returning one of several record kinds. It makes illegal reinterpretations easier to detect in code review and separates the logical type tag from the memory representation of the payload.
+
+## 5.16 Intrusive versus owning lists
+
+A linked-list node can own its payload, or the payload can contain the linkage needed to participate in the list. An intrusive list avoids a separate node allocation but ties the item's lifetime to list membership. An owning list may allocate a node and payload together or separately.
+
+Before writing the first insert function, choose whether the list owns items. Can a caller free an item while it is linked? Can an item belong to two lists? What does removing an element do to its lifetime? These questions determine correctness more than the syntax of \`next\`.
+
+On microcontrollers, a fixed pool of nodes and explicit occupancy flags may be preferable to unbounded heap allocation. It bounds memory, can eliminate allocation fragmentation, and makes exhaustion an ordinary status that tests can exercise.
+
+## 5.17 Ring buffer wraparound
+
+The earlier queue has capacity eight, with independent \`head\` and \`count\` fields. To find the tail, it computes \`(head + count) % capacity\`. This works because the queue invariant constrains \`head\` and \`count\`, and their sum is small enough to avoid overflowing \`size_t\`.
+
+Trace a full cycle. Push values 0 through 7; the queue is full. A ninth push fails without modifying state. Pop 0, 1, and 2; now head is 3 and count is 5. Push 8, 9, and 10; the physical array slots reused are 0, 1, and 2. Subsequent pops return 3 through 10 in order.
+
+The same logical sequence can be represented differently in physical storage. Clients should observe only the queue's documented behavior, not assume elements are contiguous in chronological order inside its array.
+
+### Exercises
+
+**5.9** Write an equality function for a structure containing an integer, a floating value, and an optional identifier; state the NaN policy. **5.10** Add a status tag to a variant record and reject an unsupported tag on decoding. **5.11** Design a fixed-capacity node pool for a list and describe release behavior. **5.12** Trace ring-buffer state after each push and pop, identifying array index and logical position.
