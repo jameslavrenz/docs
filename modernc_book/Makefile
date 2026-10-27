@@ -1,7 +1,11 @@
 CC ?= cc
 CFLAGS ?= -std=c23 -Wall -Wextra -Wpedantic -O2
 .PHONY: all clean check
-all: hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum
+all: hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy
+vector: examples/vector.c
+	$(CC) $(CFLAGS) $< -o $@
+file_copy: examples/file_copy.c
+	$(CC) $(CFLAGS) $< -o $@
 ring_buffer: examples/ring_buffer.c
 	$(CC) $(CFLAGS) $< -o $@
 checked_sum: examples/checked_sum.c
@@ -24,8 +28,9 @@ check: all
 	@./checked_add >/dev/null
 	@./ring_buffer >/dev/null
 	@./checked_sum >/dev/null
+	@./vector >/dev/null
 	@test "$(printf 'a b c' | ./word_count)" = '3'
 	@test "$(./hello)" = "hello, world"
 	@test "$$(printf '113\n' | ./digits | grep '^1: 2')" 
 clean:
-	rm -f hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum
+	rm -f hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy
