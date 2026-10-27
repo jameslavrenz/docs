@@ -1,29 +1,28 @@
 # Editorial Roadmap — Modern C23
 
-**Status: expanded technical-review draft (October 2026).**
+**Current state (October 2026):** 19 chapters, a preface, six appendices, and **31 standalone examples**. The current Markdown manuscript contains **66,968 words** including code listings, reference entries, and exercises. It is an independent, original example-first textbook, not an authorized K&R third edition.
 
-The source manuscript contains 19 chapters, five appendices, a preface, and approximately 61,000 words including examples and exercises. The standalone program suite now contains 29 examples. This is an **independent original textbook** rather than an authorized third edition of K&R.
+## Work completed
 
-## Recent completed work
+- Expanded the original core language chapters with examples, explicit preconditions, arithmetic checks, ownership, and resource bounds.
+- Added detailed coverage of C23 language changes and the difference between language features and standard-library implementation support.
+- Added three classes of streaming/binary parser: a bounded line reader, incremental UTF-8 scalar decoder, and bounded TLV record decoder.
+- Developed atomic counter and SPSC discussion, release/acquire publication, and hosted-thread lifecycle tests.
+- Added Appendix F, an alphabetical topic finder with chapter-level references, to help readers navigate the growing book without unstable draft page numbers.
+- Added a manuscript structure checker to CI; compiler regression testing uses GCC 14 and Clang 18.
+- Maintained a PDF build and publisher that includes all chapters and appendices.
 
-- Detailed treatments of signed arithmetic, arrays and slices, ownership, fixed-capacity arenas, structure representation, byte encoders, and safe rotations.
-- Further expansion of Chapters 3, 6, 9, and 16 with function contracts, bounded line input, C23 feature availability, and concurrency reasoning.
-- Two additional programs: `line_reader.c` (overlong-record draining and EOF handling) and `thread_counter.c` (hosted atomic increments and thread lifecycle).
-- New worked solutions in Appendix C for both programs and for C23 feature probing.
-- Compilation and runtime integration through `make check` for GCC and Clang on GitHub Actions.
-- A PDF build workflow that generates the complete reading edition and commits the PDF when it passes.
+## Next work priorities
 
-## Remaining editorial priorities
+1. **Technical correctness:** Audit every example embedded in Markdown, even if not compiled as a standalone program; verify portable pointer, integer and threading claims.
+2. **Editorial cohesion:** Consolidate repeated explanation of ownership, representability, and strict parsing into clear cross-references.
+3. **Complete exercises:** Add worked solutions for combinations of data structures, formatting, error recovery, and portability.
+4. **Visual layout:** Inspect representative rendered pages, including long code blocks, table width, mathematical expressions, and topic-finder layout.
+5. **Index:** Retain Appendix F as a chapter-level topic finder during drafting; generate verified page references for a final printable edition.
+6. **Publication target:** Reach approximately 200–230 high-quality typeset pages through necessary technical explanation, not padding.
 
-1. **Finish the technical audit.** Compile every complete code listing, not merely examples in `examples/`; check C23 features against the selected compiler and standard library.
-2. **Improve structural flow.** Move exercises closer to their relevant concepts, remove repeated descriptions, and normalize headings and cross-references.
-3. **Add useful figures.** Develop typeset diagrams for arrays, objects, ownership, queue wraparound, and the C abstract machine; verify line wrapping in the PDF.
-4. **Expand selected solutions.** Prioritize parsing, allocation failures, threads, byte layouts, and project-level integration.
-5. **Build the index.** Add terminology entries and concept references useful in a printed technical book.
-6. **Verify the reading edition.** Measure its actual page count and inspect rendered pages. The target remains about 200–230 pages; a longer document alone is not a quality criterion.
+## Verification rules
 
-## Verification discipline
+A file or workflow existing in GitHub is not evidence that it passed. Always inspect completed CI runs for the relevant commit. A passing host test does not establish interrupt safety, DMA coherency, target ABI compatibility, or real-time deadlines.
 
-A committed test or workflow is not proof that it passed. Record the outcome of actual workflow runs for the current commit. A passing hosted test does not establish interrupt safety, DMA coherency, or real-time latency on an MCU.
-
-The Markdown files are the source of truth. `modern-c23.pdf` is generated and may lag until the document workflow succeeds; do not infer that the PDF includes changes merely because those changes are pushed.
+The Markdown tree is authoritative. The tracked `modern-c23.pdf` is an output artifact and can lag when PDF workflows are queued or superseded. Measure the number of pages from the actual completed build rather than inferring it from manuscript word count.
