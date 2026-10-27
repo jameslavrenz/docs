@@ -14,6 +14,7 @@ on:
       - 'modernc_book/scripts/pdf_review_report.py'
       - 'modernc_book/scripts/page_index_audit.py'
       - 'modernc_book/tests/test_page_index_audit.py'
+      - 'modernc_book/docs/page-index-evidence.tsv'
       - '.github/workflows/modernc-pdf.yml'
   workflow_dispatch:
 
