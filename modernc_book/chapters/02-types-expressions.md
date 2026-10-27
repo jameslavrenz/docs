@@ -68,3 +68,66 @@ bool ready = false;
 An empty initializer gives the object an empty-initialization value (for this structure, both fields become zero). Check compiler support on older toolchains.
 
 **Exercises.** 2.1 Implement absolute difference for unsigned integers without underflow. 2.2 Write `gcd` tests including zeros. 2.3 Explain why `int n = sizeof array;` can narrow an object size. 2.4 Determine which operations in a signed integer sum can overflow.
+
+
+## 2.7 Integer conversion in practice
+
+Consider `size_t`, an unsigned type used for object sizes. It is tempting to subtract two lengths and then test whether the result is negative:
+
+```c
+size_t remaining = capacity - used;
+```
+
+If `used > capacity`, this subtraction does not produce a negative number; unsigned arithmetic wraps. Instead, establish the precondition before computing the difference:
+
+```c
+if (used > capacity)
+    return false;
+size_t remaining = capacity - used;
+```
+
+A second trap is evaluating mixed integer types. A comparison involving an unsigned operand may convert a signed value to an unsigned type. It is better to check a negative value before a conversion than to hope the usual arithmetic conversions preserve its mathematical meaning.
+
+## 2.8 Bitwise operations
+
+Bit masks encode independent boolean properties in one integer. Shift counts must be valid for the promoted left operand's width. For portable protocol data, perform shifts in an explicitly selected unsigned type.
+
+```c
+#include <stdint.h>
+
+enum {
+    FRAME_READY = 1u << 0,
+    FRAME_ERROR = 1u << 1,
+    FRAME_RETRY = 1u << 2
+};
+
+unsigned flags = FRAME_READY | FRAME_RETRY;
+bool retry = (flags & FRAME_RETRY) != 0;
+flags &= ~FRAME_RETRY;
+```
+
+The `|` operator combines selected bits, `&` tests or retains bits, and `~` complements all bits in the promoted type. Using a mask is not the same as testing a boolean expression with `||` or `&&`; those logical operators produce zero or one and may short-circuit.
+
+An important embedded distinction: masking an integer held in RAM is straightforward; read-modify-write of a device register may trigger hardware-specific behavior. Consult the peripheral's reference manual before applying an apparently innocent `register |= bit`.
+
+## 2.9 Evaluation order is independent of precedence
+
+Multiplication binds more tightly than addition, but precedence tells the compiler how expressions are grouped, not the order of their operands' evaluation. For example, `f() + g()` does not impose an ordering between calls. The programmer can create a sequence explicitly:
+
+```c
+int left = f();
+int right = g();
+int result = left + right;
+```
+
+Now the calls happen in the order of the statements, though addition still requires a representable result. Avoid constructions that both modify and read a scalar without the necessary sequencing. Compact code is not an excuse for surprising evaluation.
+
+## 2.10 A checked average
+
+For integers in a constrained environment, accumulating into a wider type can help, but a wider type is not a proof of no overflow. Even a 64-bit sum can overflow if the input is long enough. A fully safe routine must either check each addition, constrain the input count and element ranges, or use a documented alternative algorithm.
+
+A good interface for an average also distinguishes the empty-input case from a real average of zero. A return value alone does not always provide enough information.
+
+### Further exercises
+
+**2.5** Write a function that sets and clears one bit of a `uint32_t` given a bit position. Reject positions outside 0–31. **2.6** Show an example in which adding two valid `int` values overflows, and implement a guard that avoids evaluating the addition. **2.7** Explain the difference between `a & b == 0` and `(a & b) == 0`. **2.8** Design a loop over `unsigned` values that handles `UINT_MAX` without wrapping forever.
