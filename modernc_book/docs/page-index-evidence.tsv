@@ -1,0 +1,41 @@
+topic	evidence_phrase
+Acquire ordering	memory_order_acquire
+Arena allocator	arena_alloc
+Array decay	array parameter is adjusted to a pointer
+Bit rotation	rotate-left
+Boolean values	bool
+Bounded input	bounded line reader
+Character encodings	UTF-8
+Comparators	comparator
+Comparator, three-way integer	relational comparisons
+const qualification	const int
+Copying storage	memmove
+CRC and checksums	checksum
+Decoder, streaming frame	streaming decoder
+Digit parsing	parse_unsigned
+Embedding resources	#embed
+Error statuses	parse_status
+Exercise solutions	Selected Worked Exercises
+File I/O	fopen
+Frame decoder	frame_stream
+Implementation-defined behavior	implementation-defined
+I/O errors	ferror
+Line input	fgets
+Link-time errors	linker
+Memory layout	padding
+Numeric parsing	strtol
+Obsolete handles	stale handle
+Opaque interfaces	opaque
+Ordering, evaluation	unsequenced
+Pointer provenance and lifetime	provenance
+Portable serialization	serialization
+Release ordering	memory_order_release
+Ring buffers	ring buffer
+State-transition testing	state-transition
+String literals	string literal
+TLV format	type-length-value
+Unsigned arithmetic	modular
+Unspecified behavior	unspecified
+Wait-free algorithms	wait-free
+Word-index tokenizer	tokenizer
+Zero-length requests	zero-length
