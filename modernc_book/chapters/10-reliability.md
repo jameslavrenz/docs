@@ -135,3 +135,38 @@ No single passing test suite proves correctness, particularly for concurrent pro
 Build a streaming decoder with an injected byte source that can return a short read, an I/O error, or clean EOF. Give each outcome a distinct status and assert that the caller never sees half-decoded output. Repeat with a deliberately full output buffer and with a record whose claimed payload length is larger than available storage.
 
 **Further problems:** Construct a threat model for the toy packet protocol. Explain how a full buffer and an overflowed integer differ. Write a reviewer checklist for atomic queue shutdown and object lifetime.
+
+
+## 10.19 Defensive decoding: from bytes to a validated object
+
+A packet decoder is a good place to practice several C contracts at once. A caller supplies a byte buffer and its length. The decoder must establish a valid format before touching output state.
+
+For a toy protocol, define the frame as a one-byte magic number, one-byte version, two-byte little-endian payload length, payload bytes, and a checksum octet. The decoder first confirms that at least the fixed header and checksum are present. Only then does it read the header fields. Next it verifies the payload length against both its application-defined maximum and the remaining input capacity. Finally, it computes the checksum and copies the completed candidate into the caller's output.
+
+The order matters. If code reads `bytes[3]` before checking `length >= 4`, a later bounds check cannot undo the invalid read. If it calculates `payload_length + 5` without checking representability, a large unsigned value could wrap. If it writes the public result field-by-field and later discovers an invalid checksum, the caller sees partially updated state.
+
+A strong decoder therefore has a simple publication point: all validation succeeds, and only then is `*out` assigned.
+
+## 10.20 Define three failure classes
+
+Not all failures have the same meaning. A useful API might distinguish malformed input, incomplete input, and exhausted output capacity. Malformed input violates the format even if more bytes were supplied. Incomplete input may be a valid prefix that needs more data. Insufficient output capacity means the input might be valid, but the caller did not provide enough destination storage.
+
+An RTOS message receiver can react differently: wait for the rest of an incomplete frame, discard malformed input and resynchronize, or apply backpressure when output storage is full. Collapsing all three into a boolean failure can make the transport logic awkward.
+
+The simplest teaching program can return `bool`, but a production interface should choose the status representation based on its callers.
+
+## 10.21 Error recovery is a protocol decision
+
+After rejecting a malformed frame, should the receiver scan for the next magic byte? Doing so may recover quickly, but payload bytes could themselves contain that marker. A more robust framing design might escape reserved bytes, use a fixed header with a validated length and checksum, or rely on an out-of-band boundary.
+
+The algorithm's *resynchronization* rule belongs in the protocol specification. Otherwise two devices may interpret the same corrupt stream differently despite both having memory-safe parsers.
+
+## 10.22 Worst-case resource accounting
+
+To evaluate firmware use, compute worst-case storage and work. A parser with a maximum 64-byte payload, a four-byte header, and a checksum can bound its input record storage. The actual C output structure may be larger due to padding, so assess `sizeof` on the target when reserving a pool of output records.
+
+The per-record checksum loop has at most a fixed number of iterations. That proves an iteration bound, not a deadline: execution time also depends on scheduling, memory placement, compiler settings, and hardware. A task that blocks on a mutex or output stream may take longer than its local loop suggests.
+
+### Exercises
+
+**10.11** Implement a status enumeration with valid, incomplete, malformed and no-capacity cases. **10.12** Design a resynchronization policy when a payload contains the magic byte. **10.13** Calculate an upper bound on parser storage independent of input stream length. **10.14** Test that all error paths preserve the output structure's meaningful members.
