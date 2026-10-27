@@ -176,3 +176,106 @@ For each project, include a short report: the precise accepted input domain, key
 A particularly useful final section is *what the tests do not prove*. A host byte-arena test does not establish general typed-object alignment. A sequential queue test does not prove concurrent safety. A passing frame-decoder test does not authenticate a message. A clean sanitizer run cannot prove that unexecuted paths are safe.
 
 That level of precision distinguishes a professional systems-programming exercise from a demonstration that happened to run once.
+
+## 12.24 Capstone: a bounded telemetry receiver
+
+This project combines several of the book's smaller components into one coherent embedded-style design. The goal is to receive short binary frames, validate their content, and retain a bounded number of decoded messages for a consumer.
+
+The receiver has three layers:
+
+    incoming octets -> frame parser -> fixed slot pool -> application consumer
+
+The first layer supplies octets. The second recognizes complete, valid frames. The third stores completed messages until the application consumes them. Each layer has a different contract, and no layer needs to allocate memory dynamically.
+
+A finished implementation should make all failure paths visible: malformed input, an incomplete frame, exhausted message slots, a stale handle, and shutdown while a message is still outstanding.
+
+### Part 1: define the external format
+
+Use the same compact frame as Chapter 10: magic A5, a length octet between zero and eight, the declared number of payload octets, and an XOR checksum covering the length and payload.
+
+Create a table containing at least these independent test frames:
+
+| Meaning | Hexadecimal frame |
+| --- | --- |
+| Empty message | A5 00 00 |
+| One octet 05 | A5 01 05 04 |
+| Three octets 0A 14 1E | A5 03 0A 14 1E 03 |
+| Invalid length | A5 09 |
+| Incorrect checksum | A5 01 05 00 |
+
+For the last two entries, a complete application test must check that no new message is published. The invalid-length example represents a rejected prefix; it does not need a valid checksum because length validation fails first.
+
+Explain why successful encoding and decoding in a loop is not enough to verify the format. The independent table protects against two implementations that share the same mistake.
+
+### Part 2: identify the state owners
+
+Create one frame parser and a pool containing four fixed message records. Make a single receiver task the owner of the parser. The receiver calls the feed function for each incoming octet.
+
+When a complete message appears, the receiver attempts to acquire a free pool slot. If acquisition succeeds, it copies the completed payload into the slot and publishes a handle to the application consumer. If the pool is full, the receiver must report or count a dropped message according to the chosen policy.
+
+The application consumer eventually retrieves a message using the validated handle and releases its slot. After release, the old handle is no longer valid.
+
+This arrangement separates the lifetime of a temporary candidate message within the parser from the lifetime of a completed message retained by the pool.
+
+### Part 3: choose a queue and saturation policy
+
+A real producer and consumer often run at different rates. A pool alone stores objects but does not define the order in which completed-message handles are delivered.
+
+Add a fixed-capacity queue of handles. When the receiver decodes a message successfully, it acquires a slot, stores the message, and enqueues the handle. The consumer dequeues a handle, processes the corresponding message, and releases the slot.
+
+Specify what happens if either the pool or queue is full. Possible choices include rejecting the newest message, dropping the oldest queued message, or applying backpressure to the transport. Dropping an old message requires care: remove its handle from the queue and release its pool slot exactly once.
+
+Do not silently overwrite a live slot. A bounded memory design is useful only when saturation has predictable semantics.
+
+### Part 4: distinguish host tests from device behavior
+
+On a desktop, a test can supply input bytes from a fixed array and run receiver and consumer operations sequentially. Verify the exact decoded data, queue order, handle generations, full conditions, and stale-handle rejections.
+
+That test establishes the algorithm's expected behavior for the chosen sequence. It does not demonstrate that concurrent producer and consumer access is safe.
+
+If the project uses an RTOS and UART interrupts, select or implement a queue whose operations are supported in the relevant execution contexts. Establish how the ISR hands data to a receiver task and how that task signals the consumer. Avoid having the ISR call an arbitrary C function that may block or use unsupported library facilities.
+
+### Part 5: bound resources
+
+Document the maximum storage required by:
+- the frame parser's candidate payload;
+- all four message-pool records;
+- a fixed queue of message handles;
+- any transport byte buffer;
+- the stacks of the participating tasks.
+
+These are separate allocations or objects, and their sizes may include alignment padding. Confirm their actual sizes on the target toolchain using its build output or suitable instrumentation.
+
+Next, bound local operations. One call to the frame parser processes one octet; a pool acquire examines at most four slots; a queue enqueue performs a fixed amount of index work under its stated conditions.
+
+This gives useful operation bounds but not a complete worst-case deadline analysis. Real-time completion also depends on preemption, queue contention, memory access times, and the scheduling of the consumer.
+
+### Part 6: design shutdown
+
+Shutting down the receiver requires a policy for incomplete frames and pending messages. One possible sequence is to stop new input, allow the receiver to finish processing already queued octets, signal the consumer, drain or deliberately discard the remaining messages, join or stop all participating tasks, and only then reclaim storage.
+
+If a queued handle is discarded, release its pool slot. If a consumer still holds a handle, the pool cannot be reset or destroyed until that use is finished under the selected ownership contract.
+
+Shutdown bugs often arise because ordinary tests exercise steady-state operation but never release resources while work remains.
+
+### Required test report
+
+Submit a short report describing the accepted frame grammar, all data-structure invariants, capacity and drop policy, lifetime of every borrowed pointer and handle, executable tests, target-specific assumptions, and remaining unverified properties.
+
+A particularly useful test combines several failures: begin a partial frame, abandon it on timeout, fill the pool with valid messages, reject an additional completed frame, release one slot, then accept a new message into that slot. Confirm that an old handle does not refer to the new record.
+
+A clear architecture with documented limits is more important than using the most complicated available synchronization technique.
+
+## 12.25 A short review rubric for the capstone
+
+A high-quality submission should demonstrate correctness at four levels:
+
+**Representation.** Each binary field is decoded according to the stated wire format, with no dependence on native structure padding or endianness.
+
+**State.** Parser transitions, pool occupancy, handle generations, and queue indexes preserve their written invariants.
+
+**Ownership.** Every acquired slot is released once, stale handles are rejected, and shutdown does not destroy storage that active clients still use.
+
+**Execution.** Tests cover valid boundaries, truncation, corruption, saturation, and recovery. Concurrency and hardware-related claims are qualified by appropriate target-specific evidence.
+
+The goal is not to build a production-ready communications stack in one exercise. It is to practice decomposing a small real system into contracts that can be reasoned about and tested independently.
