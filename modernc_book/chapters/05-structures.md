@@ -73,7 +73,7 @@ To serialize an unsigned multi-byte value, select an exact format and explicitly
 
 A ring buffer holds a fixed number of elements and wraps its index back to the beginning. We use a separate count to distinguish an empty buffer from a full one.
 
-```c
+```c compile-check
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -152,7 +152,7 @@ Flexible array members have restrictions: they belong at the end of an eligible 
 
 A portable encoder establishes each output byte deliberately. Consider a record with an 8-bit kind and 16-bit little-endian length. Its wire representation can use exactly three octets regardless of padding in the in-memory structure:
 
-```c
+```c compile-check
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
