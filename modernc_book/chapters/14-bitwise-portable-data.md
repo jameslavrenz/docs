@@ -190,3 +190,103 @@ Test a zero-length payload, a payload at maximum length, one byte less than a co
 ### Exercises
 
 **14.6** Change the checksum from XOR to a documented CRC and provide independent golden test vectors. **14.7** Add an error enumeration for malformed, incomplete and oversized frames. **14.8** Design a streaming decoder using bounded state and explain how it handles resynchronization after corrupted input.
+
+
+## 14.18 Rotation is not the same as shifting
+
+A shift discards bits at one end of an integer and fills positions at the other end according to the operation's rules. A rotation instead moves discarded bits around to the opposite end. Many checksums, hash functions, cryptographic constructions, and bit-manipulation algorithms use rotation.
+
+For a 32-bit unsigned integer, rotating the hexadecimal pattern `0x12345678` left by four bits yields `0x23456781`. The top hexadecimal digit wraps around to the lowest position.
+
+A mathematical rotate-left can be expressed as the union of two shifted regions:
+
+\[
+\operatorname{rotl}_{32}(x,n)
+=
+(x \ll n)\;|\;(x \gg (32-n)),
+\]
+
+for \(1 \le n \le 31\). But that range condition is essential. In C, shifting a 32-bit value by 32 or more is undefined behavior. Using an unsigned left operand avoids signed-left-shift problems, but it does not make an out-of-range count legal.
+
+The fully safe implementation handles the zero count separately:
+
+```c
+#include <stdint.h>
+
+uint32_t rotate_left_32(uint32_t x, unsigned count)
+{
+    unsigned n = count % 32u;
+    if (n == 0)
+        return x;
+    return (x << n) | (x >> (32u - n));
+}
+```
+
+The count-reduction rule is part of the function's contract: values 0, 32, 64, and so on all mean an unchanged result. Once the zero case is excluded, both shift counts are between 1 and 31. The proof is short, and it should appear beside the code rather than remaining an unstated assumption.
+
+## 14.19 Rotate-right and inverse properties
+
+The corresponding rotate-right operation is:
+
+```c
+uint32_t rotate_right_32(uint32_t x, unsigned count)
+{
+    unsigned n = count % 32u;
+    if (n == 0)
+        return x;
+    return (x >> n) | (x << (32u - n));
+}
+```
+
+An important property is that applying a left rotation and then a right rotation by the same count restores the original value. That property is useful for automatically generating tests over numerous count values.
+
+The standalone `examples/rotate_bits.c` verifies zero and full-width counts, checks manually calculated constants, and tests the inverse property across counts 0 through 63.
+
+Round-trip tests should accompany, not replace, independent expected values. Two incorrect operations could be inverses of each other and still fail to implement the required rotation convention. The example therefore includes explicit hexadecimal expected results.
+
+## 14.20 Why direct machine-code tricks do not define C
+
+A processor may have a single rotate instruction, and an optimizing compiler may recognize this unsigned expression and select it. That is a performance matter, not a language guarantee. The source must be valid whether or not the target has a rotate instruction.
+
+Handwritten assembly can be appropriate in a carefully scoped architecture-specific module after measurement shows a real need. It should not become a substitute for specifying the mathematical operation.
+
+The C23 `<stdbit.h>` header provides several bit-counting and bit-width facilities, but not the C++ `std::rotl` / `std::rotr` interface. Use the portable C helper or a documented implementation extension when appropriate.
+
+## 14.21 Device registers are not ordinary bit containers
+
+A local `uint32_t flags` variable can be safely updated with masking operations when the arithmetic is valid and access is appropriately synchronized. A memory-mapped peripheral register may behave differently. Reading a status register may acknowledge an interrupt. Writing a one may clear a bit. Some registers require reserved positions to be written as zero, while others require preserving particular bits.
+
+Therefore `REG |= MASK` is not automatically safe. It generally implies a read, logical OR, and write, which can have surprising hardware side effects and may not be atomic relative to interrupts. Prefer the peripheral's documented set/reset mechanism when available, and isolate register semantics in target-specific driver code.
+
+The C `volatile` qualifier can be relevant to observable device accesses, but it does not guarantee bus ordering, cache coherency, or safe multi-thread synchronization. Those concerns belong to the target's memory model and the device documentation.
+
+## 14.22 Proving an encoder's byte range
+
+Consider a protocol with a fixed five-octet overhead and at most 64 payload octets. The total frame size is at most 69 octets, so the arithmetic `overhead + payload` fits on every target supporting an array that large. The important checks are then whether the input payload meets the application maximum and whether the destination capacity is sufficient.
+
+For a *general* protocol with unbounded payload length, `payload + overhead` might overflow `size_t` before comparison. The safe test is:
+
+```c
+if (capacity < overhead ||
+    payload_length > capacity - overhead)
+    return false;
+```
+
+This separates a simple mathematical property from an important C-specific evaluation rule. It also shows why the order of tests matters: subtraction is permitted only after `capacity >= overhead`.
+
+The packet-codec example in this book constructs a candidate frame before copying it to the caller's output. That gives the encoder a strong failure guarantee: an invalid request leaves the destination bytes unchanged. For large frames, this extra buffer may be too expensive, and the API might instead document partial output. Neither approach is universally right; their contracts and resource costs differ.
+
+## 14.23 Independent bit-level tests
+
+A bit-manipulation test should include:
+- Zero and all-one values.
+- A pattern with distinct nibbles such as `0x12345678`.
+- Rotation by zero, one, 31, 32, and 33.
+- Values with only the highest bit set or only the lowest bit set.
+- Round-trip properties over many counts.
+
+For a serializer, also use literal expected byte sequences. For example, `0x12345678` encoded as big-endian octets must yield `12 34 56 78`, while little-endian octets must yield `78 56 34 12`. These independent vectors distinguish errors that a self-consistent encoder and decoder would not reveal.
+
+### Additional exercises
+
+**14.9** Prove why each shift in the rotate implementation is in the range 1–31. **14.10** Implement a checked bit-setting function that rejects positions outside the selected unsigned type's width. **14.11** Explain which rules come from C and which come from a vendor peripheral manual when manipulating a status register. **14.12** Construct an independent expected-value table for left rotation of `0x80000001` by 0, 1, 4, and 31 bits.
