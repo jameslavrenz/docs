@@ -6,7 +6,7 @@ The C preprocessor is a separate, token-oriented facility that runs before ordin
 
 A header normally contains declarations and interface-related definitions. A source file includes that header and supplies the corresponding external definitions. Inclusion is conceptually textual: the preprocessor inserts the header's tokens into the translation unit.
 
-```c
+```c compile-check
 #ifndef BUFFER_H
 #define BUFFER_H
 #include <stddef.h>
@@ -69,7 +69,7 @@ C23 also standardizes `#warning`. Diagnostics emitted this way can be useful whe
 
 Use `static_assert` to make fundamental assumptions visible at translation time:
 
-```c
+```c compile-check
 #include <limits.h>
 static_assert(CHAR_BIT == 8, "octet storage required");
 ```
@@ -80,7 +80,7 @@ The constraint is appropriate for an octet-specific wire format; it would be unn
 
 The `_Generic` selection mechanism works on types rather than token spelling. It can choose an appropriate typed operation:
 
-```c
+```c compile-check
 #include <math.h>
 #define abs_floating(x) _Generic((x), \
     float: fabsf, double: fabs, long double: fabsl)(x)
