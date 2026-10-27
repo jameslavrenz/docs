@@ -139,3 +139,54 @@ A compound assignment like `REG |= MASK` may compile into a read followed by a w
 For a byte codec, test zero, all bits set, alternating-bit patterns, and a distinct-byte value such as `0x12345678`. The distinct-byte case is especially useful for finding reversed byte order. Then test output buffers that are too small, null pointers when prohibited, and any nonstandard target assumptions.
 
 **Further problems:** Write an encoder for a 24-bit unsigned field stored in three octets. Show that each shift count is valid. Explain why an ordinary struct copy and a wire serialization are different operations. Analyze a hypothetical write-one-to-clear status register.
+
+## 14.13 A wire protocol is a specification, not a structure
+
+Suppose a device transmits a frame with this byte-level layout:
+
+| Offset | Width in octets | Meaning |
+| --- | --- | --- |
+| 0 | 1 | Magic value `0xA5` |
+| 1 | 1 | Version `0x01` |
+| 2 | 2 | Unsigned payload length, little-endian |
+| 4 | 0–64 | Payload |
+| 4 + length | 1 | XOR of all preceding octets |
+
+This is an intentionally simple teaching format. The XOR field detects some accidental errors; it does not authenticate a sender and is not adequate against deliberate modification.
+
+The format does not mention `struct`, padding, alignment, or host byte order. Those are properties of the implementation, not the external message. A portable encoder explicitly writes each field as bytes. A portable decoder reads each field only after establishing that the corresponding bytes exist.
+
+## 14.14 Encode without partial publication
+
+An encoder can reject an invalid request before writing any output: reject a null destination, insufficient capacity, a payload length beyond 64, and a nonzero payload length with no valid payload storage. Then compute exactly how many bytes are needed, using arithmetic already bounded by the format's maximum.
+
+If failure must leave the destination unchanged, construct the complete frame in a local fixed-size temporary array and copy it only after validation. That costs one extra bounded copy but gives callers a simple postcondition. For larger frames, an alternative API may write incrementally and report partial output; either policy is acceptable if explicit.
+
+The companion `examples/frame_codec.c` demonstrates a strong-failure interface for both encoding and decoding. It uses `memcpy` only after checking capacities. Its local buffer size is determined by the maximum defined frame size rather than by untrusted input.
+
+## 14.15 Decode in a safe order
+
+For decoding, perform these checks in sequence:
+
+1. Confirm that the input pointer and output pointer satisfy the API and that at least five octets exist.
+2. Check magic and version fields.
+3. Decode the two-byte length from individual octets.
+4. Ensure length is at most 64 and the input contains exactly the declared frame length.
+5. Verify the checksum.
+6. Copy payload bytes into a local candidate and commit the result.
+
+If the function subtracts a fixed overhead from the input length, it must first establish that the input length is at least that overhead. This prevents unsigned underflow. Because the maximum payload is small, the final length calculation can be proven to fit in `size_t` on supported targets.
+
+## 14.16 Endianness and alignment are independent
+
+A machine can allow unaligned access and still have a byte order different from the protocol. Conversely, a target may use the protocol's byte order but require alignment for native multi-byte loads. Casting the input pointer to a multi-byte integer pointer therefore makes more than one unsafe assumption.
+
+The explicit decoder `(uint16_t)bytes[2] | ((uint16_t)bytes[3] << 8)` communicates the wire format and avoids reading a misaligned native integer. Since `uint16_t` might undergo integer promotions, the operation remains carefully bounded by the known eight-bit octet values.
+
+## 14.17 Testing message boundaries
+
+Test a zero-length payload, a payload at maximum length, one byte less than a complete frame, an extra trailing byte, a corrupted checksum, and an unsupported version. Confirm that failures leave the output object unchanged. Also test against a manually constructed frame rather than relying exclusively on an encoder/decoder round trip.
+
+### Exercises
+
+**14.6** Change the checksum from XOR to a documented CRC and provide independent golden test vectors. **14.7** Add an error enumeration for malformed, incomplete and oversized frames. **14.8** Design a streaming decoder using bounded state and explain how it handles resynchronization after corrupted input.
