@@ -4,18 +4,20 @@
 
 - 19 chapters and a preface
 - Six appendices, including worked solutions and an alphabetical topic finder
-- 75,304 Markdown words including code and exercises
-- 33 standalone C examples in the Makefile and regression script
+- 83,061 Markdown words including code and exercises
+- 35 standalone C examples in the Makefile and regression script
 - Structural checks of chapter numbers, appendix letters, Markdown fences, README links, and executable-test references
 
 ## Latest technical additions
 
-Chapters 5, 7, 10, 12, 13 and 15 were expanded for generation-tagged resource pools, incremental framing, logical ownership, bounds proofs, and model-based/state-transition testing. New `slot_pool.c` and `frame_stream.c` programs are included in the executable regression suite; Appendix C supplies worked solutions. Chapter 12 now offers a complete bounded telemetry receiver design exercise integrating the parser, fixed pool, handle queue and shutdown contracts. The manuscript now contains approximately 75,304 words including code and exercises.
+Chapters 5, 7, 10, 12, 13 and 15 were expanded for generation-tagged resource pools, incremental framing, logical ownership, bounds proofs, and model-based/state-transition testing. New `slot_pool.c` and `frame_stream.c` programs are included in the executable regression suite; Appendix C supplies worked solutions. Chapter 12 now offers a complete bounded telemetry receiver design exercise integrating the parser, fixed pool, handle queue and shutdown contracts. The manuscript now contains approximately 83,061 words including code and exercises.
 
 
 The strict incremental UTF-8 decoder (`examples/utf8_stream.c`) distinguishes incomplete, complete and invalid sequences and preserves the previous scalar on non-success. The bounded TLV decoder (`examples/tlv_decode.c`) validates headers and lengths before reading, rejects records beyond fixed resource limits, and publishes the result only after validating the whole input.
 
 Chapters 18 and 10 contain the detailed explanations, with related worked solutions in Appendix C. Appendix F improves navigation during the draft phase.
+
+Chapter 8's header example was corrected to match the compiled module, including `<stdbool.h>` for its boolean result. The word-index tests now cover an exact 31-character token, a rejected 32-character token at EOF, and reverse alphabetical insertion. Two new test programs verify comparator and `_Generic` behavior.
 
 ## Verification
 
@@ -25,7 +27,7 @@ The new manuscript checker passed its initial CI test after integration. It dete
 
 ## PDF status
 
-A confirmed PDF published earlier in this session contains **168 pages**. The newest manuscript changes may not yet be reflected in the tracked PDF while its workflow is building. The exact new page count must come from the next completed PDF job.
+A confirmed PDF published earlier in this session contains **187 pages**. The newest manuscript changes may not yet be reflected in the tracked PDF while its workflow is building. The exact new page count must come from the next completed PDF job.
 
 ## Remaining acceptance criteria
 
