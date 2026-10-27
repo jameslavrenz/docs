@@ -106,3 +106,38 @@ A counted span makes boundaries explicit. For an ASCII command field, scanning e
 Converting malformed byte sequences to lowercase or replacing bytes before validating the input can introduce ambiguity. For format-specific ASCII tokens, validate each byte first, then normalize the allowed subset. For general Unicode text, decoding and normalization need a documented Unicode library and version.
 
 **Further problems:** Extend the decoder to report incomplete separately from invalid. Produce golden test vectors for one-, two-, three-, and four-byte values. Design a text protocol that rejects embedded NUL and trailing garbage rather than silently ignoring it.
+
+
+## 18.14 Separate three kinds of text boundaries
+
+A byte stream has transport boundaries, an encoding has code-unit and code-point boundaries, and a user interface has grapheme or displayed-character boundaries. These are not interchangeable.
+
+A UTF-8 character may be split across two `fread` calls or UART DMA transfers. The decoder must retain the incomplete prefix or the adapter must buffer sufficient bytes. Even after a valid scalar value has been decoded, two adjacent values may combine into a single user-perceived character. A simple MCU command parser often needs only the first two concepts, while a text editor needs all three.
+
+A counted input buffer should always be processed according to its supplied length. A zero byte inside the buffer is valid as a byte value; whether it is allowed by the *protocol* is a separate grammar decision. Using `strlen` on arbitrary counted data can stop early at an embedded zero or read past the allocation if there is no terminator.
+
+## 18.15 Build the UTF-8 validity proof
+
+For one-byte sequences, the leading byte lies in 00–7F. Valid two-byte sequences begin with C2–DF; C0 and C1 are excluded because they would produce overlong encodings. Valid three-byte sequences begin with E0–EF but need additional restrictions on the second byte or, equivalently, a final decoded-scalar range check. Four-byte sequences begin with F0–F4 and likewise require a result no greater than U+10FFFF.
+
+Every continuation byte must have its top two bits `10`. After combining all payload bits, reject decoded values below the shortest possible value for that sequence length. Reject surrogate code points U+D800–U+DFFF. These tests, in that order or an equivalent validated order, establish that the input represents a Unicode scalar value.
+
+The standalone `utf8_decode.c` handles one code point and reports its consumed length on success. A complete streaming implementation needs an additional status to distinguish a truncated but potentially valid prefix from a definitely malformed sequence.
+
+## 18.16 Avoid accidental locale dependencies
+
+C's `<ctype.h>` functions operate on character values according to their documented rules and may be locale-sensitive. For a protocol defined in ASCII, the explicit range check `c >= '0' && c <= '9'` may make the grammar clearer, subject to the execution character representation. For raw UTF-8 bytes, interpreting every byte through `tolower` is incorrect Unicode processing.
+
+A production system should choose its textual contract at its boundary: ASCII protocol tokens, UTF-8 source text, or locale-sensitive human input. Once chosen, the parser should not silently switch conventions halfway through processing.
+
+## 18.17 Bounded streaming text
+
+A command reader with a maximum length of 64 bytes needs both an accumulation buffer and a policy for overflow. If a command exceeds the limit, immediately terminating the connection may be appropriate for a strict protocol. Alternatively, it can discard subsequent bytes until a line delimiter and then resume with the next record.
+
+Do not accept the first 64 bytes as a complete valid command: truncation can change semantics. A long dangerous command might share a harmless-looking prefix with a valid shorter command. Rejecting the entire overlong record preserves the intended grammar.
+
+A streaming decoder also needs an EOF policy: an incomplete multibyte sequence at the end of a stream is not the same thing as clean EOF between complete records.
+
+### Exercises
+
+**18.7** List valid and invalid UTF-8 leading-byte ranges. **18.8** Build a state machine that distinguishes 'need more bytes' from 'invalid encoding'. **18.9** Explain why NUL may be a valid byte while still being forbidden inside a chosen text protocol. **18.10** Specify the overflow and resynchronization behavior of a bounded line reader.
