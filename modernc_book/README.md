@@ -1,6 +1,6 @@
 # Modern C: A Concise Introduction to C23
 
-**An independent textbook** · Draft 0.1 · 26 October 2026
+**An independent textbook** · Expanded technical-review draft · 26 October 2026
 
 An original, example-first introduction to the C programming language as standardized by ISO/IEC 9899:2024 (C23). Its compact teaching progression is inspired by the general *pedagogical approach* of classic concise programming texts. This is **not** a third edition of *The C Programming Language*, and is not written by or affiliated with Brian Kernighan, Dennis Ritchie, or their publishers.
 
@@ -31,20 +31,24 @@ An original, example-first introduction to the C programming language as standar
 - [A. Working Reference to C23](appendices/A-language-reference.md)
 - [B. Standard Library by Task](appendices/B-standard-library.md)
 - [C. Selected Worked Exercises](appendices/C-exercise-solutions.md)
+- [D. Glossary of Modern C](appendices/D-glossary.md)
+- [E. Conformance and Migration Checklist](appendices/E-conformance.md)
 - [Compilable example files](examples/README.md)
 
-Chapters 3–6 now include expanded treatment of contracts, arrays, bounded queues, and stream errors; the examples directory includes additional executable tests.
+All nineteen chapters received a second-pass technical expansion: more explanation of preconditions, numeric boundaries, lifetime, ownership, explicit byte formats, concurrency, and C23 portability. Five appendices supply reference tables, selected solutions, a glossary, and a deployment checklist.
 
 ## Build and scope
 
 Use a C23-capable compiler, e.g. `gcc -std=c23 -Wall -Wextra -Wpedantic -O2 program.c -o program`. GCC 15 and newer select C23 by default; Clang 18 and newer recognize `-std=c23`. Individual standard-library facilities can lag behind language support. Check the specific toolchain and C library.
 
-The intended finished book is roughly **200–230 typeset pages**, comparable in scale to the first edition of the classic text. This repository currently contains an **expanded, still shorter manuscript**, not a claim that the final page target has already been met. Content is written in original language; exercises emphasize reasoning and building small programs.
+The intended finished book is roughly **200–230 typeset pages**, comparable in scale to the first edition of the classic text. This repository currently contains an **expanded draft, not yet established to meet the target page count**, not a claim that the final page target has already been met. Content is written in original language; exercises emphasize reasoning and building small programs.
 
 ## Sources for language conformance
 
 - [ISO C23 overview](https://en.cppreference.com/w/c/23)
 - [GCC C language standards status](https://gcc.gnu.org/projects/c-status.html)
 - [Clang C language status](https://clang.llvm.org/c_status.html)
+
+A generated reading PDF is published as [`modern-c23.pdf`](modern-c23.pdf) when the PDF workflow succeeds. The manuscript source remains authoritative; the PDF may lag behind pending workflow runs. Run `sh scripts/build-pdf.sh` locally with Pandoc and XeLaTeX to rebuild.
 
 License: All original prose and examples © 2026; rights reserved pending a separately selected license.
