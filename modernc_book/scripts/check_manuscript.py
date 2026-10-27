@@ -32,13 +32,45 @@ for path in manuscript:
     if fences % 2:
         errors.append(f"Unbalanced backtick code fences in {path}")
 
-readme = (ROOT / "README.md").read_text(encoding="utf-8")
-for raw in re.findall(r"(?<!!)\[[^\]]+\]\(([^)]+)\)", readme):
-    destination = raw.split("#", 1)[0].strip()
-    if not destination or re.match(r"^[a-z][a-z0-9+.-]*:", destination):
+    if path in chapters:
+        chapter_number = int(path.name[:2])
+        found = [int(n) for n in re.findall(
+            rf"^## {chapter_number}\.(\d+)\s", text, re.MULTILINE)]
+        expected = list(range(1, len(found) + 1))
+        if found != expected:
+            errors.append(
+                f"Nonconsecutive sections in {path.name}: "
+                f"{found}, expected {expected}")
+
+# Links are resolved relative to the file that contains them.
+# URL fragments are deliberately excluded: this checks the file destination,
+# not whether a specific heading anchor exists after rendering.
+linked_documents = [
+    ROOT / "README.md", ROOT / "examples" / "README.md",
+    ROOT / "PLAN.md", ROOT / "docs" / "editorial-status.md",
+    *manuscript,
+]
+link_count = 0
+for source in linked_documents:
+    if not source.is_file():
+        errors.append(f"Missing linked document: {source}")
         continue
-    if not (ROOT / destination).exists():
-        errors.append(f"Broken local README link: {destination}")
+    content = source.read_text(encoding="utf-8")
+    for raw in re.findall(r"(?<!!)\[[^\]]+\]\(([^)]+)\)", content):
+        destination = raw.split("#", 1)[0].strip()
+        if not destination or re.match(r"^[a-z][a-z0-9+.-]*:", destination):
+            continue
+        if destination.startswith("/"):
+            errors.append(f"Absolute local path in {source}: {destination}")
+            continue
+        resolved = (source.parent / destination).resolve()
+        if not resolved.is_relative_to(ROOT.resolve()):
+            errors.append(f"Local link leaves book: {source}: {destination}")
+            continue
+        link_count += 1
+        if not resolved.exists():
+            errors.append(f"Broken local link: {source}: {destination}")
+print(f"Checked {link_count} internal Markdown links")
 
 makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
 match = re.search(r"^all:\s+([^\n]+)", makefile, flags=re.M)
