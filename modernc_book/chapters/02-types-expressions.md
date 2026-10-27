@@ -97,6 +97,8 @@ size_t remaining = capacity - used;
 
 A second trap is evaluating mixed integer types. A comparison involving an unsigned operand may convert a signed value to an unsigned type. It is better to check a negative value before a conversion than to hope the usual arithmetic conversions preserve its mathematical meaning.
 
+**Narrowing conversions** need a representability check when the destination type cannot hold every source value. Converting a large `size_t` count to `int`, for example, may change its value; retain `size_t` or check the bound first.
+
 ## 2.8 Bitwise operations
 
 Bit masks encode independent boolean properties in one integer. Shift counts must be valid for the promoted left operand's width. For portable protocol data, perform shifts in an explicitly selected unsigned type.
