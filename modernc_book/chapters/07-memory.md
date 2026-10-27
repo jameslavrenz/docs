@@ -204,3 +204,161 @@ Sanitizers can discover use-after-free and certain out-of-bounds errors along ex
 ### Guided exercises
 
 **7.8** Add `reserve` to the vector while preserving the strong failure guarantee. **7.9** Implement an allocator adapter that fails after N successful requests. **7.10** Explain why a shallow copy of the vector must not be destroyed independently. **7.11** Contrast an arena reset with `free` on an individual block. **7.12** Design a fixed-memory message pool for 32 records with allocation, release, and double-release detection.
+
+
+## 7.21 A bounded byte arena, step by step
+
+A byte arena offers a useful middle ground between one large static buffer and many individual heap allocations. It manages a fixed byte array and a current offset. A request for `count` bytes either returns the next available region and advances the offset or reports failure without changing state.
+
+The complete example is `examples/arena_bytes.c`. Its essential representation is:
+
+```c
+enum { ARENA_CAPACITY = 128 };
+
+struct byte_arena {
+    unsigned char storage[ARENA_CAPACITY];
+    size_t used;
+};
+```
+
+The invariant is `used <= ARENA_CAPACITY`. The next available byte is `storage[used]` when `used < ARENA_CAPACITY`; `used == ARENA_CAPACITY` describes a full arena.
+
+Imagine that the first request consumes five bytes and the second consumes seven:
+
+```text
+capacity = 128
+
++---------+-------------+-------------------------------------+
+| 5 bytes |   7 bytes   |            free space               |
++---------+-------------+-------------------------------------+
+0         5            12                                    128
+                       ^
+                       used
+```
+
+The next request must fit inside the remaining 116 bytes. The naive condition `used + count <= capacity` can wrap if both values are large unsigned numbers. The safe sequence is to first verify `used <= capacity`, then test `count <= capacity - used`.
+
+This is more than a convenient idiom: it is a short proof that `storage + used` designates a position within or just beyond the array and that the requested range lies within capacity.
+
+### A strong-failure allocation function
+
+```c
+bool arena_take(struct byte_arena *a, size_t count,
+                unsigned char **out)
+{
+    if (a == nullptr || out == nullptr || count == 0 ||
+        a->used > ARENA_CAPACITY ||
+        count > ARENA_CAPACITY - a->used)
+        return false;
+
+    unsigned char *candidate = a->storage + a->used;
+    a->used += count;
+    *out = candidate;
+    return true;
+}
+```
+
+This interface explicitly rejects zero-sized requests and leaves the caller's output pointer unchanged on failure. The caller must keep the arena alive. The returned pointer is a borrowed view into arena storage; the caller must not pass it to `free`.
+
+The arena in this example allocates *bytes*, not arbitrarily aligned typed objects. Although the array is perfectly suitable for storing octets, it does not promise all requirements for dynamically creating arbitrary C object types by casting the returned pointer. A general-purpose typed arena needs an alignment policy, suitable backing storage, and careful attention to object access and effective-type rules.
+
+## 7.22 What reset really means
+
+An arena reset can simply assign `used = 0`. It does not free any separate blocks because the storage belongs to the arena structure. It also does not overwrite the old bytes, which may remain physically present.
+
+Nevertheless, the application's ownership protocol declares every previous allocation invalid after reset. A previous pointer into the array may still numerically point to an accessible byte, but that byte can now belong to a new logical allocation. Reading through the old reference may expose someone else's data or cause a logic error.
+
+This distinction between C object lifetime and *allocator-managed logical lifetime* is important. If the arena is an automatic variable and its enclosing block ends, then the actual C object's lifetime ends as well. If only the arena offset resets, its underlying byte array still exists, but old allocations are no longer valid according to the arena API.
+
+A robust arena user therefore treats reset as an ownership boundary. Reset only after every borrower has finished using the old allocations.
+
+## 7.23 Alignment is a separate engineering requirement
+
+A processor may require a `double` or 32-bit register value to begin at an address with a particular alignment. Returning the next byte without alignment adjustment may produce an address unsuitable for that type.
+
+There are two parts to a general aligned allocation request: round the current location upward to an address satisfying the requested alignment, then verify that the padding *plus* the requested object size fits. Both arithmetic steps can overflow unless carefully checked.
+
+A safe implementation can either support a fixed set of known alignments or require a documented power-of-two alignment no greater than the backing allocation's guarantee. On freestanding targets, DMA may impose constraints stronger than ordinary C alignment. A buffer can be correctly aligned for its type and still be unusable for an uncached DMA transfer without additional architectural measures.
+
+The byte-arena teaching program avoids claiming those guarantees. That limitation is a feature of its contract, not a defect hidden by a cast.
+
+## 7.24 Growable vectors versus fixed arenas
+
+A vector owns one resizable contiguous allocation. An arena owns one fixed backing region from which many short-lived byte spans can be borrowed.
+
+A vector is natural when one sequence grows and needs random access. An arena is useful when many temporary objects have a shared lifetime. A fixed pool of uniform records is a third choice when individual objects must be reclaimed without relocating the others.
+
+Compare what happens on exhaustion. A vector may attempt a heap allocation and can fail if memory is unavailable or its required size overflows. An arena simply rejects a request that exceeds its fixed remaining capacity. A pool rejects a request when no free slot remains. Each has a clear failure mode, but none is automatically thread-safe.
+
+For real-time work, do not assume that replacing `malloc` with an arena proves a deadline. You must still account for synchronization, initialization cost, memory contention, and whatever the caller does with returned storage.
+
+## 7.25 A precise realloc failure guarantee
+
+Suppose a vector has four stored integers and capacity four. A fifth append triggers a resize. Save the pointer, length, capacity, and existing elements before attempting the resize.
+
+If the resizing function returns null for a nonzero request, the original allocation remains allocated. A correct implementation leaves every saved property unchanged. The test in `examples/vector_checked.c` deliberately injects such a failure through a callback, then verifies the strong failure guarantee.
+
+On success, the allocation may be relocated. Even if the new pointer compares numerically equal to the old address, callers must derive new interior references from the returned pointer. A container interface should document that any resize invalidates previously borrowed element pointers.
+
+Two subtle points deserve attention. First, copying the vector structure is a shallow copy, not a transfer of ownership. Second, the library should not expose a pointer into an allocation and then resize it behind the caller's back without a documented invalidation rule.
+
+## 7.26 Building a cleanup path deliberately
+
+A function that acquires a buffer, opens a file, and transforms data has multiple opportunities for failure. A reliable function records which resources have been acquired and ensures every acquired resource is released on all exits.
+
+An illustrative pattern is:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int process_file(const char *path)
+{
+    int status = 1;
+    void *buffer = nullptr;
+    FILE *fp = nullptr;
+
+    if (path == nullptr)
+        return status;
+
+    buffer = malloc(512);
+    if (buffer == nullptr)
+        goto cleanup;
+
+    fp = fopen(path, "rb");
+    if (fp == nullptr)
+        goto cleanup;
+
+    /* Process input; on error jump to cleanup. */
+    status = 0;
+
+cleanup:
+    if (fp != nullptr && fclose(fp) == EOF)
+        status = 1;
+    free(buffer);
+    return status;
+}
+```
+
+This complete function is a *skeleton*: its processing step is omitted. The cleanup logic shows that a failed `fopen` still releases the buffer and a failed `fclose` changes the status. Calling `free(nullptr)` is permitted. A nonzero processing error would be preserved unless code later overwrote it with success, so real implementations should set success only after processing succeeds.
+
+There is no need to avoid `goto` categorically. In C, a clearly labeled cleanup block can be easier to audit than deeply nested conditions, especially when multiple resources have independent acquisition and release steps.
+
+## 7.27 Ownership exercise with three aliases
+
+Consider:
+
+```c
+struct vector a = {};
+/* append three elements into a */
+struct vector b = a;
+int *first = a.data;
+```
+
+Draw all three objects. The structures `a` and `b` are separate, but both pointers designate the same allocation; `first` also refers to that storage. If one structure calls `free` through its pointer, all aliases become unusable for accessing the former allocation. The other structure must not call `free` again.
+
+A library can avoid such mistakes through opaque owning types, explicit move-like transfer functions, or conventions disallowing structure copying. C does not directly enforce a unique-owner type, so APIs and code review must carry the guarantee.
+
+### Additional exercises
+
+**7.13** Draw an arena after requests of 5, 7, and 100 bytes; identify the next legal maximum request. **7.14** Explain why `used + count <= capacity` is a weaker validation expression than `count <= capacity - used` after checking `used <= capacity`. **7.15** Add a `remaining` function that never underflows when the arena state is corrupt. **7.16** Modify an arena to support marks and rewinds; define which borrowed views are invalidated. **7.17** Introduce an injected allocation failure in a vector and prove that all prior elements survive. **7.18** Explain why a general-purpose typed arena cannot simply return any byte-aligned pointer to any requested type.
