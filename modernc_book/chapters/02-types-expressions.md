@@ -132,3 +132,53 @@ A good interface for an average also distinguishes the empty-input case from a r
 ### Further exercises
 
 **2.5** Write a function that sets and clears one bit of a `uint32_t` given a bit position. Reject positions outside 0–31. **2.6** Show an example in which adding two valid `int` values overflows, and implement a guard that avoids evaluating the addition. **2.7** Explain the difference between `a & b == 0` and `(a & b) == 0`. **2.8** Design a loop over `unsigned` values that handles `UINT_MAX` without wrapping forever.
+
+
+## 2.11 Representable values before casts
+
+A cast requests a conversion; it does not assert that the mathematical value fits. If an external protocol provides a `uint32_t` length and a function expects an `int` length, test the range *before* conversion. A cast performed first may already have discarded information.
+
+```c
+#include <stdint.h>
+#include <limits.h>
+#include <stdbool.h>
+
+bool length_to_int(uint32_t length, int *out)
+{
+    if (out == nullptr || (uintmax_t)length > (uintmax_t)INT_MAX)
+        return false;
+    *out = (int)length;
+    return true;
+}
+```
+
+Here `uintmax_t` gives a common unsigned domain capable of representing both operands; the positive limit `INT_MAX` is safe to convert. The routine assigns its output only on success. This pattern works for sizes, array indexes, and serialized integer fields.
+
+C23 requires two's-complement representation for signed integers, but that does **not** make signed overflow defined. `INT_MAX + 1` is not a portable wraparound operation. The representation model and the rules for evaluating expressions are separate questions.
+
+## 2.12 Division, remainder, and a dangerous minimum
+
+For integer division, the fractional part is discarded toward zero. The remainder satisfies `(a / b) * b + a % b == a` when the quotient is representable and `b` is nonzero. The expression `INT_MIN / -1` can overflow the signed result on a typical two's-complement `int` and has undefined behavior. Division by zero is undefined for integer arithmetic.
+
+An absolute-value function with signed output cannot represent the absolute value of `INT_MIN` on the usual two's-complement implementation. Instead of writing `abs(INT_MIN)` and assuming success, choose a wider type where available or provide a checked interface.
+
+## 2.13 Floating-point accuracy is a contract
+
+Floating-point arithmetic has finite precision and a finite exponent range. A result can round differently from the exact real-number result; adding a very small number to a very large one may change nothing at all. Reassociating sums can alter their results:
+
+```c
+double a = 1.0e20;
+double b = -1.0e20;
+double c = 3.0;
+/* (a+b)+c and a+(b+c) need not be equal. */
+```
+
+A numerical algorithm should state its permitted error, expected input scale, handling of infinities and NaNs, and acceptable loss of significance. The rules can also depend on whether the target implements IEC 60559 floating-point facilities. In embedded computation, fixed-point is sometimes chosen not because floating point is categorically wrong, but because reproducibility, speed, or resource bounds favor an integer representation with an explicit scale.
+
+## 2.14 A precise conversion exercise
+
+Write a checked function accepting a signed `long` and returning a `uint16_t` if and only if the input is between zero and `UINT16_MAX`. The correct order is: reject negative input; compare the nonnegative input in an appropriate common type; then perform the cast. Test `-1`, zero, one, the maximum, and one beyond the maximum wherever that value is representable.
+
+Be careful with `sizeof`: its result is `size_t`, not `int`. Printing it with `%d` is an argument-type mismatch. Use `%zu` for `size_t`. Comparing object sizes and subtracting indexes also requires careful thought: an unsigned subtraction cannot express a negative distance unless the design explicitly uses a signed difference type such as `ptrdiff_t` and checks its range.
+
+**Further problems:** Derive a safe check for `a * b` with two positive `size_t` values. Show the difference between `(unsigned)-1` and a signed negative one. Explain why shifting a negative signed value is a poor choice for portable bit-manipulation code.
