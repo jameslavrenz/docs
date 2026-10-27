@@ -9,7 +9,8 @@ mkdir -p build
 # Keep chapter numbers authored in the Markdown; do not apply automatic numbering.
 # The source files are ordered lexically by their two-digit chapter prefix.
 pandoc frontmatter/preface.md chapters/*.md appendices/*.md \
-  --from=gfm --pdf-engine=xelatex --listings --toc --toc-depth=2 \
+  --from=gfm --pdf-engine=xelatex --listings --toc --toc-depth=1 \
+  --lua-filter=scripts/chapter-openings.lua \
   --metadata="title:Modern C: A Concise Introduction to C23" \
   --metadata="subtitle:Independent technical-review draft" \
   --metadata="date:October 2026" \
