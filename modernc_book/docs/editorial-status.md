@@ -6,7 +6,7 @@
 - 5 appendices, including selected exercise solutions, a glossary and a migration checklist.
 - A preface explaining the audience, contracts, portability and source conventions.
 - Approximately 34,300 Markdown words in the front matter, chapters and appendices, counting code listings.
-- 18 standalone C examples in `examples/`.
+- 19 standalone C examples in `examples/`.
 
 ## Verified versus unverified
 
