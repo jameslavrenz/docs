@@ -37,6 +37,31 @@ for line_no, line in enumerate(source.splitlines(), 1):
             errors.append(f"line {line_no}: nonexistent Appendix {appendix}")
     if "Chapter" not in line and "Appendix" not in line:
         errors.append(f"line {line_no}: topic lacks a chapter or appendix locator")
+# Verify the ordering as well as the presence of locators. Strip markup and
+# punctuation so labels such as \`getchar\`, C23, and Word-index sort naturally.
+current_group = None
+prior_key = None
+prior_label = None
+seen = set()
+for line_no, line in enumerate(source.splitlines(), 1):
+    if line.startswith("### "):
+        current_group = line[4:].strip()
+        prior_key = prior_label = None
+    elif line.startswith("- **"):
+        match = re.match(r"- \*\*(.*?)\*\*", line)
+        if not match:
+            errors.append(f"line {line_no}: malformed topic label")
+            continue
+        label = match.group(1).rstrip(":")
+        key = re.sub(r"[^a-z0-9]", "", label.casefold())
+        if not current_group or not key:
+            errors.append(f"line {line_no}: missing group or sortable label")
+        if prior_key is not None and key < prior_key:
+            errors.append(f"line {line_no}: topic {label!r} follows {prior_label!r} out of order")
+        if key in seen:
+            errors.append(f"line {line_no}: duplicate topic label {label!r}")
+        seen.add(key)
+        prior_key, prior_label = key, label
 if entries < 90:
     errors.append(f"Expected at least 90 index entries, found {entries}")
 print(f"Topic finder: {entries} entries; {len(actual_chapters)} chapters; {len(actual_appendices)} appendices")
