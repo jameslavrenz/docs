@@ -123,3 +123,99 @@ Threads and atomics also depend on implementation support. Never assume that a f
 When a library function signals failure with a sentinel, immediately consult the documented mechanism for distinguishing failure from a normal result. For `fread`, inspect `ferror` and `feof` following a short read. For `strtol`, inspect `errno` and the end pointer. For `malloc`, check the returned pointer while remembering that zero-size requests have special semantics.
 
 **Practice:** Create a small table containing every library function used in your program, its return-value meaning, and your application's chosen behavior on failure.
+
+
+## B.13 Selecting string functions by their contracts
+
+The C library contains several functions for operations that look similar but have importantly different preconditions.
+
+`strlen` counts bytes in a terminated C string, excluding its final zero character. It has no separate maximum-length argument. Before calling it, the program must already know that the supplied pointer designates a valid sequence containing a terminator within accessible storage.
+
+An arbitrary network packet or counted file buffer does not satisfy that contract merely because it contains characters. If it has no terminating zero, a call to `strlen` can read beyond the buffer. Use the supplied length for counted data.
+
+`strcmp` compares terminated strings according to the unsigned-character values of their bytes. It is appropriate for keys stored in arrays with guaranteed termination. It is not a Unicode collation operation and does not implement locale-aware natural-language sorting.
+
+`memcpy` copies a specified number of bytes between valid, nonoverlapping regions. `memmove` is designed for overlapping regions. Both require that the requested region fits within accessible storage. Neither checks that a caller's numerical size is truthful.
+
+These distinctions recur throughout the book: a function name does not infer the intended storage extent, and a pointer does not carry a verified length.
+
+## B.14 Why a bounded copy name may mislead
+
+The traditional `strncpy` function is sometimes used as though it meant “copy a safely terminated string.” Its actual behavior is more complicated. If the source has at least as many characters as the specified count, the destination may not receive a terminating zero. If the source is shorter, the function fills the remainder of the specified region with zero bytes.
+
+That contract can be useful for certain fixed-width fields, but it is not a general replacement for deliberate validation and copying. If the application expects a terminated string, establish the destination capacity, choose a maximum accepted length, and ensure termination explicitly.
+
+For untrusted inputs, a clear counted-span API is often preferable. The parser can reject a length exceeding its documented maximum instead of silently truncating distinct keys into the same stored representation.
+
+## B.15 Check formatted output carefully
+
+The `snprintf` family permits bounded output into a supplied buffer. A typical return value represents the number of characters that would have been written, excluding the terminating zero, when no encoding error occurs. That means an apparently successful positive result can still indicate truncation.
+
+For an ordinary nonnegative return value `n` and destination capacity `capacity`, the formatted result fits without truncation only when `(size_t)n < capacity`. The check must follow a test that `n >= 0`, so a negative error result is not converted into a huge unsigned value.
+
+Consider:
+
+```c
+char buffer[32];
+int n = snprintf(buffer, sizeof buffer, "%u", value);
+if (n < 0 || (size_t)n >= sizeof buffer) {
+    /* Handle encoding failure or truncation. */
+}
+```
+
+This fragment assumes a valid `unsigned` value and the required `<stdio.h>` declaration. The caller can choose to reject truncation, retry with a larger buffer, or use a known fixed-size representation. What matters is that the behavior is intentional.
+
+In a freestanding environment, the availability and completeness of formatted I/O depends on the supplied C library. Some embedded libraries intentionally omit portions of floating-point formatting to reduce code size.
+
+## B.16 Input conversion with `strtol`
+
+`strtol` is valuable when its grammar matches the application's requirements. It can handle a leading sign and may skip leading whitespace; it also provides an end pointer so callers can see how much input was consumed.
+
+A robust conversion should:
+1. Verify that the input is a valid terminated C string.
+2. Set `errno = 0` before conversion.
+3. Call `strtol` with an explicit base when appropriate.
+4. Check whether the end pointer equals the start, indicating no conversion.
+5. Check `errno == ERANGE` for range errors.
+6. Reject unexpected trailing characters according to the application's grammar.
+
+The parser in Chapter 2 deliberately implements a stricter grammar—optional sign followed immediately by decimal digits, with no whitespace. That is why replacing it with a bare `strtol` call would change observable behavior unless the caller added equivalent validation.
+
+Never assume that converting a valid `long` value to a narrower destination is safe. Apply the destination's representability test separately.
+
+## B.17 Sorting is not stable by contract
+
+`qsort` accepts a base pointer, element count, element size, and comparator. It sorts according to that comparator but does not promise to retain the original order of elements that compare equal.
+
+A comparator must interpret pointers as the array's actual element type and provide a consistent ordering. A comparator that subtracts signed integer keys can overflow, and one that depends on mutable global state can be inconsistent across calls.
+
+Chapter 17's `sort_records.c` example combines priority, name, and unique arrival order. The arrival field is a final tie-breaker that produces the application's desired deterministic order without assuming the sorting algorithm is stable.
+
+A comparator may examine pointer members inside a record only if their targets have the required lifetimes and represent valid strings or other objects throughout the sort.
+
+## B.18 Functions involving external resources
+
+Hosted file streams and allocated memory are external resources with lifetimes. A program that obtains them should establish where cleanup occurs, including when an intermediate operation fails.
+
+For example, `fread` can return fewer elements than requested because of end of file or an error. Inspect `feof` and `ferror` as appropriate. `fwrite` returning fewer elements than requested indicates failure under its contract. A close can report an error after buffered output operations appeared to succeed.
+
+A reliable program must also check counts before using the bytes as a complete record. Returning a shorter record from a read operation is not the same thing as parsing a complete valid packet.
+
+The bounded line reader in Chapter 6 demonstrates the distinction between clean EOF, complete input, malformed input, and too-long records. Its resource model is hosted and does not imply that a microcontroller environment supplies a filesystem.
+
+## B.19 A task-oriented checklist
+
+Before choosing any standard-library function, identify:
+
+- Whether the input is terminated text or counted bytes.
+- Whether the source and destination storage may overlap.
+- Whether the operation can allocate, block, or otherwise consume external resources.
+- How it reports errors and whether any output may already have changed.
+- What type conversions occur in its arguments and return value.
+- Whether the target C library implements the required facility in the selected language mode.
+
+The standard library is most useful when a program deliberately satisfies these contracts. It cannot infer a valid object lifetime, repair a dishonest buffer length, or supply a hardware feature that the deployment platform lacks.
+
+### Reference exercise
+
+Take one use each of `strlen`, `memcpy`, `snprintf`, `strtol`, and `qsort` in a program you have written. For each, state its actual preconditions, the relevant representation or ownership assumptions, and exactly how failure or truncation is detected. Then decide whether its use matches the intended application behavior.
