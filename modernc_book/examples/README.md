@@ -20,7 +20,7 @@ make clean
 make CC=gcc-14 CFLAGS='-std=c23 -Wall -Wextra -Wpedantic -Werror -O2' check
 ```
 
-The project currently builds **29 standalone programs**, including a separately compiled demonstration with a public header. GitHub Actions also runs the suite with Clang 18.
+The project currently builds **31 standalone programs**, including a separately compiled demonstration with a public header. GitHub Actions also runs the suite with Clang 18.
 
 The `thread_counter.c` example uses the optional hosted C threads interface `<threads.h>` and must be linked with threading support; its Makefile rule supplies `-pthread` on the Linux CI runners. That rule is not necessarily appropriate for a freestanding MCU cross-compiler.
 
@@ -29,3 +29,7 @@ The `thread_counter.c` example uses the optional hosted C threads interface `<th
 Some C23 features are treated as **illustrative fragments** rather than build requirements, including `constexpr`, `_BitInt`, `#embed`, `<stdckdint.h>` and `<stdbit.h>`. Test each feature on the intended compiler and C library before relying on it in deployed software.
 
 The test suite verifies specific programs and inputs; it does not guarantee that every short fragment embedded in the chapters is a complete translation unit.
+
+The newest complete programs are `utf8_stream.c` (incremental strict UTF-8 scalar decoding, preserving output while incomplete) and `tlv_decode.c` (bounded type-length-value records with a strong failure guarantee). Both are part of the Makefile regression suite.
+
+The manuscript's structural checks run through `python3 scripts/check_manuscript.py`. They verify expected chapters and appendices, Markdown code-fence pairing, local README links, executable targets, and regression-test references. These structural checks do not replace compiling the examples or technically proofreading illustrative fragments.
