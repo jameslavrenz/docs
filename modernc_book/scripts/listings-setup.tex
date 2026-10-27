@@ -6,3 +6,10 @@
 % Permit gentler interword stretch before TeX lets prose protrude beyond the page.
 % This does not suppress the off-page bounding-box check in CI.
 \setlength{\emergencystretch}{4em}
+
+% Use compact, dotted chapter entries in the printed table of contents.
+% Keep the H1 bookmark/navigation depth unchanged. This prevents a nearly
+% empty second contents page without shrinking the body font.
+\makeatletter
+\renewcommand*\l@section[2]{\@dottedtocline{1}{0em}{2.5em}{\bfseries #1}{\bfseries #2}}
+\makeatother
