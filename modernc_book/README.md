@@ -21,6 +21,7 @@ An original, example-first introduction to the C programming language as standar
 13. [Testing, Diagnostics, and Portability](chapters/13-testing.md)
 14. [Bits, Bytes, and Portable Data](chapters/14-bitwise-portable-data.md)
 15. [Expressions, Objects, and the Abstract Machine](chapters/15-abstract-machine.md)
+16. [Atomics, Threads, and Communication](chapters/16-atomics-concurrency.md)
 
 ### Appendices
 
