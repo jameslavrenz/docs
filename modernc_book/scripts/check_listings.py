@@ -27,6 +27,7 @@ OPTIONAL_HEADERS = ("<stdckdint.h>", "<stdbit.h>")
 failed = []
 checked = 0
 skipped = 0
+contextual = []
 with tempfile.TemporaryDirectory(prefix="modernc-listings-") as temp:
     scratch = Path(temp)
     for chapter in sorted((ROOT / "chapters").glob("*.md")):
@@ -39,6 +40,7 @@ with tempfile.TemporaryDirectory(prefix="modernc-listings-") as temp:
             is_fragment = "compile-check" in block.group("info").split()
             has_main = re.search(r"\bint\s+main\s*\(", code) is not None
             if not (is_fragment or has_main):
+                contextual.append((chapter.name, number, code.strip().splitlines()[0][:90] if code.strip() else '(empty)'))
                 continue
             if not re.search(r"^\s*#\s*include\b", code, re.MULTILINE):
                 print(f"SKIP {chapter.name} C block {number}: no include directives")
@@ -68,6 +70,9 @@ with tempfile.TemporaryDirectory(prefix="modernc-listings-") as temp:
 
 for name, number, error in failed:
     print(f"FAIL {name} C block {number}\n{error}", file=sys.stderr)
+print(f"Context-dependent C snippets not independently compiled: {len(contextual)}")
+for name, number, preview in contextual:
+    print(f"CONTEXT {name} C block {number}: {preview}")
 print(f"Markdown listings: {checked} checked; {skipped} skipped; "
       f"{len(failed)} failed")
 if checked < 35:
