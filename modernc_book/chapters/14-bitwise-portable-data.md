@@ -226,7 +226,9 @@ The count-reduction rule is part of the function's contract: values 0, 32, 64, a
 
 The corresponding rotate-right operation is:
 
-```c
+```c compile-check
+#include <stdint.h>
+
 uint32_t rotate_right_32(uint32_t x, unsigned count)
 {
     unsigned n = count % 32u;
