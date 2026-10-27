@@ -136,3 +136,52 @@ A complete executable version with boundary tests appears in `examples/checked_i
 **15.5** Explain why reading an integer directly from an arbitrary byte-buffer address can violate alignment or effective-type rules.
 
 **15.6** Distinguish a language's unspecified evaluation order from an implementation-defined integer conversion.
+
+
+## 15.9 The optimizer reasons from the language rules
+
+Compilers are not required to preserve an apparent intention that depends on undefined behavior. Consider:
+
+```c
+int *p = /* supplied by caller */;
+int value = *p;
+if (p == nullptr)
+    return -1;
+```
+
+The program already dereferences `p` before testing it. A compiler may optimize under the assumption that the dereference had defined behavior; moving the test after the access has made it ineffective. The correct ordering is to check the pointer first and then dereference.
+
+Likewise, `int sum = a + b; if (sum < a) ...` does not provide a general overflow test for signed integers, since overflowing addition already has undefined behavior. Establish representability before evaluating the addition.
+
+## 15.10 Object representation versus value
+
+Every object has an object representation consisting of bytes. The interpretation of those bytes depends on the type. Some object representations can contain padding or trap representations for some types or implementations. Reading arbitrary bytes as if they were a fully initialized object of any chosen type is not generally safe.
+
+The character types have special significance for inspecting object representations. Copying bytes using `memcpy` is commonly preferable to violating aliasing rules through an incompatible pointer cast. But reproducing the bytes of a pointer or floating-point value on another machine does not guarantee the same value there.
+
+## 15.11 Sequence and indirection
+
+An expression such as `array[i++] = array[i]` deserves suspicion: side effects and value computations may be unsequenced in a way that violates the rules. A clearer version splits responsibilities:
+
+```c
+size_t index = i;
+int value = array[index];
+array[index] = value;
+++i;
+```
+
+This example is intentionally trivial, but each step now has an explicit order. The larger lesson is not to ban compact expressions, but to separate operations when sequencing is a necessary part of correctness.
+
+## 15.12 Bounds and pointer provenance
+
+A pointer is more than a numeric address for the purposes of the C abstract machine. Pointer arithmetic and dereference are constrained by the object and its lifetime. Converting an arbitrary integer to a pointer and dereferencing it is not portable ISO C, even on targets where hardware maps devices at fixed numeric addresses.
+
+Freestanding systems often provide implementation-specific extensions for memory-mapped I/O and linker-defined memory locations. Such code should be isolated and documented rather than presented as a portable language feature.
+
+## 15.13 A reasoning template for code reviews
+
+For each expression ask: Which types participate? What conversions occur? Which operations can overflow or have invalid operands? What is the evaluation ordering? Which object is accessed? Is its lifetime active, and is the access permitted through this lvalue type?
+
+This short set of questions is particularly effective for parsing, arithmetic kernels, and pointer-heavy utilities.
+
+**Further problems:** Rewrite an overflow-after-addition test into a valid precondition check. Identify the violated rule in a dangling-pointer return. Explain why `memcpy` may safely move representation bytes even though a cast-and-dereference technique is not generally interchangeable.
