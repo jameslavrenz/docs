@@ -99,3 +99,36 @@ On common hosted implementations, compiling threaded examples may require additi
 **16.5** Explain why changing two producer threads to call the same SPSC enqueue operation breaks the algorithm.
 
 **16.6** Compare an SPSC queue with a mutex-protected queue for latency, correctness, maintainability, and portability.
+
+
+## 16.9 Identify the exact shared objects
+
+Concurrency reasoning starts by listing which objects are accessed by more than one participant. In the SPSC queue, the producer publishes `tail` and observes `head`; the consumer publishes `head` and observes `tail`. Both positions are atomic. Data slots are ordinary objects, but the publication protocol ensures the producer and consumer do not access the same occupied slot without the appropriate ordering.
+
+Merely declaring the indices atomic is not sufficient if the buffer is accessed outside that protocol. Every operation must respect the rule that only the producer enqueues, only the consumer dequeues, and the queue object remains alive until both stop.
+
+## 16.10 Understanding the release/acquire pair
+
+A producer writes a slot, then uses a release store to publish the new tail. A consumer that reads the published tail with an acquire load can safely observe the preceding slot write. After consuming the element, the consumer releases its new head position. The producer uses an acquire load of head before deciding that a slot can be reused.
+
+The two directions solve distinct problems: publication of newly written data and reclamation of space after consumption. Using only one direction would not establish all of the required cross-thread ordering in the intended design.
+
+## 16.11 Sequential tests do not demonstrate concurrency correctness
+
+A single-threaded test that pushes seven items, observes full, pops three, and wraps around is useful for verifying index arithmetic and FIFO ordering. It does not establish absence of a data race during simultaneous operations.
+
+A concurrency test can run one producer and one consumer with a known sequence and verify that every item is transferred exactly once and in order. A stress test with variable delays may expose mistakes, but even millions of successful transfers cannot prove the memory-order argument. Reasoning about the C memory model remains necessary.
+
+## 16.12 Interrupts are outside a generic hosted-thread proof
+
+An interrupt handler is not automatically equivalent to a C standard thread. The compiler, runtime, architecture, and RTOS specify which atomic operations are safe in that context, whether they are lock-free, and how memory barriers interact with devices.
+
+An atomic operation implemented through a library helper or lock may be unsuitable in an interrupt. Even lock-free machine instructions can require cache coherency or architectural barriers beyond what a generic application-level description conveys. Verify the target before advertising an SPSC queue as interrupt-safe.
+
+## 16.13 Lifetime and cancellation
+
+Stopping a producer is not the same as ensuring it has stopped. A queue owner must establish that neither participant will access the queue before releasing its memory. A shutdown protocol might signal cancellation, wake blocked consumers, join worker threads, and only then destroy the queue.
+
+The choice between draining and discarding pending items should be explicit. Either can be correct depending on the application, but implicit destruction while work remains creates lifetime hazards.
+
+**Further problems:** Create a two-thread FIFO stress test recording item sequence numbers. Explain the effect of replacing a release store with a relaxed store. Sketch a shutdown protocol for a queue shared between a worker thread and an RTOS task.
