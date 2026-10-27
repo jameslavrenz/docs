@@ -36,6 +36,7 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 - **Checked arithmetic:** addition, subtraction and multiplication, Chapters 2, 9 and 15; Appendix B.
 - **CI:** compiler matrix, regression suites and reproducibility, Chapters 8 and 13.
 - **Comma operator:** sequencing and expression rules, Chapter 15.
+- **Comparator, three-way integer:** overflow-safe relational comparison and multi-key sorting, Chapter 17; Appendix C.
 - **Comparators:** `qsort`, signed overflow and consistent ordering, Chapter 17.
 - **Compound literals:** initialization and object lifetimes, Chapters 2 and 15.
 - **`const` qualification:** pointer access and contracts, Chapter 4.
@@ -83,6 +84,7 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 ### G–H
 
 - **`getchar`:** the `int` result and `EOF`, Chapter 1.
+- **Generic macro dispatch:** typed maximum functions, side-effect evaluation and limitations, Chapter 19; Appendix C.
 - **Generic selection:** `_Generic`, Chapter 19.
 - **Headers:** declarations, include guards, standalone inclusion, Chapters 3 and 8.
 - **Heap allocation:** `malloc`, `realloc`, capacity planning, Chapter 7.
@@ -98,6 +100,7 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 - **I/O errors:** short transfers, buffering and cleanup, Chapter 6.
 - **Lifetime:** automatic, static and allocated objects, Chapters 7 and 15.
 - **Line input:** bounded line reader and resynchronization, Chapter 6.
+- **Link-time errors:** missing definitions and multiple definitions, Chapter 8; Appendix C.
 - **Linkage:** translation units, internal and external definitions, Chapters 3 and 8.
 - **Lock-free algorithms:** progress properties, memory order and hardware constraints, Chapter 16.
 
@@ -180,6 +183,7 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 - **Vector:** dynamic capacity, ownership, and failure guarantees, Chapter 7.
 - **Warnings:** pedantic diagnostics and compiler differences, Chapters 9 and 13.
 - **Wait-free algorithms:** progress guarantees, Chapter 16.
+- **Word-index tokenizer:** ASCII assumptions, exact 31-byte limit and EOF behavior, Chapter 11.
 - **Word index:** sorting, insertion invariants, errors and complexity, Chapter 11.
 - **Zero initialization:** aggregate initialization versus raw bytes, Chapters 5, 7 and 9.
 - **Zero-length requests:** allocation and slice policies, Chapters 4 and 7.
