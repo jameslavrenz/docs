@@ -8,6 +8,7 @@ C provides `char`, `short`, `int`, `long`, and `long long`, each with signed and
 
 ```c
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdio.h>
 int main(void)
 {
@@ -16,7 +17,7 @@ int main(void)
 }
 ```
 
-The formatting macros such as `PRIx32` are declared in `<inttypes.h>`; add that header to compile the example. Prefer unsigned integers for bit masks and modular arithmetic, not as a generic cure for negative values. Unsigned overflow wraps modulo a power of two; signed overflow has undefined behavior.
+The formatting macros such as `PRIx32` are declared in `<inttypes.h>`, which is included above. Prefer unsigned integers for bit masks and modular arithmetic, not as a generic cure for negative values. Unsigned overflow wraps modulo a power of two; signed overflow has undefined behavior.
 
 ## 2.2 Conversion is an operation
 
