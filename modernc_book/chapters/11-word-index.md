@@ -205,3 +205,135 @@ Then add generated larger cases with invariants: total counts must equal accepte
 ### Exercises
 
 **11.10** Trace the search interval for inserting a word at the beginning, middle, and end of a five-element table. **11.11** Estimate the maximum number of shifts for inserting 1,024 distinct words in reverse order. **11.12** Design an error enumeration that distinguishes a long word, full table, input failure, and counter overflow. **11.13** Write an independent expected output for a file containing repeated words with differing capitalization.
+
+
+## 11.18 Trace a complete input
+
+The word-index program is small enough to reason about from its first input byte to its final output. Consider the stream:
+
+```text
+Pear apple pear BANANA apple
+```
+
+The tokenizer recognizes letters and decimal digits and treats the intervening space as a separator. Under its intended ASCII-compatible execution encoding, it converts the uppercase letters to lowercase before updating the index.
+
+The resulting logical sequence of words is:
+
+```text
+pear, apple, pear, banana, apple
+```
+
+The index maintains entries in sorted order, so its final output is:
+
+```text
+apple 2
+banana 1
+pear 2
+```
+
+This output is independently determined by the input, rather than constructed by running the index algorithm again. That distinction is useful in testing: the expected result must not rely on the implementation being correct.
+
+## 11.19 A trace of sorted insertion
+
+Start with an empty table and insert `pear`: the search interval is `[0,0)`, so the insertion position is zero.
+
+Insert `apple`: the search finds position zero because `apple` sorts before `pear`. The program shifts the existing record right and inserts `apple` at the first slot.
+
+Insert `pear` again: the search locates the existing entry at position one and increments its count rather than inserting a duplicate.
+
+Insert `banana`: the new word belongs between `apple` and `pear`, so the program moves `pear` right by one slot. The table now contains three distinct words.
+
+Finally, inserting `apple` again increments the first entry's count. No shifting occurs for repeated words.
+
+At each step, the invariant is that exactly the first `used` entries contain initialized words, those words are strictly increasing according to `strcmp`, and all counts are positive.
+
+The implementation can therefore print the table directly without a final sorting pass.
+
+## 11.20 Why the midpoint is written carefully
+
+The binary search uses the half-open interval `[lo, hi)`. Its midpoint is:
+
+```c
+size_t mid = lo + (hi - lo) / 2;
+```
+
+Before this expression, the algorithm maintains `lo <= hi <= used`. Therefore `hi - lo` is defined without unsigned underflow, and adding at most half that difference to `lo` yields a result between `lo` and `hi`.
+
+The superficially simpler expression `(lo + hi) / 2` may overflow a sufficiently narrow unsigned type even when both endpoints are valid indexes. In this particular fixed-capacity example, `used` never exceeds 1,024 and such overflow is not realistic on its supported hosts. The subtraction-based midpoint is nevertheless a clear reusable pattern.
+
+When the middle entry is lexically less than the requested word, the insertion position must follow it; the search assigns `lo = mid + 1`. Otherwise it assigns `hi = mid`. The interval shrinks until the endpoints meet.
+
+The final position identifies either an existing word or the location where a new word should be inserted.
+
+## 11.21 Moving entries without losing one
+
+Suppose there are `used` initialized entries and a new word belongs at index `lo`. Before insertion, confirm that `used < MAX_WORDS`. The program moves entries from right to left:
+
+```c
+for (size_t j = used; j > lo; --j)
+    entries[j] = entries[j - 1];
+```
+
+On the first iteration, the destination is `entries[used]`, which is available because the capacity check established that one extra slot exists. The source is `entries[used - 1]`, the final initialized entry.
+
+Moving right to left is necessary. Moving left to right would overwrite an entry before its old contents had been copied to the next slot.
+
+When `lo == used`, the loop executes zero times and the word is appended. When `lo == 0`, every existing entry shifts one position. This creates a linear worst-case cost for insertion.
+
+Each `struct entry` includes its word bytes directly, so structure assignment copies the complete inline representation. There is no owning pointer that would require a deep-copy operation. This is a deliberate simplification of the data structure.
+
+## 11.22 Fixed resource bounds
+
+The example defines:
+
+```c
+enum { MAX_WORDS = 1024, MAX_LEN = 31 };
+```
+
+Each entry stores a word buffer of 32 `char` elements and an `unsigned long` count. Thus the table uses the storage required by 1,024 such structures, including any implementation-selected padding or alignment. Its exact RAM footprint is `sizeof entries` on the selected target.
+
+The tokenizer uses a single 32-element buffer plus a length and an overlong-word flag. No storage grows with the input file size.
+
+The application therefore has predictable memory consumption, but input processing time depends on the number of bytes and words. A new distinct word near the beginning may shift many entries; repeated words require a binary search and count increment. Once 1,024 distinct words exist, a new distinct word is rejected.
+
+A production application might decide to evict old entries, use a fixed-size hash table, or retain approximate counts. Those choices change the observable output contract. The teaching program instead reports exhaustion explicitly.
+
+## 11.23 What 'ASCII' means in this program
+
+The source uses numerical range tests such as `c >= 'A' && c <= 'Z'`, and it converts uppercase letters by adding the difference between the lowercase and uppercase initial letter codes.
+
+This assumes an execution character encoding with contiguous alphabetic ranges and uniform uppercase/lowercase offsets, as is true on common ASCII-compatible systems. The C language guarantees that decimal digits are consecutively encoded, but does not require every alphabetic character range to be contiguous on every conforming implementation.
+
+The program's intended scope is ASCII-oriented text processing on a compatible hosted target. It should not be described as a universally portable Unicode tokenizer.
+
+For a locale-sensitive C application, character classification functions in `<ctype.h>` may be appropriate, with their argument-domain restrictions respected. For UTF-8, byte-range classification alone does not identify Unicode letters. A Unicode tokenizer would need decoding and higher-level character-property decisions before indexing.
+
+Explicitly stating this limitation is more accurate than claiming that a small ASCII example automatically supports every text encoding.
+
+## 11.24 The three end-of-input cases
+
+The tokenizer recognizes a word when a separator is encountered after word bytes. But a stream can end immediately after the final word without a separator.
+
+The program therefore has a final step after the input loop: if the current word length is positive, terminate the buffer and insert that last word. Without this step, a file ending in an ordinary letter or digit would silently omit its final token.
+
+There is another case: an overlong word reaches EOF without a separator. The program must still reject it. It does not become legal merely because a delimiter never appeared.
+
+Finally, `getchar` returning `EOF` does not alone establish clean end of input. The program checks `ferror(stdin)` before reporting success. These cases illustrate why stream termination must be part of the algorithm, not an afterthought.
+
+## 11.25 Improve the regression tests
+
+The original test feeds a small mixed-case sentence, checks sorted output and counts, verifies empty input, and expects a word longer than 31 characters to be rejected.
+
+A stronger boundary suite should also test:
+- Exactly 31 valid word bytes.
+- A 32-byte word rejected without truncated insertion.
+- A final valid word with no trailing newline.
+- Multiple separators in a row.
+- A repeated word at the beginning and end of the stream.
+- Output order when inserting distinct words in reverse alphabetical order.
+
+The program exposes failure through a nonzero exit status and a diagnostic written to `stderr`. Tests must inspect the exit status, not infer success from the presence of output alone.
+
+### Further exercises
+
+**11.14** Produce an insertion trace for five words in reverse alphabetical order and count the total number of shifted entries. **11.15** Derive the exact worst-case number of shifts for inserting 1,024 distinct words at the front of the table. **11.16** Add boundary tests for exactly 31 and 32 word bytes. **11.17** Explain what would need to change before the tokenizer could correctly process UTF-8 letters outside ASCII. **11.18** Replace the fixed inline word buffers with dynamically owned strings, then describe the additional ownership and failure cases created by that design.
