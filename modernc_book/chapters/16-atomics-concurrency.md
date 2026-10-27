@@ -62,6 +62,9 @@ Reserve one slot to distinguish full from empty. With capacity eight, the queue 
 
 The example in `examples/spsc_queue.c` implements precisely this one-producer/one-consumer algorithm. It is **not** a multiple-producer or multiple-consumer queue. It also does not directly establish that its operations are safe to invoke from an interrupt handler on every implementation: that is a separate target-specific question involving lock-free guarantees, runtime support, and interrupt semantics.
 
+
+**C23 initialization note.** Older atomic examples may use `ATOMIC_VAR_INIT`, but that macro was removed in C23. The standalone SPSC example uses ordinary `0` initialization for its atomic index members before either participant starts. Once concurrent operation begins, the participants access those positions only through atomic operations with the documented ordering.
+
 ## 16.4 Why index wraparound is not numeric overflow
 
 An SPSC ring normally advances an index with `(index + 1) % CAPACITY`. If index values are always less than capacity, and capacity is suitably small, the addition stays in range. The modulo computes a position within the array. It should not be confused with allowing arbitrary integer overflow.
