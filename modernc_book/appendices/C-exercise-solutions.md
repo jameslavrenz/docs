@@ -374,3 +374,89 @@ A correct design may use an opaque owning type, an explicit deep-copy function o
 | Frame decoder | complete valid frame | truncated or corrupted frame | Yes, output record unchanged |
 
 A passing test for every listed row provides useful evidence. It does not establish arbitrary pointer validity, interrupt safety, or correctness for all possible inputs. Those conclusions require the API contracts and independent reasoning developed in the chapters.
+
+
+## C.26 An overlong line does not become two records
+
+Consider a maximum of 16 ordinary bytes per line. A line containing 17 bytes is invalid. If a reader returns immediately after observing its 17th byte, remaining bytes from that same logical line may still be in the stream. The next call could incorrectly treat those bytes as the beginning of another record.
+
+A bounded line reader should define a recovery policy. The example in `examples/line_reader.c` continues reading and discarding bytes until newline or clean EOF when it encounters an overlong or malformed line. That makes the next call begin at a genuine record boundary.
+
+It builds a candidate line in a fixed local array and commits the text and reported length only on `LINE_OK`. Any other status leaves both caller outputs unchanged.
+
+The test deliberately arranges the sequence:
+
+```text
+"short\\n"
+"12345678901234567\\n"  (17 bytes: reject)
+"recovered\\n"
+"1234567890123456\\n"   (16 bytes: accept)
+"final"                   (unterminated EOF: accept once)
+```
+
+The test must confirm that the failed record did not modify the previously returned line and that `recovered` is read next. The exact-capacity record should be accepted, with a terminating zero written in the extra slot. After `final`, the following call returns clean end of input.
+
+There is a nonobvious tradeoff. Memory consumption is bounded by the candidate buffer, but a read call that drains an arbitrarily long invalid record has no finite input-independent bound on execution time. An event-loop or real-time design should use incremental input with a work budget rather than a single blocking drain operation.
+
+A NUL byte is rejected here because the interface returns a C string. A counted binary record API could accept that byte under a different contract.
+
+## C.27 Relaxed atomic increments and join
+
+The `thread_counter.c` example creates two workers, each performing 20,000 atomic increments. The mathematical result is 40,000, which fits the minimum standard range of unsigned int.
+
+Why is `memory_order_relaxed` enough? The counter is the only shared data whose value matters. Every increment is atomic, and the program does not use the counter as a signal that unrelated non-atomic payload bytes are ready.
+
+Thread joins ensure that the program reaches its final count check after workers have completed. The context must remain alive until all started threads are joined. If creating the second worker fails, the first still needs to be joined before returning.
+
+**What the test does not establish:** It does not show that relaxed memory ordering suffices to publish ordinary data, that an atomic operation is interrupt-safe on every MCU, or that the program can meet a real-time scheduling deadline. Those are different claims with different evidence requirements.
+
+## C.28 A one-shot publication proof
+
+A producer writes an ordinary payload and release-stores a ready flag. A consumer acquire-loads the flag and reads the payload only after observing true. If the acquire reads from the release operation, the producer's preceding writes happen-before the consumer's subsequent reads.
+
+The proof assumes one publication and no subsequent writes to the payload while the consumer reads it. Resetting the ready flag and overwriting the payload without a separate handoff can create a data race. Atomicity of the flag is not a general lock on every object around it.
+
+A repeating producer-consumer queue requires a protocol for both data publication and slot reclamation. This is why the SPSC ring example has release/acquire relationships for both head and tail.
+
+## C.29 C23 feature probes as executable specifications
+
+A compiler flag selects a dialect, but it is not an exhaustive compatibility test. A feature probe should compile a minimal translation unit that actually uses the feature.
+
+For `constexpr`, a scalar constant object initialized by a permitted constant expression can be verified through `static_assert`. For `_BitInt`, use the exact requested width and check the value range intended by the algorithm. For `#embed`, include a known small binary file and verify that the array contains the expected bytes and length.
+
+For `<stdckdint.h>`, the test must also include and link the header's functionality:
+
+```c
+#include <limits.h>
+#include <stdckdint.h>
+
+int main(void)
+{
+    int result;
+    if (ckd_add(&result, 10, 20) || result != 30)
+        return 1;
+    return !ckd_add(&result, INT_MAX, 1);
+}
+```
+
+On overflow, the test checks the boolean indication rather than making assumptions about the prior contents of the result. A wrapper API promising strong failure safety should use a temporary result.
+
+A failed feature probe may indicate unsupported syntax, a missing library header, an unresolved library function, or a runtime mismatch. Report which step failed. Do not quietly downgrade the language mode while claiming C23 verification.
+
+## C.30 What a complete review report looks like
+
+For one example, write a review under six headings:
+
+**Contract:** accepted input, output and failure behavior.
+
+**Invariants:** statements preserved through every iteration, including bounds and ownership.
+
+**Resource use:** maximum storage, allocation behavior, work per call, and whether it can block.
+
+**Portability:** exact language assumptions, required headers, compiler version and target features.
+
+**Verification:** independent expected values, error injection, executed compiler flags and CI run.
+
+**Limitations:** untested interleavings, unsupported platforms, and properties requiring hardware or normative review.
+
+This report can be shorter than the program. Its value is making the conditions of correct use explicit.
