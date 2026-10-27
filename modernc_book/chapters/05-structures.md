@@ -133,7 +133,7 @@ A structure assignment copies the member values, including pointer *values*, not
 
 A final structure member can be a flexible array. It has no fixed element count in the structure's definition:
 
-```c
+```c compile-check
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdint.h>
