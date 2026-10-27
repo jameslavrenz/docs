@@ -185,3 +185,40 @@ A useful first decomposition separates three questions: What is the input domain
 The same shape reappears in firmware: read a sample or message, update bounded state, and report or act on the result. The difference is not primarily a new language construct but the stronger need to bound time, memory, and error handling. Keeping simple algorithms streaming from the outset makes the later examples easier to adapt.
 
 **Further problems:** Describe precisely what the word counter considers a separator. Add overflow checks to the histogram counters using `ULONG_MAX`. Change the line counter to distinguish a newline count from a count of human-readable lines that includes a final unterminated line.
+
+
+## 1.11 The execution path from source file to program
+
+The small examples hide several steps that are worth separating. A preprocessor handles directives such as \`#include\`; a compiler translates a translation unit into object code; a linker combines objects and libraries into an executable. On a hosted implementation, the runtime arranges for \`main\` to execute. None of those stages guarantees that an input file exists or that a terminal will accept output.
+
+Consider a program split between \`count.c\` and \`main.c\`. The shared function declaration belongs in a header. If \`main.c\` is compiled without seeing the declaration, current C does not permit inventing an implicit function declaration. That old convenience was dangerous: the compiler could assume an incompatible calling convention or return type. A correct C program states its interfaces.
+
+A useful first experiment is to compile with \`-c\` and inspect the resulting object files without linking them. Then link those objects into an executable. Deliberately omit the object containing one function definition: the unresolved external symbol illustrates the boundary between compilation and linkage.
+
+## 1.12 A state machine for byte-oriented input
+
+The line and word counters suggest a general pattern. Each input byte causes a state transition, and the program emits results based on the resulting state. The same pattern recognizes a serial protocol whose messages begin with a marker, contain a length, and end with a checksum.
+
+For a toy ASCII protocol, suppose lines are terminated by \`'\n'\` and may contain at most 16 ordinary bytes. A parser could maintain a buffer, a length, and one status flag. Every ordinary byte is accepted only if capacity remains. A newline terminates a record, and an overlong line is rejected rather than truncated into something that looks valid.
+
+The key engineering step is to write the invariants before the loop: \`0 <= length <= capacity\`; no bytes are written beyond \`buffer[length-1]\`; failure has a documented outcome; and after rejecting a long line the parser must either drain to the next newline or stop processing. That final choice is a *resynchronization policy*, not a syntax issue.
+
+Why not read the entire input file first? Streaming input requires bounded storage regardless of total input size, and it can process an indefinitely long stream. Its tradeoff is that the algorithm must remember enough state to handle records split across reads.
+
+## 1.13 Three kinds of correctness
+
+A counting program can fail in at least three distinct ways.
+
+First, the algorithm can be logically wrong: perhaps two consecutive spaces are counted as a word. Second, it can invoke an operation the language does not define, such as accessing an array at index ten when its valid indexes are zero through nine. Third, it can encounter an ordinary external error: the input stream may fail, or the output may not be writable.
+
+A test for one class does not necessarily reveal the others. Trace the state machine to reason about the first. Make bounds explicit and use compiler diagnostics and sanitizers to help investigate the second. Check I/O results to address the third.
+
+## 1.14 Choosing types from contracts
+
+For \`getchar\`, \`int\` is the correct return type because the function must represent \`EOF\` separately from ordinary character values. For an array length, \`size_t\` is the natural type because the standard library uses it to represent object sizes. For a fixed-width protocol field, use a suitable type such as \`uint16_t\` if the target provides it.
+
+The preferred type depends on meaning rather than an aesthetic preference for unsigned or wide integers. A counter of unbounded input events can still overflow; using \`unsigned long\` does not make the data unlimited. Choose a maximum supported volume and decide what to do if it is exceeded.
+
+### Guided exercises
+
+**1.9** Write a table of the input states for the word counter: separator, word byte, and EOF. For each, state which variables change. **1.10** Propose a record parser with a 16-byte buffer and show the sequence of state changes for a 17-byte record. **1.11** Modify the histogram to report an error before incrementing a counter already at \`ULONG_MAX\`. **1.12** Build a two-translation-unit program and explain exactly which step fails when a required object file is omitted.
