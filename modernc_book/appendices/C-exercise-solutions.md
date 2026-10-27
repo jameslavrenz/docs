@@ -367,11 +367,11 @@ A correct design may use an opaque owning type, an explicit deep-copy function o
 | Operation | Successful boundary | Rejection boundary | Preserve on failure? |
 | --- | --- | --- | --- |
 | Signed parser | `LONG_MIN`, `LONG_MAX` | too many digits | Yes, output unchanged |
-| Byte arena | exactly remaining bytes | one byte too many | Yes, offset and pointer unchanged |
+| Byte arena | exactly remaining bytes | one byte too many | Yes; state unchanged |
 | 32-bit rotate | counts 0, 31, 32 | all counts permitted via modulo | Not applicable |
-| Counted subslice | ending exactly at length | offset greater than length | Yes, output view unchanged |
+| Counted subslice | ending exactly at length | offset greater than length | Yes; view unchanged |
 | Vector append | growth succeeds | injected resize failure | Yes, all prior elements |
-| Frame decoder | complete valid frame | truncated or corrupted frame | Yes, output record unchanged |
+| Frame decoder | complete valid frame | truncated or corrupted frame | Yes; record unchanged |
 
 A passing test for every listed row provides useful evidence. It does not establish arbitrary pointer validity, interrupt safety, or correctness for all possible inputs. Those conclusions require the API contracts and independent reasoning developed in the chapters.
 
@@ -545,11 +545,11 @@ A TLV parser does not authenticate the sender. Nor does it guarantee freedom fro
 | Input unit | Hosted stream byte | One octet | Counted octet buffer |
 | Output unit | Terminated line | One Unicode scalar | Structured message |
 | Incomplete input | Waits or EOF handling | `UTF8_MORE` | Rejected as incomplete |
-| Capacity limit | 16 bytes per line | Constant decoder state | Four fields, eight octets each |
+| Capacity limit | 16 bytes per line | Constant decoder state | 4 fields, 8 octets each |
 | Failure output | Unchanged | Unchanged scalar | Unchanged record |
-| Recovery | Drain to delimiter | Reset on malformed sequence | Reject entire record |
+| Recovery | Drain to delimiter | Reset on error | Reject entire record |
 | Environment | Hosted streams | Any octet source | Counted buffer |
-| Security guarantee | None | Encoding validity only | Bounds and structural validity only |
+| Security guarantee | None | Encoding validity only | Bounds and shape only |
 
 The table shows why a general-purpose parser interface is not one-size-fits-all. A blocking line reader owns the task of obtaining bytes. A one-byte decoder depends on the caller to provide the next byte. A whole-message TLV decoder requires that a framing component has already supplied the complete candidate record.
 
