@@ -277,3 +277,128 @@ A good habit is to avoid returning borrowed pointers to transient storage. Inste
 ### Guided exercises
 
 **4.10** Draw a four-element array, a pointer to element two, and a pointer to the whole array; determine the element reached by each valid pointer increment. **4.11** Implement `slice_find` returning an index through an output pointer, distinguishing 'not found' from an invalid input. **4.12** Implement a reverse operation on a mutable slice and test empty and single-element slices. **4.13** Explain why copying a slice structure does not copy its elements. **4.14** Write a subslice function whose arithmetic remains defined at `SIZE_MAX`.
+
+
+## 4.21 A worked memory diagram
+
+The array and pointer relationship is easier to understand when we distinguish objects from the values that refer to them. Consider a five-element array and a separate pointer variable:
+
+```c
+int values[5] = {10, 20, 30, 40, 50};
+int *current = &values[2];
+```
+
+One possible conceptual picture is:
+
+```text
+values:   +----+----+----+----+----+
+          | 10 | 20 | 30 | 40 | 50 |
+          +----+----+----+----+----+
+           [0]  [1]  [2]  [3]  [4]
+                      ^
+current:  +-----------|-----------+
+          | pointer to values[2]  |
+          +-----------------------+
+```
+
+The pointer object `current` has its own storage and type. It contains a value designating `values[2]`, not a copy of the integer 30. The expression `*current = 31;` modifies the array element. The expression `current += 2;` moves the pointer to `values[4]`. One more increment produces a legitimate one-past pointer, but dereferencing that one-past pointer would be undefined.
+
+Nothing in this picture commits C to an address size or to a particular stack layout. The array's five elements are contiguous by language definition; where the implementation stores the automatic objects is a separate matter.
+
+## 4.22 Decoding difficult declarations
+
+For ordinary declarations, start at the identifier and work outward using the parentheses to determine binding:
+
+```c
+int *p;                  /* pointer to int */
+int a[4];                /* array of four int */
+int (*row)[4];           /* pointer to array of four int */
+int *function(void);     /* function returning pointer to int */
+int (*callback)(int);    /* pointer to function */
+```
+
+Compare `int *function(void)` with `int (*callback)(int)`. The first declares a function, because the parentheses following `function` form the parameter list. The second declares a pointer object, because the parentheses group the `*` with `callback` before the function-parameter part is interpreted.
+
+A `typedef` can make a complex interface more readable:
+
+```c
+typedef bool (*sample_callback)(int value, void *context);
+```
+
+It creates a name for the type, not a new distinct type with ownership or lifetime enforcement. Documentation must still tell clients how long the callback and context remain valid and whether invocation can happen asynchronously.
+
+## 4.23 Arrays in function parameters
+
+The declaration `void normalize(double samples[16]);` is not a request for the language to pass an entire 16-element array by value. The array parameter is adjusted to a pointer to its first element. The number 16 may document intent, but it does not enforce length at runtime.
+
+Use a count when the function should support variable-length input:
+
+```c
+bool normalize(double *samples, size_t count);
+```
+
+This signature also forces a new question: can `samples` be null when `count == 0`? If the answer is yes, do not form an end pointer with `samples + count` before checking the null case. If the answer is no, return an error or state a stronger caller precondition.
+
+For a fixed-size mathematical object, an array pointer can retain the row dimension:
+
+```c
+void work_on_row(int (*row)[4]);
+```
+
+The caller may pass the address of an array of four `int` values. This is not interchangeable with `int **`, which would require a pointer object at its target.
+
+## 4.24 Building a safe subslice
+
+A pair `(data, length)` describes an array region when the caller's preconditions are met. A subslice adds two numbers, `offset` and `count`, and must ensure the requested interval fits.
+
+The naive condition `offset + count <= length` can overflow, because these quantities are usually `size_t`. Rewrite the condition as two comparisons:
+
+```c
+if (offset > length || count > length - offset)
+    return false;
+```
+
+C's `||` operator short-circuits, so the subtraction executes only if `offset <= length`. This is an example of making a proof obligation visible in the expression itself.
+
+The companion `examples/slices.c` demonstrates a full slice, a middle subslice, a failed request with `SIZE_MAX`, and the zero-length case. The function leaves the output view unchanged on failure, a useful promise for callers that maintain a previously valid view.
+
+Why is a view not an owning container? Because copying it does not copy the underlying elements. It borrows the original buffer and cannot safely outlive the object that supplies those elements. When the owner reallocates or frees its storage, the view becomes invalid even if its pointer value is unchanged.
+
+## 4.25 Multidimensional layout
+
+A declaration `int grid[3][4];` denotes three contiguous arrays, each containing four contiguous integers. The expression `grid[r][c]` selects an element using the row and column. The address calculation is conceptually equivalent to advancing by `r * 4 + c` elements from the beginning, assuming `r < 3` and `c < 4`.
+
+A function accepting that array can be written with a known column dimension:
+
+```c
+void inspect(size_t rows, const int grid[rows][4]);
+```
+
+The parameter is adjusted to a pointer to an array of four `const int` elements. This differs fundamentally from an array of independent row pointers, where each row may live in a different allocation.
+
+Some APIs expose an explicit row stride or pitch because data may be padded, shared with a graphics surface, or stored by a peripheral DMA engine. A stride describes storage layout; it is not always equal to the number of logically meaningful columns. Validate both logical bounds and the physical storage extent before an indexed access.
+
+## 4.26 String storage and counted text
+
+A string literal includes a trailing zero character and has static storage duration. The statement `const char *name = "C23";` stores a pointer to that literal. The statement `char name[] = "C23";` defines an independently stored mutable array containing four bytes on an eight-bit-byte implementation: `'C'`, `'2'`, `'3'`, and the terminating zero.
+
+A counted text span can represent an input containing embedded zero bytes. Such a span cannot be passed to `strlen` or `printf("%s", ...)` without additional termination guarantees. A fixed-format output like `fwrite(data, 1, length, stdout)` is appropriate for known valid byte storage, and its return value must be checked for short output.
+
+For UTF-8, the span length counts bytes rather than Unicode scalar values or grapheme clusters. Do not assume that truncating a UTF-8 buffer to an arbitrary byte capacity preserves complete characters; a truncation may cut through a multibyte sequence.
+
+## 4.27 Reasoning about overlap
+
+Suppose a mutable array contains `"abcde"`, and we want to remove its second element. We can move the bytes from the third element onward left by one position, including the terminating zero if the result remains a C string.
+
+```c
+char text[] = "abcde";
+memmove(&text[1], &text[2], sizeof text - 2);
+```
+
+Because the regions overlap, `memmove` is required instead of `memcpy`. The code's size calculation is valid for this fixed array, but a general function accepting `char *` must be told the meaningful length and total capacity. The destination remains within the original allocation.
+
+When the array elements are structures that contain owning pointers, moving the record bytes is only a shallow move. The program must ensure it has not accidentally created duplicate owners or left an old record that will be destroyed twice.
+
+### Diagnostic questions
+
+Explain the type and validity of `&values[5]` for a five-element array. Explain why `int **` cannot receive `int grid[3][4]` directly. Describe which operation invalidates a slice into a vector after a successful resize. Show a proof that a subslice calculation cannot wrap even when `offset == SIZE_MAX`. Decide whether your interface accepts an empty slice with a null pointer.
