@@ -362,3 +362,79 @@ A library can avoid such mistakes through opaque owning types, explicit move-lik
 ### Additional exercises
 
 **7.13** Draw an arena after requests of 5, 7, and 100 bytes; identify the next legal maximum request. **7.14** Explain why `used + count <= capacity` is a weaker validation expression than `count <= capacity - used` after checking `used <= capacity`. **7.15** Add a `remaining` function that never underflows when the arena state is corrupt. **7.16** Modify an arena to support marks and rewinds; define which borrowed views are invalidated. **7.17** Introduce an injected allocation failure in a vector and prove that all prior elements survive. **7.18** Explain why a general-purpose typed arena cannot simply return any byte-aligned pointer to any requested type.
+
+
+## 7.28 Pools and arenas solve different lifetime problems
+
+The bounded byte arena earlier in this chapter hands out consecutive spans and reclaims them as a group. Its reset operation makes every previously issued span invalid according to the arena's logical ownership contract. It does not reclaim an individual middle allocation.
+
+A fixed slot pool, introduced in Chapter 5, makes a different choice: each slot can be released independently. An available slot can then be reassigned to another client without relocating the remaining occupied slots.
+
+These differences determine which structure fits a workload:
+
+| Property | Byte arena | Fixed slot pool |
+| --- | --- | --- |
+| Backing storage | One fixed byte array | Fixed array of uniform records |
+| Allocation | Advances an offset | Finds an available slot |
+| Individual release | Not normally supported | Supported |
+| Reclamation | Reset whole arena or rewind a mark | Release by validated handle |
+| Address stability | Until reset and reuse | Stable physical slot while occupied |
+| Lifetime identity | Borrowed span plus arena epoch | Index and optional generation |
+| Exhaustion | Insufficient remaining bytes | No available non-retired slot |
+| Typed objects | Requires alignment/access design | Records already have declared types |
+| Concurrency | Requires a synchronization design | Requires a synchronization design |
+
+The last row matters. Avoid claiming that a static array is intrinsically thread-safe. Storage policy and synchronization policy are independent.
+
+## 7.29 A stale handle is a lifetime bug even with valid memory
+
+Suppose client A holds a pointer or index to a record in a fixed pool. A releases the record. Later client B acquires the same physical slot for a different logical object.
+
+A's old pointer could still refer to an address inside the pool array. Dereferencing it may be within the raw bounds of that array, yet accessing B's logical record violates the application ownership model.
+
+Generation-tagged handles help detect this error. A handle contains an index and a generation number. Release invalidates the handle by changing the generation before reuse. A lookup verifies both values.
+
+This does not make the handle a cryptographically secure capability. An arbitrary caller can construct a matching pair of numbers; two distinct pools can reuse the same index and generation; a bug can corrupt the pool metadata. The scheme protects against common accidental stale-reference mistakes under its documented trust and lifetime assumptions.
+
+## 7.30 Preventing generation reuse
+
+A generation counter that wraps can eventually recreate the value of an old handle. For an unsigned counter, wrapping is *defined* arithmetic—but that defined wraparound may cause a logical identity error.
+
+The `slot_pool.c` example retires a slot when its generation reaches `UINT_MAX`. The slot is no longer eligible for allocation, so no generation value is reused for that physical slot during the pool's lifetime.
+
+This gives a simple identity argument at a cost: repeated acquire/release cycles can eventually reduce the pool's available capacity. A real system might choose a wider generation field and a carefully reasoned lifetime bound, but it should document why generation reuse cannot affect active clients.
+
+The design also needs to distinguish free from retired. A retired slot is not occupied by a client, but the allocator must never select it again.
+
+## 7.31 Object lifetime and logical lifetime
+
+There are two useful meanings of 'still alive':
+
+- The C object underlying a pool's slot continues to exist because the containing array object is alive.
+- The *logical resource allocation* associated with a particular handle exists only between successful acquire and release operations.
+
+After release, the physical slot may remain a valid C object; the logical record identified by the released handle is no longer accessible under the pool API.
+
+This distinction is common in firmware. A descriptor entry, DMA buffer, task-control record, or message slot may remain permanently allocated in RAM while its ownership changes from one subsystem to another.
+
+A correct API should define transitions between logical owners. Access through an outdated owner is wrong even when a simple address sanitizer cannot detect a physical out-of-bounds access.
+
+## 7.32 Recycling pointers versus recycling identities
+
+Returning raw pointers from a fixed pool can be convenient, but a pointer alone may not distinguish an old allocation from a newly acquired object in the same slot. A generation-tagged handle deliberately requires clients to revalidate identity through the pool before each operation.
+
+There is a cost to this indirection: an index check, an occupancy check, and a generation comparison. For a small control-plane operation these checks may be cheap relative to the value of reliable stale-handle detection.
+
+In a time-critical hot loop, a system may instead acquire a validated record and use a borrowed pointer for a short, clearly delimited interval. The owner must guarantee that the slot will not be released or reassigned during that interval. Such a guarantee can come from task confinement, locking, or another explicitly designed protocol.
+
+## 7.33 Failure behavior at saturation
+
+A real-time system usually needs a policy for full resource pools. The pool example returns false immediately. A larger system could queue a request, block with a timeout, drop an old event, or reject incoming work.
+
+Those choices have very different timing and data-loss properties. The most predictable choice for a small synchronous pool is often immediate rejection, with the caller deciding what to do.
+
+Never silently overwrite an occupied record simply because a new request arrives. Such behavior can invalidate another client's handle without an agreed ownership transition and can convert a recoverable capacity error into corrupted application state.
+
+### Worked exercises
+
+**7.19** Design a driver descriptor pool with eight slots and a rule that no handle from one pool may be used with another. **7.20** Decide whether a full pool should reject, wait, or evict for a safety-related telemetry application. **7.21** Prove that generation retirement prevents reuse of a retired slot's handle value. **7.22** Explain why a pointer into a pool may remain physically in bounds after its logical allocation has ended. **7.23** Extend `slot_pool.c` with a validated update function and tests for stale handles.
