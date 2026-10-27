@@ -656,3 +656,133 @@ The queue itself still needs a suitable overflow policy, its atomic operations m
 ### Extended exercises
 
 **C.1** Add an owning-pool identity to handles and document how identity changes when a pool is reinitialized. **C.2** Add detailed parser statuses for invalid length, checksum failure, and incomplete input. **C.3** Test every valid payload length from zero to eight with independent expected frames. **C.4** Design the reset and recovery action after a simulated input-queue overflow. **C.5** Write a review explaining which properties are tested, which follow from invariants, and which require real hardware verification.
+
+
+## C.40 A comparator that cannot overflow
+
+Suppose an application stores events with priority, name, and arrival order. It wishes to sort by ascending priority, then alphabetically by name, then by increasing arrival number.
+
+The tested `examples/sort_records.c` defines a comparator for `qsort`. Its integer comparisons follow this pattern:
+
+```c
+return (a > b) - (a < b);
+```
+
+For any two integer values, each relational expression yields either zero or one. Their difference therefore lies in the interval −1 through 1. The expression cannot overflow as an `int`.
+
+Do not use `return a - b;` as a general signed-integer comparator. If `a` is `INT_MIN` and `b` is `INT_MAX`, the mathematical subtraction cannot fit in an `int`. Its undefined signed overflow makes that comparator invalid even though it may seem to work in ordinary cases.
+
+The multi-key comparator returns as soon as it finds a differing key. For equal priorities it calls `strcmp` on the two stored names; only if those names compare equal does it compare the arrival numbers.
+
+This establishes a lexicographic order. A test constructs an explicit expected arrival sequence, sorts the records, and compares each output position against that independent expectation. It also confirms that each adjacent pair is in ascending comparator order.
+
+### Stability versus a tie-breaking key
+
+ISO C's `qsort` does not promise that records comparing equal retain their original positions. Including the unique original arrival number as a final key distinguishes those records. Their relative positions then follow the comparator's specified order.
+
+This does **not** make the sorting algorithm stable. It defines a total ordering that already contains the desired arrival-order behavior.
+
+If arrival values are not unique, the comparator can still report equality for distinct records. Whether that is acceptable depends on the application's output contract.
+
+### The comparator's pointer types
+
+The `qsort` function passes two pointers to array elements as `const void *`. The callback converts them into `const struct record *` because the array being sorted contains records of that type.
+
+A callback that interprets them as the wrong object type may violate the language's access rules or produce meaningless comparisons. C does not dynamically attach a type tag to a `void *`; the caller and callback must agree through the API contract.
+
+The `strcmp` call also assumes both fixed-size name arrays contain terminating zero bytes. The teaching initializer satisfies that condition. A parser that populated names from untrusted packets would need to validate or supply the terminator before sorting.
+
+### Extension
+
+Add a fourth key, `timestamp`, and write the complete sort specification in prose before implementing it. Test equal priorities, equal names, equal timestamps, and different arrival values. A reviewer should be able to derive the expected array order from the stated contract independently of the code.
+
+## C.41 A type-selected operation that evaluates once
+
+The companion `examples/generic_select.c` uses `_Generic` to choose between ordinary typed functions:
+
+```c
+static int maximum_int(int a, int b)
+{
+    return a > b ? a : b;
+}
+
+static long maximum_long(long a, long b)
+{
+    return a > b ? a : b;
+}
+
+#define max_same_type(a, b) \
+    _Generic((a), int: maximum_int, \
+                  long: maximum_long)((a), (b))
+```
+
+The controlling expression `(a)` determines which function is chosen by type. It is not executed a second time as part of that selection. The arguments to the chosen function are evaluated as for an ordinary function call.
+
+A crucial test is:
+
+```c
+int side_effect = 0;
+int result = max_same_type(++side_effect, 7);
+```
+
+The expected `side_effect` after the call is one, and `result` is seven. This contrasts with the dangerous textual macro `#define MAX(a,b) ((a)>(b)?(a):(b))`, which can evaluate the chosen argument more than once.
+
+The standard generic selection syntax was introduced before C23, but remains useful in modern C code. The standalone program is built under C23 alongside the other examples.
+
+### The unstated conversion trap
+
+The macro chooses its function using the type of `a` alone. If a caller passes an `int` as `a` and a `long` as `b`, the selection chooses the `int` function. The second argument is then converted to `int` through the function prototype.
+
+Such conversion may discard information when the `long` value lies outside the range of `int`. The macro is therefore documented for arguments of matching supported types.
+
+This is an important lesson in API design: compile-time type selection is not automatic enforcement of every relationship between two arguments.
+
+### Additional type support
+
+Extend the example with an unsigned function:
+
+```c
+static unsigned maximum_unsigned(unsigned a, unsigned b)
+{
+    return a > b ? a : b;
+}
+```
+
+Add an association for `unsigned` and test values near `UINT_MAX`. Then try using a `double` first argument and observe the diagnostic for an unsupported association.
+
+A production application can offer a named function for every important type. A small generic macro is worthwhile when it makes those existing functions easier to call without hiding the required value conversions.
+
+## C.42 A complete three-file compilation exercise
+
+The checksum module consists of:
+- `examples/modules/checksum.h`, containing the public declaration;
+- `examples/modules/checksum.c`, containing the definition;
+- `examples/modules/main.c`, containing an executable test client.
+
+The header must include `<stdbool.h>` for `bool` and `<stddef.h>` for `size_t`. It must not rely on the caller having included those declarations first.
+
+A clean teaching build compiles both source files, then links their object files:
+
+```sh
+cc -std=c23 -Wall -Wextra -Wpedantic -c examples/modules/checksum.c
+cc -std=c23 -Wall -Wextra -Wpedantic -c examples/modules/main.c
+cc checksum.o main.o -o modules_demo
+```
+
+The commands are illustrative for a `cc` compiler and should be run in a clean scratch directory because their default object names may overlap other files.
+
+Remove `checksum.o` from the final link. The caller still has a valid declaration, but the linker cannot find the definition. This demonstrates an unresolved external symbol, a different problem from an unknown function declaration.
+
+Next deliberately change the function's output parameter type in the implementation without updating the header. Because the implementation includes the header, the compiler can diagnose the conflict.
+
+Finally, modify the checksum algorithm to exclude the final byte. Both source files may compile and link successfully, but the executable test's expected checksum should now fail. That is an algorithmic regression detected at execution rather than a compile/link interface error.
+
+## C.43 Choosing evidence for the claim
+
+A sorted-record example that passes deterministic tests provides evidence about its selected records and chosen ordering rules. It does not prove its comparator will never be given unterminated names by some future caller.
+
+A generic macro that runs correctly for `int` and `long` does not establish safe behavior for every mixed-type call.
+
+A successful two-file link does not establish that host and embedded targets use the same ABI or standard library.
+
+When documenting any such example, separate the verified build and runtime observations from the assumptions under which the code remains correct. That distinction is particularly valuable when readers transfer a concise textbook example into a larger real-time or embedded application.
