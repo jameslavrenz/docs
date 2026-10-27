@@ -45,8 +45,10 @@ jobs:
           pdftotext build/modern-c23.pdf build/modern-c23.txt
           grep -q 'A First Look at C' build/modern-c23.txt
           grep -q 'Conformance and Migration Checklist' build/modern-c23.txt
-          python3 scripts/check_pdf.py build/modern-c23.pdf
           python3 scripts/pdf_review_report.py build/modern-c23.pdf
+      - name: Validate PDF page bounds
+        working-directory: modernc_book
+        run: python3 scripts/check_pdf.py build/modern-c23.pdf
       - name: Publish PDF to repository
         run: |
           mkdir -p modernc_book
@@ -74,11 +76,19 @@ jobs:
           git commit -m 'book: publish generated Modern C23 PDF'
           git push origin HEAD:main
       - name: Save page-by-page PDF review worksheet
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: modern-c23-layout-review
           path: modernc_book/build/pdf-review-report.tsv
-          if-no-files-found: error
+          if-no-files-found: warn
+      - name: Save PDF debug artifact even if layout validation fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: modern-c23-layout-debug-pdf
+          path: modernc_book/build/modern-c23.pdf
+          if-no-files-found: warn
       - name: Save PDF workflow artifact
         uses: actions/upload-artifact@v4
         with:
