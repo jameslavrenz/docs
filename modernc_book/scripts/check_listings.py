@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Compile standalone C listings printed in the book's Markdown chapters.
 
-A block with a main function and its own includes is treated as a complete
-program. Other blocks are illustrative fragments and not independently built.
-This is a syntax/type-check audit, not a runtime test or proof of correctness.
+A block with a main function and its own includes is a complete program.
+Self-contained function fragments may be tagged `c compile-check` in Markdown.
+Only tagged fragments are independently checked; contextual snippets remain
+illustrative. These are syntax checks, not runtime tests or proofs.
 """
 from pathlib import Path
 import os
@@ -30,10 +31,14 @@ with tempfile.TemporaryDirectory(prefix="modernc-listings-") as temp:
     scratch = Path(temp)
     for chapter in sorted((ROOT / "chapters").glob("*.md")):
         source = chapter.read_text(encoding="utf-8")
-        blocks = re.findall(r"^```c\s*\n(.*?)^```\s*$",
-                            source, flags=re.MULTILINE | re.DOTALL)
-        for number, code in enumerate(blocks, 1):
-            if not re.search(r"\bint\s+main\s*\(", code):
+        blocks = list(re.finditer(
+            r"^```c(?P<info>[^\n]*)\n(?P<code>.*?)^```\s*$",
+            source, flags=re.MULTILINE | re.DOTALL))
+        for number, block in enumerate(blocks, 1):
+            code = block.group("code")
+            is_fragment = "compile-check" in block.group("info").split()
+            has_main = re.search(r"\bint\s+main\s*\(", code) is not None
+            if not (is_fragment or has_main):
                 continue
             if not re.search(r"^\s*#\s*include\b", code, re.MULTILINE):
                 print(f"SKIP {chapter.name} C block {number}: no include directives")
@@ -46,7 +51,8 @@ with tempfile.TemporaryDirectory(prefix="modernc-listings-") as temp:
 
             source_path = scratch / f"{chapter.stem}-{number}.c"
             source_path.write_text(code + "\n", encoding="utf-8")
-            command = COMPILER + FLAGS + ["-fsyntax-only", str(source_path)]
+            extra = ["-Wno-unused-function"] if is_fragment else []
+            command = COMPILER + FLAGS + extra + ["-fsyntax-only", str(source_path)]
             try:
                 result = subprocess.run(
                     command, capture_output=True, text=True, timeout=20,
@@ -64,7 +70,7 @@ for name, number, error in failed:
     print(f"FAIL {name} C block {number}\n{error}", file=sys.stderr)
 print(f"Markdown listings: {checked} checked; {skipped} skipped; "
       f"{len(failed)} failed")
-if checked < 10:
+if checked < 35:
     print("Too few complete chapter listings found", file=sys.stderr)
     sys.exit(1)
 if failed:
