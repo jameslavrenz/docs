@@ -274,3 +274,72 @@ A good verification report names the source commit, compiler versions, flags, te
 ### Additional exercises
 
 **13.11** Construct a CI matrix separating compiler tests, sanitizer tests, and PDF generation. **13.12** Write a failure-injection test that makes a vector resize fail and checks all saved invariants. **13.13** Produce an independent expected-value table for 32-bit rotations. **13.14** Write a one-page review explaining which properties of a fixed byte arena are proven by bounds checks and which depend on caller-provided storage and lifetime.
+
+## 13.27 Model-based testing for a fixed pool
+
+A fixed pool is small enough that a separate test model can describe its intended behavior without sharing its implementation. For four slots, the model can record which logical resources are live and which handles are stale. Generate a sequence of acquire, read, release and invalid-handle operations. After every step, compare the implementation's result with the model's expected result.
+
+This is stronger than one happy-path test, because operations can be interleaved in many orders. The model should not simply copy the pool's actual loop or generation-update code; an independent model helps detect a mistake shared by several implementation functions.
+
+A minimal regression sequence exercises all of these: fill all slots; reject one extra acquire; release one slot; reject its old handle; reacquire the slot with a different generation; reject double release; verify that every still-live handle reads its original value.
+
+Then simulate generation exhaustion by initializing one test-only slot's generation at UINT_MAX, acquiring and releasing it, and checking permanent retirement. This branch would be practically impossible to exercise by waiting through billions of ordinary allocation cycles.
+
+## 13.28 State-transition coverage for a streaming parser
+
+Line coverage can report that each parser state was visited, yet miss important transitions. For a framed byte protocol, tests should cover every state and each type of outgoing transition.
+
+A practical transition table includes:
+
+| Starting state | Byte class | Expected result |
+| --- | --- | --- |
+| Expect magic | Correct marker | More input required |
+| Expect magic | Other byte | Rejected |
+| Expect length | Zero | Expect checksum |
+| Expect length | Valid positive length | Expect payload |
+| Expect length | Above maximum | Rejected |
+| Expect payload | Ordinary payload byte | More input required |
+| Expect payload | Final payload byte | Expect checksum |
+| Expect checksum | Correct byte | Completed message |
+| Expect checksum | Wrong byte | Rejected |
+
+After every rejected candidate, assert that the previously published result remains unchanged. After every successful frame, assert that parser state has returned to its initial boundary. Test both a zero-length payload and a maximum-length payload.
+
+A byte-at-a-time parser is especially amenable to exhaustive exploration over short inputs, but the full 256-byte input alphabet grows exponentially with sequence length. Partition bytes by behavior and combine that model with selected exhaustive small cases and generated longer streams.
+
+## 13.29 Independent golden vectors
+
+An encoder and decoder can agree on an incorrect interpretation of a protocol. If both accidentally omit the length octet from a checksum, an encode/decode round trip may still pass.
+
+For at least a few tests, calculate the expected wire representation independently from the format specification. In the example frame, a length of three and payload 0A 14 1E yields XOR checksum 03, so the complete frame is A5 03 0A 14 1E 03. The test should compare the entire decoded payload and count, not just the fact that the parser returned success.
+
+A second independent vector should test an empty payload. Then deliberately change one byte without updating the checksum and confirm that rejection preserves the previous result.
+
+The same principle applies to numerical routines. An inverse property is useful, but two wrong functions may be inverses of one another. Combine properties with independently established outputs.
+
+## 13.30 Fuzzing and its limits
+
+Fuzzing supplies many generated or mutated inputs to a function, looking for crashes, sanitizer reports, assertion failures, hangs, or unexpected statuses. A bounded parser is a natural candidate: its input is a byte sequence with a known maximum meaningful record length.
+
+Build a fuzz harness that initializes a new parser for each input, feeds the bytes, and checks invariants after each transition. The harness should never treat malformed input as a reason to abort the process. Instead, malformed input should produce a documented rejection status.
+
+Instrumented fuzzing can be especially valuable for off-by-one errors and incomplete-input transitions. However, absence of a crash does not show that the parser implements the intended wire format. Include assertions for output publication, state reset, resource limits, and independence from input chunk boundaries where those properties are part of the API.
+
+Fuzzing also cannot by itself establish ISR timing or hardware DMA coherency. Those properties require target-specific analysis.
+
+## 13.31 A compact evidence hierarchy
+
+Different evidence supports different claims:
+
+- A successful compilation establishes that the source was accepted by the selected compiler and flags.
+- A passing deterministic test establishes observed behavior for specified inputs.
+- A property or randomized test broadens the explored input space.
+- A sanitizer run can expose certain runtime defects along executed paths.
+- A written invariant argument explains why a property should hold across every permitted iteration.
+- Hardware measurement characterizes the real target's timing and environmental behavior.
+
+A technical book should label these distinctions accurately. A repository with green CI is a good teaching artifact, but not proof that every illustrative fragment is production-ready on every embedded toolchain.
+
+### Further exercises
+
+**13.15** Create a model-based randomized test for the four-slot pool and record the random seed needed to reproduce failures. **13.16** Write a transition coverage table for all four states of the frame parser. **13.17** Build two independent golden vectors and a corrupted-vector test. **13.18** Design a fuzz harness that never interprets malformed external input as a programming assertion failure. **13.19** Prepare a verification report distinguishing host observations from target-hardware claims.
