@@ -8,7 +8,7 @@ Suppose two threads each execute `++counter` one thousand times. The operation i
 
 An atomic object makes individual accesses atomic:
 
-```c
+```c compile-check
 #include <stdatomic.h>
 
 atomic_uint counter = 0;
@@ -26,7 +26,7 @@ Relaxed ordering suffices when all that matters is a single independent count, n
 
 Imagine a producer fills a payload and then signals that it is ready. The consumer must not read the payload before the producer's writes have been made visible through synchronization.
 
-```c
+```c compile-check
 #include <stdatomic.h>
 #include <stdbool.h>
 
