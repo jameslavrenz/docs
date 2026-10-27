@@ -11,13 +11,13 @@ Every object occupies storage for a particular lifetime. Automatic objects usual
 
 int *make_array(size_t count)
 {
-    if (count > SIZE_MAX / sizeof(int))
+    if (count == 0 || count > SIZE_MAX / sizeof(int))
         return nullptr;
     return malloc(count * sizeof(int));
 }
 ```
 
-The multiplication is checked before it can overflow. A zero-sized request deserves its own interface policy: the result of `malloc(0)` is implementation-defined in useful details and should not be confused with an array containing one element. New storage from `malloc` has indeterminate contents. Use `calloc` for zero-initialized storage, while still checking the requested dimensions.
+The multiplication is checked before it can overflow. This interface rejects zero-sized requests. Other interfaces may choose different zero-size semantics, but they should document them. New storage from `malloc` has indeterminate contents. Use `calloc` for zero-initialized storage, while still checking the requested dimensions.
 
 ## 7.2 One owner, one release
 
