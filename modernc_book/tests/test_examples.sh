@@ -18,6 +18,7 @@ make all
 [ "$(./callbacks)" = 'callbacks: OK' ]
 [ "$(./utf8_decode)" = 'utf8_decode: OK' ]
 [ "$(./compile_time)" = 'compile_time: OK' ]
+[ "$(./c23_basics)" = 'c23_basics: OK' ]
 [ "$(printf 'C23 binary copy' | ./file_copy)" = 'C23 binary copy' ]
 [ "$(./byte_decode)" = 'decoded: 12345678' ]
 sh tests/test_word_index.sh
