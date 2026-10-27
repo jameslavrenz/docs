@@ -22,7 +22,7 @@ Exact-width integer types such as `uint32_t` exist when the implementation offer
 
 Use unsigned values for bit-level work. A left shift with a count greater than or equal to the promoted operand's width has undefined behavior, as does a negative shift count. The shift operators have their own integer-promotion rules; explicitly selecting a wide enough unsigned operand avoids accidental signed arithmetic.
 
-```c
+```c compile-check
 #include <stdint.h>
 
 static uint32_t extract_byte(uint32_t value, unsigned position)
@@ -39,7 +39,7 @@ A register read-modify-write operation may not have the semantics of an ordinary
 
 A little-endian 32-bit unsigned field stores its least significant octet first. A big-endian field stores the most significant octet first. For portable decoding, use shifts and masks on bytes rather than reinterpreting an input buffer as a pointer to `uint32_t`.
 
-```c
+```c compile-check
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -100,7 +100,7 @@ A format that defines 32-bit fields in network byte order requires explicit big-
 
 The expression `1 << position` has a signed left operand. For sufficiently large `position`, the result may not fit, or the shift count may equal or exceed the promoted width. Using an unsigned fixed-width operand addresses the signedness issue but not invalid counts.
 
-```c
+```c compile-check
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -210,7 +210,7 @@ for \(1 \le n \le 31\). But that range condition is essential. In C, shifting a 
 
 The fully safe implementation handles the zero count separately:
 
-```c
+```c compile-check
 #include <stdint.h>
 
 uint32_t rotate_left_32(uint32_t x, unsigned count)
