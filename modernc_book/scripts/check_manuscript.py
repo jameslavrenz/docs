@@ -89,6 +89,26 @@ else:
         errors.append("Duplicate executable target in Makefile all")
     print(f"Checked {len(programs)} executable targets")
 
+# Check that the draft topic finder refers only to existing chapters and appendices.
+finder = ROOT / "appendices" / "F-topic-finder.md"
+if finder.is_file():
+    index = finder.read_text(encoding="utf-8")
+    entries = [line for line in index.splitlines() if line.startswith("- **")]
+    if len(entries) < 75:
+        errors.append(f"Topic finder unexpectedly short: {len(entries)} entries")
+    for line in entries:
+        # Match both singular/plural and ranges; check all number endpoints.
+        for hit in re.finditer(r"\\bChapters?\\s+([0-9]+)(?:[–-]([0-9]+))?", line):
+            for value in (hit.group(1), hit.group(2)):
+                if value is not None and not 1 <= int(value) <= len(chapters):
+                    errors.append(f"Invalid topic-finder chapter reference: {line}")
+        for letter in re.findall(r"\\bAppendix\\s+([A-Z])\\b", line):
+            if letter not in letters:
+                errors.append(f"Invalid topic-finder appendix reference: {line}")
+    print(f"Checked {len(entries)} topic-finder entries for reference ranges")
+else:
+    errors.append("Missing Appendix F topic finder")
+
 if errors:
     for error in errors:
         print(f"ERROR: {error}", file=sys.stderr)
