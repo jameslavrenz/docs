@@ -1,6 +1,6 @@
 # Editorial Roadmap — Modern C23
 
-**Current state (October 2026):** 19 chapters, a preface, six appendices, and **33 standalone examples**. The current Markdown manuscript contains **75,304 words** including code listings, reference entries, and exercises. It is an independent, original example-first textbook, not an authorized K&R third edition.
+**Current state (October 2026):** 19 chapters, a preface, six appendices, and **35 standalone examples**. The current Markdown manuscript contains **83,061 words** including code listings, reference entries, and exercises. It is an independent, original example-first textbook, not an authorized K&R third edition.
 
 ## Work completed
 
@@ -26,5 +26,7 @@
 ## Verification rules
 
 A file or workflow existing in GitHub is not evidence that it passed. Always inspect completed CI runs for the relevant commit. A passing host test does not establish interrupt safety, DMA coherency, target ABI compatibility, or real-time deadlines.
+
+A subsequent technical expansion adds multi-key sorting, `_Generic` dispatch, a fixed-header correction, separate object compilation, a full word-index trace and stronger boundary tests, and additional standard-library API contracts. The source now totals 83,061 words including code, exercises and appendices; the last independently measured PDF before this latest material was 187 pages.
 
 The Markdown tree is authoritative. The tracked `modern-c23.pdf` is an output artifact and can lag when PDF workflows are queued or superseded. Measure the number of pages from the actual completed build rather than inferring it from manuscript word count.
