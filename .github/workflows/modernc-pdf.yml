@@ -8,6 +8,7 @@ on:
       - 'modernc_book/chapters/**'
       - 'modernc_book/appendices/**'
       - 'modernc_book/scripts/build-pdf.sh'
+      - 'modernc_book/scripts/check_pdf.py'
       - '.github/workflows/modernc-pdf.yml'
   workflow_dispatch:
 
@@ -40,6 +41,7 @@ jobs:
           pdftotext build/modern-c23.pdf build/modern-c23.txt
           grep -q 'A First Look at C' build/modern-c23.txt
           grep -q 'Conformance and Migration Checklist' build/modern-c23.txt
+          python3 scripts/check_pdf.py build/modern-c23.pdf
       - name: Publish PDF to repository
         run: |
           mkdir -p modernc_book
