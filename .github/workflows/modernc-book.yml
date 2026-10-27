@@ -47,3 +47,21 @@ jobs:
             extra_flags='-Wno-gnu-binary-literal'
           fi
           make CFLAGS="-std=c23 -Wall -Wextra -Wpedantic -Werror -O2 $extra_flags" check
+
+
+  undefined-behavior-sanitizer:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install GCC 14
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-14
+      - name: Run C23 examples under UBSan
+        working-directory: modernc_book
+        env:
+          CC: gcc-14
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: |
+          make clean
+          make CFLAGS="-std=c23 -Wall -Wextra -Wpedantic -Werror -O1 -g -fsanitize=undefined -fno-sanitize-recover=all" check
