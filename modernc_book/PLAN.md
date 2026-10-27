@@ -1,6 +1,6 @@
 # Roadmap to a ~200–230-page textbook
 
-**Status:** initial 12-chapter draft, not yet near the target length.
+**Status:** 12-chapter draft plus three appendices and four standalone examples; still not yet near the target length. The next milestone is expanded chapters and tested examples, then layout and typeset page count.
 
 The first-edition-scale book should grow through:
 1. Expanded explanations and more progressive examples per chapter.
