@@ -180,3 +180,120 @@ The build is only one acceptance gate. A PDF may technically compile but have br
 ### Exercises
 
 **19.7** Write a two-level stringizing macro and demonstrate its expansion with a numeric macro. **19.8** Compare a macro and a typed inline function when passed an increment expression. **19.9** Design a compile-time configuration that selects a host or target byte sink. **19.10** Explain why a successful document build is not proof that every C listing compiles.
+
+
+## 19.21 Generic selection is type-directed dispatch
+
+C offers a limited but useful compile-time mechanism for choosing an expression based on the type of another expression. The `_Generic` selection form can select between named functions:
+
+```c
+static int maximum_int(int a, int b)
+{
+    return a > b ? a : b;
+}
+
+static long maximum_long(long a, long b)
+{
+    return a > b ? a : b;
+}
+
+#define max_same_type(a, b) \
+    _Generic((a), int: maximum_int, \
+                  long: maximum_long)((a), (b))
+```
+
+This macro is intended for two arguments of the same supported type. If the first is `int`, the generic selection chooses `maximum_int`; if it is `long`, it chooses `maximum_long`. An unsupported first-argument type produces a constraint diagnostic because no selection matches and no default association is supplied.
+
+The selected result is a function designator; the arguments are then supplied to that function as in a normal call. The controlling expression is not evaluated at runtime merely for the selection. This matters for side effects.
+
+For example:
+
+```c
+int count = 0;
+int answer = max_same_type(++count, 7);
+```
+
+The increment in the controlling expression does **not** happen once during generic selection and again during function invocation. It occurs as part of the actual function argument evaluation, so `count` becomes one, not two.
+
+This contrasts with a traditional function-like macro that copies argument text into both sides of a comparison and may evaluate the same argument repeatedly.
+
+## 19.22 Generic selection still needs a contract
+
+It is tempting to call a type-directed macro fully type-safe. But a selection based only on the first argument does not force the second argument to have that same type.
+
+A caller might write `max_same_type(1, 2L)`; the `int` function would be selected, and the second argument would be converted to `int` according to the call's function prototype. If its value is out of range for `int`, the conversion may not produce the intended result.
+
+A production helper may need a stronger interface, more specific functions, or a carefully designed second type check. Alternatively, it can state explicitly that callers must provide equal supported types and rely on compiler conversion warnings and code review.
+
+The central rule is that `_Generic` selects an expression based on type. It does not invent a new language-level overloaded function system with the same constraints as C++ templates.
+
+## 19.23 What the generic associations mean
+
+A selection can include more types and a `default` association. It must not contain multiple compatible type associations in a way prohibited by the language's constraints.
+
+The selection's controlling expression is used for type matching, not for a dynamic switch on its current numerical value. Thus `_Generic(x, int: foo, long: bar)` chooses according to the type of `x`, even if `x` happens to hold a value representable in both types.
+
+For an array or qualified expression, the controlling-expression type rules deserve particular care because the language's ordinary conversions and type compatibility can affect matching. If the distinction between two closely related types is essential, compile and test the exact declaration under the targeted compiler mode rather than reasoning from spelling alone.
+
+A small feature probe can use `static_assert` and a constant generic selection to document an expected match in the build:
+
+```c
+static_assert(_Generic((int)0, int: 1, default: 0));
+```
+
+That statement checks a translation-time property. It does not execute the selected program function.
+
+## 19.24 Why use real functions behind the macro
+
+The generic macro can select functions defined in ordinary C. Those functions have normal parameter types, normal prototypes, and ordinary evaluation semantics. A developer can set a breakpoint inside one, test it directly, or reuse it without the generic dispatch.
+
+This reduces the risks of macros that implement their entire algorithm through textual substitution. It also gives the compiler a familiar opportunity to inline or optimize a small typed function when appropriate.
+
+The design is not a universal replacement for callbacks. Generic selection occurs at translation time based on the known type, while a callback is a runtime-selected operation. Use the former when supported types are known in source and the latter when behavior must be supplied dynamically by a caller or test.
+
+For example, a host test that substitutes a failing allocator needs a callback or equivalent runtime seam; a math wrapper choosing between float and double functions may benefit from generic selection.
+
+## 19.25 A small validation example
+
+The standalone `examples/generic_select.c` contains typed maximum functions and tests for both `int` and `long`. It includes `INT_MIN\), `INT_MAX\), `LONG_MIN\) and `LONG_MAX\) comparisons without subtracting their values.
+
+The test also increments an integer in a macro argument and confirms that the operation occurs once. This directly checks the pedagogical claim that the macro does not duplicate argument evaluation.
+
+The test does not establish that mixed-type inputs are safe. The macro's documented caller contract requires matching supported types, so the example illustrates one constrained application of `_Generic`, not every possible selection design.
+
+## 19.26 Macro expansions can mislead a debugger
+
+The preprocessor operates before ordinary compilation of expressions. An object-like or function-like macro expands to tokens, not a separately callable runtime function. Error messages and debugger stepping may therefore point into the macro expansion or into a user call site rather than behave like a normal function call.
+
+When a macro becomes complicated, first ask whether a `static inline` function would express the same logic. If the macro's real purpose is compile-time selection, keep the macro small and delegate work to typed functions.
+
+A second source of confusion is precedence. A simple macro `#define SQUARE(x) x*x` misbehaves when passed `1 + 2`, because substitution does not introduce the parentheses a function call would. Parenthesizing parameters and the result improves such macros, but it does not solve double evaluation when the argument appears twice.
+
+## 19.27 Compile-time contracts versus runtime checks
+
+Several different mechanisms detect different kinds of errors:
+
+| Mechanism | When it applies | What it can establish |
+| --- | --- | --- |
+| `static_assert` | Translation | A constant expression meets a required property |
+| `_Generic` | Translation | Selects a matching association by expression type |
+| `#if` and macros | Preprocessing | Chooses tokens using preprocessing conditions |
+| Function prototype | Translation | Declared argument/return type relationships |
+| Ordinary `if` | Execution | Checks runtime state and input |
+| Tests and sanitizers | Execution | Observe behavior on exercised paths |
+
+No one mechanism subsumes the others. A compile-time size assertion cannot guarantee a runtime packet has sufficient available bytes. A runtime null pointer check cannot prove that a pointer refers to a still-alive object. A generic selection cannot verify an allocator's logical ownership rules.
+
+Use each mechanism for the property it is capable of expressing.
+
+## 19.28 Readability wins over maximum metaprogramming
+
+C's compile-time facilities can eliminate certain kinds of repetition, but they can also obscure meaning when used excessively. An ordinary named function is often the best interface. A small `static_assert` is useful for a real target assumption. A few lines of generic selection can simplify a family of typed operations.
+
+Do not build a complex macro-based type system merely to avoid writing a small number of clear functions. In particular, firmware intended for multiple compilers and static-analysis tools may benefit from conservative, explicit interfaces that every tool can understand.
+
+The best criterion is whether the change makes the program easier to audit, test, and maintain under the actual supported toolchains.
+
+### Further exercises
+
+**19.11** Add an `unsigned` maximum function and extend the generic selection to choose it. **19.12** Create a compile-time diagnostic for an unsupported controlling-expression type. **19.13** Investigate how a mixed `int` and `long` call is converted and design an interface that rejects it. **19.14** Replace a double-evaluating macro with a typed inline function. **19.15** Compare the role of `_Generic` with a runtime callback using the same operation on input data.
