@@ -249,7 +249,9 @@ A restricted pointer can help an implementation optimize accesses when the progr
 
 Consider:
 
-```c
+```c compile-check
+#include <stddef.h>
+
 void add_arrays(size_t count,
                 double *restrict result,
                 const double *restrict left,
@@ -260,7 +262,7 @@ void add_arrays(size_t count,
 }
 ```
 
-This is a fragment requiring `<stddef.h>` for `size_t`. Its caller must provide valid arrays with the necessary restricted-access relationships. It would be wrong to present `restrict` as a mechanism that checks whether the three pointers overlap. It does not.
+The function includes `<stddef.h>` for `size_t`. Its caller must provide valid arrays with the necessary restricted-access relationships. It would be wrong to present `restrict` as a mechanism that checks whether the three pointers overlap. It does not.
 
 The exact C restrict association rules deserve careful reading before adding the qualifier to an existing public interface. Optimizing a small loop should not come at the cost of silently making common aliasing call patterns invalid.
 
