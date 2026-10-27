@@ -12,7 +12,7 @@ UTF-8 encodes a code point in one to four octets. Continuation octets do not sta
 
 An untrusted message need not have a terminating zero byte. A parser can accept a pointer and a length, so no operation depends on searching outside the supplied region.
 
-```c
+```c compile-check
 #include <stddef.h>
 #include <stdbool.h>
 
