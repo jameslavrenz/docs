@@ -191,3 +191,88 @@ A string literal has static storage duration; modifying it through a pointer pro
 A counted string view, `struct text_view { const char *data; size_t size; };`, can represent slices that are not null-terminated. Such views are convenient for parsers, but passing their pointers to `strlen` or `printf("%s")` is unsafe unless termination is separately guaranteed. A view usually borrows storage and should not outlive its owner.
 
 **Further problems:** Implement a bounded substring search that never relies on a terminator. Explain the difference between `int (*)[4]` and `int **`. Write tests for a zero-length slice and for the final legal element index.
+
+
+## 4.15 Draw the objects before drawing pointers
+
+For a declaration such as
+
+\`\`\`c
+int values[4] = {10, 20, 30, 40};
+int *p = &values[1];
+\`\`\`
+
+draw four adjacent \`int\` objects and one separate pointer object. The pointer is not a second element of the array; it stores a value designating the second element. \`p + 1\` points at the third element. \`*(p + 1)\` reads that element. \`p[1]\` is defined in terms of the same indexing relationship.
+
+Now draw \`&values\`. Its type is pointer to an array of four \`int\`, whereas \`values\` ordinarily converts to pointer to its first \`int\`. These pointers may designate the same starting address in memory, yet their types control pointer arithmetic: incrementing a pointer-to-array advances by the whole array size.
+
+This is why declarations matter even when two pointer values print alike.
+
+## 4.16 A counted slice
+
+A plain pointer to the first element does not contain a length. A small value type can carry the two pieces together:
+
+\`\`\`c
+#include <stddef.h>
+
+struct int_slice {
+    const int *data;
+    size_t length;
+};
+\`\`\`
+
+The slice usually *borrows* storage. It does not allocate anything, and copying the structure copies the pointer and length rather than copying the elements. The owner must keep the array alive for the duration of every use of the slice.
+
+A safe access function may return a boolean result and use an output pointer:
+
+\`\`\`c
+#include <stdbool.h>
+
+bool slice_get(struct int_slice s, size_t index, int *out)
+{
+    if (out == nullptr || index >= s.length ||
+        s.data == nullptr)
+        return false;
+    *out = s.data[index];
+    return true;
+}
+\`\`\`
+
+This checks the index against the *declared* slice length. Its precondition still requires \`s.data\` to point to at least \`s.length\` readable integers when \`s.length\` is nonzero. A dangling pointer or dishonest length cannot be repaired by the index check.
+
+The standalone example \`examples/slices.c\` demonstrates both direct access and the creation of a bounded subslice.
+
+## 4.17 Derive a subslice without overflow
+
+A subslice starts at \`offset\` and contains \`count\` elements. It is tempting to check \`offset + count <= length\`, but unsigned addition may overflow. Instead, require \`offset <= length\` and \`count <= length - offset\`. That subtraction is evaluated only after the first condition holds.
+
+When \`count == 0\`, you may represent the new slice using a pointer to an existing valid position, including the one-past position of a nonempty array. If the original slice is empty and its data pointer is null, do not form \`data + 0\`: pointer arithmetic on a null pointer is not a portable way to construct a valid empty slice. An implementation can return a null data pointer for a zero-length result.
+
+## 4.18 Const qualifies a path of access
+
+Compare these declarations:
+
+\`\`\`c
+const int *read_only_elements;  /* elements not modifiable through pointer */
+int *const fixed_address = /* valid int pointer initializer */;
+\`\`\`
+
+The first pointer variable may be reassigned, but it cannot be used to assign to the designated \`int\`. The second pointer variable itself cannot be reassigned, but it can modify the designated \`int\` if that object is modifiable and the pointer is valid.
+
+A \`const\`-qualified pointer is not an ownership system. A borrowed \`const char *\` can become dangling when another part of the program releases its storage. Conversely, a constant object with static storage duration may remain alive for the whole program. Lifetime and permission to modify are separate properties.
+
+## 4.19 Overlap and copying
+
+Suppose \`char letters[] = "abcdef";\`. Moving the region \`letters[0..3]\` one position to the right creates overlapping source and destination regions. \`memcpy\` is not the right operation; \`memmove\` is specified to handle such overlap.
+
+Before calling either library function, establish that both source and destination contain the requested number of valid bytes. The function names do not infer buffer capacity. For a type with pointer members, byte-wise copying the enclosing structure still performs a shallow copy; it does not duplicate heap storage referenced by members.
+
+## 4.20 Pointer lifetime can end without the pointer value changing
+
+A local variable's lifetime ends when the relevant block invocation ends. A heap allocation's lifetime ends when it is freed. Successful \`realloc\` ends the old allocation's lifetime and may return a different address. In each case an old pointer can retain an address-like bit pattern while becoming unusable for dereferencing the former object.
+
+A good habit is to avoid returning borrowed pointers to transient storage. Instead return a value, let the caller supply output storage, or explicitly transfer ownership of allocated storage under an API contract.
+
+### Guided exercises
+
+**4.10** Draw a four-element array, a pointer to element two, and a pointer to the whole array; determine the element reached by each valid pointer increment. **4.11** Implement \`slice_find\` returning an index through an output pointer, distinguishing 'not found' from an invalid input. **4.12** Implement a reverse operation on a mutable slice and test empty and single-element slices. **4.13** Explain why copying a slice structure does not copy its elements. **4.14** Write a subslice function whose arithmetic remains defined at \`SIZE_MAX\`.
