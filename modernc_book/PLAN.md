@@ -1,6 +1,6 @@
 # Roadmap to a ~200–230-page textbook
 
-**Status:** 12-chapter draft plus three appendices and four standalone examples; still not yet near the target length. The next milestone is expanded chapters and tested examples, then layout and typeset page count.
+**Status:** 13-chapter draft plus three appendices and twelve standalone examples; still below the target length. The next milestone is expanded chapters and tested examples, then layout and typeset page count.
 
 The first-edition-scale book should grow through:
 1. Expanded explanations and more progressive examples per chapter.
@@ -11,3 +11,7 @@ The first-edition-scale book should grow through:
 6. A reproducible manuscript-to-PDF pipeline and final rendered-page QA.
 
 **Editorial policy:** Original authorship; never present this as K&R's third edition or reproduce their chapters, prose, or exercises. Every complete listing must be compile-tested with real toolchains. Clearly mark illustrative fragments. Correctness and concision outrank arbitrary page inflation.
+
+## Latest continuation
+
+Chapter 13 adds testing methodology, sanitizer guidance, property testing, fuzzing, and host-versus-target verification. The repository-wide GitHub Actions workflow at `.github/workflows/modernc-book.yml` targets GCC 14 and Clang 18. Its execution status must be checked independently; a committed workflow is not evidence of a passing run.
