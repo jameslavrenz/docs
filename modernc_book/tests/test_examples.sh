@@ -10,5 +10,7 @@ make all
 [ "$(./checked_add)" = 'checked_add: OK' ]
 [ "$(./ring_buffer)" = 'ring_buffer: OK' ]
 [ "$(./checked_sum)" = 'checked_sum: OK' ]
+[ "$(./vector)" = 'vector: OK' ]
+[ "$(printf 'C23 binary copy' | ./file_copy)" = 'C23 binary copy' ]
 [ "$(./byte_decode)" = 'decoded: 12345678' ]
 printf '%s\n' 'All example checks passed'
