@@ -150,3 +150,33 @@ C23 accepts `static_assert` directly as a keyword. To detect a feature's availab
 The book's `compile_time.c` demonstrates simple macro expansion and C23 initialization. Add variations that intentionally fail `static_assert` in a scratch file and observe the compiler's message. Then compare that translation-time diagnostic to a runtime check that reports an error without preventing compilation.
 
 **Further problems:** Explain the difference between `STR_DIRECT(VERSION)` and `STR_EXPANDED(VERSION)`. Implement a portable fallback for an embedded byte array. Design a compile-time condition selecting one of two platform adapters and fail explicitly when neither is supported.
+
+## 19.17 A preprocessor macro is not a generic function
+
+A function-like macro may evaluate an argument more than once, and even a macro wrapped in parentheses does not become type-safe. The familiar `MAX(a, b)` substitution illustrates the danger when a caller passes `index++`. The expression chosen by the conditional operator may be evaluated again.
+
+A `static inline` function for a specific type avoids duplicate evaluation of its arguments. The caller's argument expressions are still evaluated in an order that C does not necessarily prescribe, so do not write calls that depend on sequencing between them.
+
+A `_Generic` selection can choose among several typed functions at translation time, allowing a type-directed wrapper without converting every value to one common type. Be careful to specify supported types and a clear policy for unsupported arguments.
+
+## 19.18 Use static assertions for real assumptions
+
+A portable byte decoder may not need to assume an eight-bit byte if it operates on abstract values in the standard character domain, but an octet-specific wire codec does need an explicit policy about eight-bit units. A compile-time assertion can make that dependency visible to future maintainers.
+
+Do not scatter assertions about irrelevant architecture properties throughout a general library. A function operating on `size_t` lengths and opaque pointers may be perfectly valid on targets with different pointer widths, whereas a hardware register interface can have genuine address and alignment requirements.
+
+## 19.19 Configuration is part of the reproducible build
+
+A macro such as `DEVICE_TARGET` changes which tokens are translated. Therefore it can change program behavior just as surely as a source edit. Record the selected configuration, compiler version, flags, and target alongside test results.
+
+For embedded code, a host adaptation may use a fake device sink, while the MCU build uses a UART driver. The public interface should remain the same; conditional compilation should select the adapter, not duplicate the entire application algorithm.
+
+## 19.20 Keep the generated book reproducible
+
+The book's PDF is also a build artifact. A manuscript change should trigger generation from the current source and a check that required headings appear in the output. A page count should be measured from the PDF itself, not inferred from the Markdown word count.
+
+The build is only one acceptance gate. A PDF may technically compile but have broken line wrapping, duplicated section numbering, or code examples that run off the page. The final editorial pass requires inspecting rendered pages and checking the technical content independently.
+
+### Exercises
+
+**19.7** Write a two-level stringizing macro and demonstrate its expansion with a numeric macro. **19.8** Compare a macro and a typed inline function when passed an increment expression. **19.9** Design a compile-time configuration that selects a host or target byte sink. **19.10** Explain why a successful document build is not proof that every C listing compiles.
