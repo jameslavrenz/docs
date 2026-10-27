@@ -1,7 +1,11 @@
 CC ?= cc
 CFLAGS ?= -std=c23 -Wall -Wextra -Wpedantic -O2
 .PHONY: all clean check
-all: hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy word_index packet_decode byte_codec checked_interval spsc_queue callbacks utf8_decode compile_time c23_basics slices vector_checked frame_codec callback_sink modules_demo arena_bytes parse_signed rotate_bits line_reader thread_counter utf8_stream tlv_decode
+all: hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy word_index packet_decode byte_codec checked_interval spsc_queue callbacks utf8_decode compile_time c23_basics slices vector_checked frame_codec callback_sink modules_demo arena_bytes parse_signed rotate_bits line_reader thread_counter utf8_stream tlv_decode slot_pool frame_stream
+slot_pool: examples/slot_pool.c
+	$(CC) $(CFLAGS) $< -o $@
+frame_stream: examples/frame_stream.c
+	$(CC) $(CFLAGS) $< -o $@
 utf8_stream: examples/utf8_stream.c
 	$(CC) $(CFLAGS) $< -o $@
 tlv_decode: examples/tlv_decode.c
@@ -67,4 +71,4 @@ digits: examples/digits.c
 check: all
 	@sh tests/test_examples.sh
 clean:
-	rm -f hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy word_index packet_decode byte_codec checked_interval spsc_queue callbacks utf8_decode compile_time c23_basics slices vector_checked frame_codec callback_sink modules_demo arena_bytes parse_signed rotate_bits line_reader thread_counter utf8_stream tlv_decode
+	rm -f hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy word_index packet_decode byte_codec checked_interval spsc_queue callbacks utf8_decode compile_time c23_basics slices vector_checked frame_codec callback_sink modules_demo arena_bytes parse_signed rotate_bits line_reader thread_counter utf8_stream tlv_decode slot_pool frame_stream
