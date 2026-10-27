@@ -93,3 +93,57 @@ static int maximum(int a, int b)
 A function packages an operation behind a name and an interface. `static` at file scope gives this function internal linkage: other source files cannot refer to it by this name. The conditional operator selects one of two expressions.
 
 **Exercises.** 1.1 Change the temperature program to print from 100 down to 0. 1.2 Count tabs and spaces separately. 1.3 Count lines longer than a fixed limit without storing whole lines. 1.4 Explain what happens if the histogram test accidentally admits the character `':'`.
+
+
+## 1.6 Counting words: states rather than lines
+
+Counting lines required remembering only a number. Counting words requires remembering whether the previous character belonged to a word. A *state* is just the minimum information needed to interpret the next input.
+
+```c
+#include <stdio.h>
+#include <stdbool.h>
+
+int main(void)
+{
+    unsigned long words = 0;
+    bool inside = false;
+    int ch;
+
+    while ((ch = getchar()) != EOF) {
+        bool separator = ch == ' ' || ch == '\n' || ch == '\t';
+        if (separator) {
+            inside = false;
+        } else if (!inside) {
+            inside = true;
+            ++words;
+        }
+    }
+    if (ferror(stdin)) {
+        fputs("input error\n", stderr);
+        return 1;
+    }
+    printf("%lu\n", words);
+}
+```
+
+The loop recognizes a transition from *outside* to *inside* a word. Notice that the definition of a word depends on the definition of separator. Here only three ASCII whitespace characters count. Changing to `isspace` requires `<ctype.h>` and care to pass only an `unsigned char` value or `EOF`.
+
+A state-machine description is valuable beyond text processing. An embedded serial receiver similarly recognizes transitions among waiting, payload, and checksum states, and can process one byte at a time without allocating a complete input stream.
+
+### Trace a program
+
+For input `" one  two\n"`, write down `inside` and `words` after each character. Two adjacent separators must not count an empty word. End-of-file also must not count an extra word.
+
+## 1.7 When the simplest program is not enough
+
+The programs in this chapter fit in small files, but each has an implicit contract. A histogram counter might overflow on a sufficiently large input. An I/O operation may fail before reaching EOF. An unexpected input byte may not be meaningful under an intended encoding. A reliable C program deliberately records which of those conditions it will handle.
+
+Three habits will recur throughout the book:
+
+1. Carry buffer sizes explicitly.
+2. Treat resource and I/O failures as ordinary control paths.
+3. Use the type system and compiler diagnostics to expose assumptions rather than conceal them.
+
+### Further exercises
+
+**1.5** Modify the word counter to report separately how many words began with an ASCII digit. **1.6** Implement the line counter using a function `count_lines(FILE *stream)` that reports failure separately from a legitimate zero count. **1.7** Determine when `unsigned long` is wide enough for your intended input volume; document a policy for counter overflow. **1.8** Write a program that collapses runs of spaces to one space while preserving newlines.
