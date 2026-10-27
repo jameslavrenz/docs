@@ -156,3 +156,46 @@ Function-pointer indirection can inhibit inlining and complicate static call-gra
 Measure on target hardware when performance matters. A desktop microbenchmark may not predict instruction cache, branch prediction, or linker optimizations on a Cortex-M core.
 
 **Further problems:** Write a reentrant traversal that avoids global state. Define unregister semantics for an asynchronous callback API. Implement an ordered comparator for records containing a timestamp and a unique identifier.
+
+## 17.14 A practical byte-sink interface
+
+A callback can separate a useful algorithm from the device performing its I/O. Define a writer that receives a context pointer, source bytes, and a count, and returns how many bytes it accepted:
+
+```c
+#include <stddef.h>
+
+typedef size_t (*sink_write_fn)(void *context,
+                                const unsigned char *data,
+                                size_t count);
+
+struct byte_sink {
+    sink_write_fn write;
+    void *context;
+};
+```
+
+The interface contract must forbid returning more bytes than requested. A zero result means no progress under this simplified synchronous protocol, so a complete-write wrapper reports failure rather than spinning indefinitely.
+
+## 17.15 Handling partial writes
+
+A wrapper starts at offset zero. It calls the sink with `data + offset` and `count - offset`, then increases the offset by the number of bytes accepted. Since the call occurs only when `offset < count`, these operations are within a valid caller-supplied byte buffer. If the sink returns zero or a value larger than the remaining count, the wrapper reports failure.
+
+The loop's progress proof is straightforward: on every successful iteration, offset strictly increases and never exceeds count. The loop therefore terminates after a finite number of accepted writes, even if the sink accepts just one byte at a time.
+
+This design is particularly relevant to a UART driver or nonblocking transport. A real asynchronous system may need a 'would block' status and a state object retained across callbacks. That is a different protocol from the simple synchronous function here.
+
+## 17.16 Test using a fake device
+
+The companion `examples/callback_sink.c` uses a fake writer that can accept only two bytes per call. The complete-write wrapper must repeatedly call it to deliver a longer message. The test then switches the fake into a mode that accepts zero bytes, verifying that the wrapper fails without looping forever.
+
+A fake device is useful because it isolates the algorithm from real hardware and permits exact, repeatable failure behavior. Hardware validation remains necessary for UART timing, DMA, interrupt interaction, and other target-specific concerns.
+
+## 17.17 Lifetime and reentrancy
+
+The sink's context pointer is borrowed during each synchronous call. If the sink stores that pointer and uses it after returning, a new lifetime contract is required. Likewise, a sink used simultaneously by multiple threads may require a mutex or atomics. The callback pointer itself does not provide thread safety.
+
+A reusable interface should specify whether a callback may call back into the same interface recursively. Such reentrancy can be safe for a purely local algorithm but dangerous for a driver with shared mutable state.
+
+### Exercises
+
+**17.6** Modify the sink to report 'would block' separately from a permanent error. **17.7** Write a wrapper that resumes a partially sent message on a later call. **17.8** Design a byte sink with a maximum record length and checked capacity. **17.9** Explain what the caller must guarantee about the lifetime of its context object.
