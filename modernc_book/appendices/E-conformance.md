@@ -81,13 +81,13 @@ The exact executable names and versions may differ on another host. These comman
 
 The current probe set tests five independent facilities:
 
-| Probe | Layer being tested | Why an application might use it |
+| Probe | Support layer | Example use |
 | --- | --- | --- |
-| `constexpr` scalar object | Compiler's C23 language front end | Translation-time named constants |
-| Nine-bit `_BitInt` | Compiler and selected target | Integers with explicit value-width requirements |
-| `<stdckdint.h>` checked addition | Header plus compiler/library integration | Overflow-tested integer operations |
-| `<stdbit.h>` bit-count operation | Header plus compiler/library integration | Portable bit-width and population-count utilities |
-| `#embed` with two known octets | Preprocessor and build resource search | Inclusion of small binary resources |
+| `constexpr` scalar | C23 compiler | Named constant |
+| Nine-bit `_BitInt` | Compiler/target | Precise integer width |
+| `<stdckdint.h>` | Compiler/library | Overflow-checked addition |
+| `<stdbit.h>` | Compiler/library | Bit width and population count |
+| `#embed` | Preprocessor | Embed binary resources |
 
 Each probe reports whether the feature actually compiled, linked, and produced its expected result on that particular host. The report does not declare all C23 features implemented merely because one succeeds.
 
