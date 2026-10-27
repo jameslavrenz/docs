@@ -49,16 +49,19 @@ bool factorial(unsigned n, unsigned long *out)
 {
     if (out == nullptr) return false;
     unsigned long result = 1;
-    for (unsigned i = 2; i <= n; ++i) {
+    unsigned i = 2;
+    while (i <= n) {
         if (result > ULONG_MAX / i) return false;
         result *= i;
+        if (i == n) break;
+        ++i;
     }
     *out = result;
     return true;
 }
 ```
 
-This version needs special attention if `n == UINT_MAX`: incrementing the loop counter wraps to zero, so the stopping condition would never become false. A corrected general-purpose loop should avoid incrementing after processing the final `i`, for instance by breaking when `i == n`. The example deliberately exposes why a locally checked multiplication is not the whole correctness proof.
+The explicit final-iteration break also avoids unsigned loop-counter wraparound if `n == UINT_MAX`. Checking multiplication alone is not the whole correctness proof.
 
 ## C.4 Little-endian byte decoding
 
