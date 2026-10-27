@@ -93,6 +93,22 @@ Each probe reports whether the feature actually compiled, linked, and produced i
 
 An unsupported probe is recorded rather than failing the separate basic-example regression suite. This is intentional: the ordinary examples should remain usable on systems without a particular optional library facility. A *project that depends on the missing facility* must still reject that toolchain or select a carefully tested alternative implementation.
 
+### Observed GitHub Actions results — October 27, 2026
+
+The following table records **actual compile-and-run probes** in the repository's Ubuntu 24.04 CI environment. It applies to these exact hosted compiler setups, not to every build or target using the same compiler family.
+
+| Tested facility | GCC 14 | Clang 18 |
+| --- | --- | --- |
+| C23 `constexpr` scalar object | Passed | Not accepted |
+| C23 nine-bit `_BitInt` | Passed | Passed |
+| `<stdckdint.h>` checked addition | Passed | Passed |
+| `<stdbit.h>` bit count | Passed | Passed |
+| `#embed` small binary resource | Not accepted | Not accepted |
+
+The corresponding GitHub Actions run is [40514510373](https://github.com/jameslavrenz/docs/actions/runs/40514510373). Its compiler logs contain the exact diagnostics. In particular, Clang 18 reported an unknown `constexpr` identifier in the test, and both compiler setups rejected the `#embed` directive. These results should not be generalized to newer Clang or GCC versions without rerunning the probes.
+
+An application that depends on these features must set its minimum supported compiler/library environment accordingly or use an alternative implementation. The book's mandatory example suite intentionally does not depend on the two unavailable features.
+
 ## E.9 Language version and library version are different
 
 The compile flag `-std=c23` requests a language mode. It does not guarantee a complete hosted C23 library or every optional header on all installations. The build can also select an older library than the compiler release might suggest, especially when cross-compiling to firmware targets.
