@@ -189,34 +189,34 @@ Designated initialization helps when a structure evolves because it names the in
 
 ## 5.14 Padding and equality
 
-Two structures can have equal corresponding members while their padding bytes differ. Using \`memcmp(&a, &b, sizeof a)\` to test semantic equality is therefore not a general solution. Compare the meaningful fields instead:
+Two structures can have equal corresponding members while their padding bytes differ. Using `memcmp(&a, &b, sizeof a)` to test semantic equality is therefore not a general solution. Compare the meaningful fields instead:
 
-\`\`\`c
+```c
 struct measurement { unsigned id; double value; };
 
 bool same_measurement(struct measurement a, struct measurement b)
 {
     return a.id == b.id && a.value == b.value;
 }
-\`\`\`
+```
 
-The floating comparison here deliberately treats NaNs as unequal; whether this is appropriate depends on the application's data model. If bitwise reproducibility matters, define representation-specific behavior rather than assuming the members' \`==\` operators implement it.
+The floating comparison here deliberately treats NaNs as unequal; whether this is appropriate depends on the application's data model. If bitwise reproducibility matters, define representation-specific behavior rather than assuming the members' `==` operators implement it.
 
-For serialization, encode only documented fields in a documented order. Writing \`sizeof(struct measurement)\` bytes to a file can unintentionally expose padding bytes and platform-specific floating representations.
+For serialization, encode only documented fields in a documented order. Writing `sizeof(struct measurement)` bytes to a file can unintentionally expose padding bytes and platform-specific floating representations.
 
 ## 5.15 Tagged unions and exhaustiveness
 
 A union can store one of several representations in shared storage. It does not automatically record which interpretation is active. A common approach pairs the union with a tag:
 
-\`\`\`c
+```c
 enum value_kind { VALUE_INT, VALUE_FLOAT };
 struct value {
     enum value_kind kind;
     union { int integer; double real; } data;
 };
-\`\`\`
+```
 
-A function consuming \`struct value\` should examine the tag before accessing the corresponding member. C23 does not provide algebraic data types with exhaustive pattern matching; a \`switch\` over an enum can still have invalid values due to corrupted input or casts. An explicit default error path is useful at trust boundaries.
+A function consuming `struct value` should examine the tag before accessing the corresponding member. C23 does not provide algebraic data types with exhaustive pattern matching; a `switch` over an enum can still have invalid values due to corrupted input or casts. An explicit default error path is useful at trust boundaries.
 
 A tagged union is particularly effective for a parser returning one of several record kinds. It makes illegal reinterpretations easier to detect in code review and separates the logical type tag from the memory representation of the payload.
 
@@ -224,13 +224,13 @@ A tagged union is particularly effective for a parser returning one of several r
 
 A linked-list node can own its payload, or the payload can contain the linkage needed to participate in the list. An intrusive list avoids a separate node allocation but ties the item's lifetime to list membership. An owning list may allocate a node and payload together or separately.
 
-Before writing the first insert function, choose whether the list owns items. Can a caller free an item while it is linked? Can an item belong to two lists? What does removing an element do to its lifetime? These questions determine correctness more than the syntax of \`next\`.
+Before writing the first insert function, choose whether the list owns items. Can a caller free an item while it is linked? Can an item belong to two lists? What does removing an element do to its lifetime? These questions determine correctness more than the syntax of `next`.
 
 On microcontrollers, a fixed pool of nodes and explicit occupancy flags may be preferable to unbounded heap allocation. It bounds memory, can eliminate allocation fragmentation, and makes exhaustion an ordinary status that tests can exercise.
 
 ## 5.17 Ring buffer wraparound
 
-The earlier queue has capacity eight, with independent \`head\` and \`count\` fields. To find the tail, it computes \`(head + count) % capacity\`. This works because the queue invariant constrains \`head\` and \`count\`, and their sum is small enough to avoid overflowing \`size_t\`.
+The earlier queue has capacity eight, with independent `head` and `count` fields. To find the tail, it computes `(head + count) % capacity`. This works because the queue invariant constrains `head` and `count`, and their sum is small enough to avoid overflowing `size_t`.
 
 Trace a full cycle. Push values 0 through 7; the queue is full. A ninth push fails without modifying state. Pop 0, 1, and 2; now head is 3 and count is 5. Push 8, 9, and 10; the physical array slots reused are 0, 1, and 2. Subsequent pops return 3 through 10 in order.
 
