@@ -1,35 +1,26 @@
-# Editorial and Verification Status — 26 October 2026
+# Editorial and Verification Status — October 2026
 
 ## Manuscript
 
-- 19 chapters, all expanded in a full second editorial pass.
-- 5 appendices, including selected exercise solutions, a glossary and a migration checklist.
-- A preface explaining the audience, contracts, portability and source conventions.
-- Approximately 55,800 Markdown words in the front matter, chapters and appendices, counting code listings.
-- 27 standalone C examples in `examples/`.
+- 19 chapters, five appendices, and a preface
+- Approximately 61,000 source words including code listings and exercises
+- 29 standalone examples integrated with `make check`
+- Latest additions: checked function contracts, robust line reading, hosted atomic threads, C23 feature probing, and corresponding worked solutions
 
-## Verified versus unverified
+## Source and tests
 
-**Verified:** The updated Markdown files, scripts and workflow configuration were committed through the GitHub connector and checked as readable from the repository.
+The expanded manuscript and complete examples are committed to `main` under `modernc_book/`. The GitHub Actions matrix builds examples under GCC 14 and Clang 18 using an explicit C23 dialect and strict warnings. See the workflow's latest run for the current result.
 
-**Verified for the expanded manuscript:** GitHub Actions example tests completed successfully with GCC 14 and Clang 18 on the updated 27-program suite. A passing suite does not mean that all illustrative fragments embedded in the Markdown have been separately compiled.
+The two new examples have specific limits. `line_reader.c` uses hosted `FILE *` streams and enforces bounded **storage**, not bounded time spent draining a long record. `thread_counter.c` requires the optional hosted C threads facility and does not establish interrupt safety or an RTOS timing guarantee.
 
-**Still to verify:** The PDF regeneration containing the latest chapter additions, its actual page count, a visual layout review, and the final index. The older published PDF must not be assumed to contain the latest revisions until its new build succeeds.
+## PDF publication
 
-## C23 specificity
+The PDF workflow includes the preface, 19 chapters and five appendices, then measures the actual resulting PDF. The previous confirmed PDF was 124 pages; newer source changes must not be assumed typeset until a later successful publication is verified.
 
-The language specification is ISO/IEC 9899:2024. Features such as `nullptr`, `auto`, `typeof`, `constexpr`, `_BitInt`, `#embed`, `<stdbit.h>` and `<stdckdint.h>` have implementation-specific availability. Test language and library support separately on the intended target.
+## Outstanding acceptance criteria
 
-## Acceptance criteria for a reading edition
-
-A complete reading draft must build from the latest source, include the preface and all five appendices, show a navigable table of contents, have no truncated code listings, and report a measured page count. Publication-ready status additionally requires source and example audits, cross-compiler results, comprehensive proofreading, and an index.
-
-## Subsequent expansion: practical systems examples
-
-Expanded Chapters 8, 11, 13–15, 17 and 19 with additional reasoning, contracts, and engineering examples. Added three complete programs: a checked frame encoder/decoder, a partial-write callback sink, and a multi-file checksum module. Appendix C now explains their correctness conditions and boundary tests. The Makefile and CI script compile and test 24 programs.
-
-PDF page count and publication status must be verified from the newly generated artifact rather than assumed from the manuscript change. The new GitHub Actions PDF build may be waiting behind earlier runs.
-
-## Current deepening pass
-
-Expanded Chapters 2, 4, 5, 7, 12 and 14 with diagrammatic memory explanations, mathematical bounds checks, allocation ownership, a signed-decimal parser, byte-arena behavior, bit rotation, and detailed exercises. Appendix C adds worked solutions through C.25. The example suite now covers 27 complete programs.
+- Technical audit of all illustrative fragments and standard-library portability claims
+- Cross-compiler tests for advanced optional C23 features
+- Visual inspection of the generated PDF and page-break quality
+- Useful book index, complete cross-references, and editorial consistency pass
+- Expansion toward the intended roughly 200–230-page reading edition without padding or redundant prose
