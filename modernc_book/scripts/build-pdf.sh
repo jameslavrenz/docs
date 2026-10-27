@@ -13,7 +13,7 @@ pandoc frontmatter/preface.md chapters/*.md appendices/*.md \
   --metadata="title:Modern C: A Concise Introduction to C23" \
   --metadata="subtitle:Independent technical-review draft" \
   --metadata="date:October 2026" \
-  -V geometry:margin=0.85in -V fontsize=10pt \
+  -V geometry:margin=0.65in -V fontsize=10pt \
   -V mainfont='DejaVu Serif' -V monofont='DejaVu Sans Mono' \
   -o build/modern-c23.pdf
 
