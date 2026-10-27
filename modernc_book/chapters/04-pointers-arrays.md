@@ -214,7 +214,7 @@ This is why declarations matter even when two pointer values print alike.
 
 A plain pointer to the first element does not contain a length. A small value type can carry the two pieces together:
 
-```c
+```c compile-check
 #include <stddef.h>
 
 struct int_slice {
