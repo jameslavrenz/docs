@@ -29,6 +29,9 @@ jobs:
       - name: Check manuscript structure
         working-directory: modernc_book
         run: python3 scripts/check_manuscript.py
+      - name: Check topic finder references
+        working-directory: modernc_book
+        run: python3 scripts/check_topic_finder.py
       - name: Compile complete chapter listings
         working-directory: modernc_book
         env:
