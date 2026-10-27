@@ -1,0 +1,35 @@
+name: Modern C23 Book Examples
+on:
+  push:
+    paths:
+      - 'modernc_book/**'
+      - '.github/workflows/modernc-book.yml'
+  pull_request:
+    paths:
+      - 'modernc_book/**'
+      - '.github/workflows/modernc-book.yml'
+  workflow_dispatch:
+jobs:
+  examples:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc-14, clang-18]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install compiler
+        run: |
+          sudo apt-get update
+          if [ "${{ matrix.compiler }}" = "gcc-14" ]; then
+            sudo apt-get install -y gcc-14
+          else
+            sudo apt-get install -y clang-18
+          fi
+      - name: Compile and test all book examples
+        working-directory: modernc_book
+        env:
+          CC: ${{ matrix.compiler }}
+        run: |
+          make clean
+          make CFLAGS='-std=c23 -Wall -Wextra -Wpedantic -Werror -O2' check
