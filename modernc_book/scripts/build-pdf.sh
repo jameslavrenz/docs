@@ -18,4 +18,8 @@ pandoc frontmatter/preface.md chapters/*.md appendices/*.md \
   -o build/modern-c23.pdf
 
 test -s build/modern-c23.pdf
+# Print the measured reading-edition length when Poppler is installed.
+if command -v pdfinfo >/dev/null 2>&1; then
+  pdfinfo build/modern-c23.pdf | grep '^Pages:'
+fi
 echo 'Created build/modern-c23.pdf'
