@@ -170,3 +170,109 @@ The per-record checksum loop has at most a fixed number of iterations. That prov
 ### Exercises
 
 **10.11** Implement a status enumeration with valid, incomplete, malformed and no-capacity cases. **10.12** Design a resynchronization policy when a payload contains the magic byte. **10.13** Calculate an upper bound on parser storage independent of input stream length. **10.14** Test that all error paths preserve the output structure's meaningful members.
+
+
+## 10.23 A bounded binary record format
+
+A type-length-value (TLV) record stores each field as a type identifier, a length, and a sequence of value bytes. This pattern appears in binary protocols, embedded device configuration, and extensible message formats. The exact field widths and constraints must be specified; the letters 'TLV' alone do not define a universal byte layout.
+
+For our teaching protocol, each field has:
+
+- One octet identifying the tag.
+- One octet containing an unsigned byte count.
+- Exactly that many following payload octets.
+
+A complete message is a concatenation of zero or more fields. The application imposes two further limits: at most four fields and at most eight payload octets per field. Repeated tags are permitted, and a zero-length field is valid.
+
+Those limits bound memory independent of the input's advertised lengths. The parser rejects a message that exceeds them rather than allocating more storage or truncating a field.
+
+The complete implementation is `examples/tlv_decode.c`.
+
+## 10.24 Parsing is a sequence of narrowing proofs
+
+A byte array supplied by the caller does not have the same type as the application record. The decoder must establish that every external field fits the chosen internal representation.
+
+Suppose `cursor` is the number of input bytes already consumed and `size` is the supplied input length. Maintain the invariant:
+
+```text
+0 <= cursor <= size
+0 <= decoded_field_count <= 4
+```
+
+Before reading a two-octet field header, test `size - cursor >= 2`. That subtraction is safe because the cursor invariant already holds.
+
+Read tag and length only after this test. Advance cursor by two, then check that the length is no greater than eight and that `length <= size - cursor`. Only after these checks is it valid to copy the payload bytes from the source.
+
+This approach avoids forming potentially overflowing sums such as `cursor + header_size + length` before checking bounds. It also avoids reading the length octet from a truncated one-byte header.
+
+## 10.25 A strong failure guarantee
+
+A decoder that fills its caller's result structure incrementally can leave partially decoded data on a malformed input. That is not always forbidden, but it complicates callers that want a previous valid configuration to survive a failed update.
+
+The TLV decoder instead begins with a local empty candidate. It appends each validated field to that candidate and assigns the whole result to `*out` only after consuming the complete input successfully.
+
+```c
+struct tlv_message candidate = {};
+/* Validate every field and fill candidate. */
+*out = candidate;    /* Exactly one publication point. */
+return true;
+```
+
+The program intentionally retains a simple `bool` result: malformed input, excessive field count, and oversized field values all return false. For a production protocol, an enumeration distinguishing those failure causes may be more useful.
+
+On failure, no meaningful member of the output result is modified. The implementation tests this guarantee after a valid two-field message by attempting several malformed messages and checking that the earlier result is retained.
+
+## 10.26 What zero-length input means
+
+The grammar permits an empty message containing zero TLV fields. Consequently, the decoder accepts `bytes == nullptr` when `size == 0` and produces an empty result. It rejects a null input pointer when the supplied size is nonzero.
+
+This explicit convention avoids a common C pointer mistake: attempting to construct an end pointer by writing `nullptr + 0`. The decoder uses indexes and never performs pointer arithmetic on a null input.
+
+An application might instead require at least one field and reject an empty message. That is a valid alternative, but the rule belongs in its specification rather than being implied by an implementation accident.
+
+## 10.27 Truncation and extra bytes
+
+Consider these byte sequences:
+
+```text
+01 03 0A 0B 0C   Valid field: tag 1, three bytes 0A 0B 0C
+01 04 0A 0B 0C   Invalid: claims four bytes, supplies three
+01               Invalid: incomplete field header
+01 00 02 00      Valid: two empty fields, tags 1 and 2
+```
+
+The decoder does not accept the valid prefix of a malformed message and ignore trailing or missing bytes. Its loop must consume exactly the supplied length in complete TLV fields.
+
+The tests also supply a field whose claimed length exceeds eight and a message containing five empty fields. Both are rejected by application limits even though the one-byte length value itself is representable.
+
+Memory safety is necessary but not sufficient for protocol correctness. A decoder could remain within every buffer while silently ignoring an unsupported tag or interpreting an unknown field incorrectly. A real application often adds tag validation, mandatory-field checks, versioning, and field-order rules.
+
+## 10.28 Unknown fields and forward compatibility
+
+A flexible protocol may allow unknown tag values to be skipped using their lengths. This can help newer senders communicate with older receivers. But skipping a field is safe only after its claimed length has been validated against the available input bytes.
+
+Different tags may also have different allowed lengths. A timestamp might require exactly four octets, while a device name might be a variable-length text field. A general decoder can first validate the outer TLV shape and then run a second semantic validation stage for each recognized tag.
+
+Do not assume unknown fields are harmless. A security- or safety-critical field marked mandatory might need to cause rejection when the receiver cannot interpret it. Protocol evolution requires an explicit compatibility policy.
+
+## 10.29 Storage and timing bounds
+
+The example's result structure reserves four field slots, each containing up to eight value octets plus tag and length metadata. Its maximum storage is known from the C type, although padding means `sizeof(struct tlv_message)` need not equal a simple sum of wire-format octets.
+
+The decoder's loop can accept at most four fields before reaching its success condition. It rejects an attempted fifth field. Its payload copies are limited to eight octets each, establishing a straightforward bound on local work for valid and rejected records.
+
+This is a useful design for small embedded messages: resource exhaustion becomes an ordinary error value rather than unexpected heap allocation or unbounded parsing.
+
+However, if the surrounding transport waits indefinitely for a complete message, the application's end-to-end latency is not bounded merely because the parser is. Transport and parser timing must be assessed separately.
+
+## 10.30 From parser to authenticated command
+
+The educational TLV example intentionally has no checksum, authentication, anti-replay protection, or authorization. It must not be treated as a secure command protocol simply because it performs strict bounds checking.
+
+A production command receiver should distinguish the integrity of transmitted data, the identity or authorization of the sender, and the semantic validity of the command. A CRC may detect accidental corruption; cryptographic authentication may be required when malicious modification is in scope. Bounds checks cannot provide those properties.
+
+The separation is valuable architecturally. A framing layer obtains a complete message, an integrity layer verifies the appropriate check, the TLV decoder constructs a typed candidate, and the application verifies allowed operations before committing state.
+
+### Additional exercises
+
+**10.15** Modify the TLV decoder to return distinct statuses for truncated header, truncated payload, excessive field count, and oversized value. **10.16** Specify mandatory tags and reject duplicate instances of those tags. **10.17** Add an unknown-field skipping policy while preserving all bounds checks. **10.18** Build an independent expected-value test for two TLV fields rather than relying on an encoder written with the same algorithm. **10.19** Explain why a bounded parser is not automatically a secure or real-time protocol implementation.
