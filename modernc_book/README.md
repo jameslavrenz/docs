@@ -19,6 +19,7 @@ An original, example-first introduction to the C programming language as standar
 11. [An Extended Example: Word Index](chapters/11-word-index.md)
 12. [Exercises and Further Reading](chapters/12-exercises.md)
 13. [Testing, Diagnostics, and Portability](chapters/13-testing.md)
+14. [Bits, Bytes, and Portable Data](chapters/14-bitwise-portable-data.md)
 
 ### Appendices
 
