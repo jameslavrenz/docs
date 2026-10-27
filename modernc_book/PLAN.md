@@ -1,6 +1,6 @@
 # Editorial Roadmap — Modern C23
 
-**Current milestone:** comprehensive second-pass revision completed on 26 October 2026. The repository now has 19 chapters, 5 appendices, a preface, and 24 standalone example programs. Chapter, appendix and preface Markdown total approximately 34,300 words, including code and exercises. The 200–230-page target is an editorial objective, not a verified page count.
+**Current milestone:** comprehensive second-pass revision completed on 26 October 2026. The repository now has 19 chapters, 5 appendices, a preface, and 27 standalone example programs. Chapter, appendix and preface Markdown total approximately 55,800 words, including code and exercises. The 200–230-page target is an editorial objective, not a verified page count.
 
 ## Completed in this pass
 
@@ -32,3 +32,9 @@ This is an original independent C23 book inspired by a compact example-first ped
 Expanded Chapters 8, 11, 13–15, 17 and 19 with additional reasoning, contracts, and engineering examples. Added three complete programs: a checked frame encoder/decoder, a partial-write callback sink, and a multi-file checksum module. Appendix C now explains their correctness conditions and boundary tests. The Makefile and CI script compile and test 24 programs.
 
 PDF page count and publication status must be verified from the newly generated artifact rather than assumed from the manuscript change. The new GitHub Actions PDF build may be waiting behind earlier runs.
+
+## Current expansion: memory, arithmetic, and representation
+
+Detailed additions to Chapters 2, 4, 5, 7, 12 and 14 explain signed decimal boundaries, pointer-to-array types, counted subslices, structure layout and flexible arrays, fixed byte arenas, aligned-object caveats, and rotation operations. Appendix C adds worked derivations and boundary-test tables. Three new programs (`parse_signed.c`, `arena_bytes.c`, `rotate_bits.c`) bring the test suite to 27 standalone programs.
+
+The manuscript and appendices, including code listings, now contain approximately 55,800 words. The most recently measured published PDF before this expansion had 124 pages; verify the regenerated PDF directly rather than estimating pagination from word count.
