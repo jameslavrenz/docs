@@ -239,3 +239,38 @@ For publication, add a second gate: the generated PDF must contain every chapter
 ### Exercises
 
 **13.7** Write failure-injection cases for an allocator and a short-writing output sink. **13.8** List what a passing host test cannot establish about MCU interrupt timing. **13.9** Add a CI check that separately reports compiler-test and PDF-build failures. **13.10** Design independent golden vectors for a three-byte header codec.
+
+
+## 13.24 A repeatable verification session
+
+The book's standalone examples are intended to be compiled using the actual C23 language mode, not merely whichever dialect a host compiler selects by default. A reproducible local session should begin with an explicit compiler version check and a clean build:
+
+```sh
+gcc --version
+make clean
+make CC=gcc CFLAGS='-std=c23 -Wall -Wextra -Wpedantic -Werror -O2' check
+```
+
+On a system where an older compiler does not recognize `-std=c23`, install or select a compatible compiler rather than quietly switching to an earlier language dialect and assuming the results prove C23 compatibility.
+
+The GitHub Actions matrix in this repository uses GCC 14 and Clang 18. It preserves warnings as errors, with a targeted workaround for Clang 18's diagnostic that classified standardized C23 binary literals as a GNU extension. This does not justify suppressing all pedantic warnings.
+
+## 13.25 Verify the errors that matter
+
+For a signed parser, ordinary numbers are necessary tests but not the interesting boundary. Verify `LONG_MIN`, `LONG_MAX`, bare signs, whitespace policy, trailing garbage, and an out-of-range decimal string. Initialize the output to a sentinel and ensure failed calls leave it unchanged.
+
+For a byte arena, fill its remaining storage exactly, attempt one byte more, and check that neither the allocation cursor nor the output pointer changes on failure. Test reset, while respecting the rule that borrowed regions from before reset are no longer valid under the arena API.
+
+For bit rotations, use literal expected values and count zero, 31, and 32. The tests are valuable because an invalid shift count may seem harmless on a particular CPU while still invoking undefined C behavior.
+
+## 13.26 Distinguish instrumentation from proof
+
+Host sanitizers can reveal many use-after-free errors, out-of-bounds accesses, and undefined operations when the erroneous path executes. They do not establish all possible behavior by merely completing a smoke test. Property testing can broaden input coverage, but an inverse-operation property may be shared by two mutually incorrect implementations.
+
+Combine three forms of evidence: independent expected values for carefully chosen cases, invariants derived from the language and algorithm, and repeated executable tests across compiler configurations. Use target hardware tests for properties not represented by the host execution environment.
+
+A good verification report names the source commit, compiler versions, flags, test inputs, observed outcomes, and remaining unverified assumptions. The presence of a test file does not mean a test ran; similarly, a PDF workflow file does not mean the latest reading edition was published.
+
+### Additional exercises
+
+**13.11** Construct a CI matrix separating compiler tests, sanitizer tests, and PDF generation. **13.12** Write a failure-injection test that makes a vector resize fail and checks all saved invariants. **13.13** Produce an independent expected-value table for 32-bit rotations. **13.14** Write a one-page review explaining which properties of a fixed byte arena are proven by bounds checks and which depend on caller-provided storage and lifetime.
