@@ -60,11 +60,18 @@ Floating-point values are approximations. A decimal fraction like 0.1 often cann
 
 C23 recognizes `bool`, `true`, and `false` as keywords, and permits empty initialization:
 
-```c
+```c compile-check
+#include <stdbool.h>
+
 struct point { int x, y; };
-struct point origin = {};
-bool ready = false;
-struct point moved = (struct point){.x = 3, .y = 4};
+
+int initialization_example(void)
+{
+    struct point origin = {};
+    bool ready = false;
+    struct point moved = (struct point){.x = 3, .y = 4};
+    return origin.x + moved.x + ready; /* 3 */
+}
 ```
 
 An empty initializer gives the object an empty-initialization value (for this structure, both fields become zero). **Compound literals** create unnamed objects; here `(struct point){.x = 3, .y = 4}` supplies the value used to initialize `moved`. At block scope, the unnamed object's lifetime extends to the end of the enclosing block. Check C23-specific syntax support on older toolchains.
