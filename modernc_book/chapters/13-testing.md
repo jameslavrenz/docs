@@ -160,3 +160,46 @@ For this manuscript, `make check` invokes a shell-based regression suite, while 
 **13.5** State which properties of a ring buffer can be established with single-threaded tests and which need concurrency-specific reasoning.
 
 **13.6** Design a verification matrix for a program that must run on an x86-64 development host and an ARM Cortex-M microcontroller.
+
+
+## 13.13 Make tests deterministic
+
+A regression test should produce the same expected result from the same inputs under documented conditions. Tests based on timing thresholds, random seeds without recording them, or unspecified evaluation order are difficult to reproduce. When randomness is useful, record the seed and provide a way to replay the failing case exactly.
+
+For the book's word index, generate a fixed set of vocabulary and expected counts. For the bounded queue, push and pop a known sequence through wraparound. For the byte decoder, use independent golden vectors defined by the protocol rather than relying only on round trips.
+
+## 13.14 Test failures, not just successes
+
+Many defects hide on error paths. Test the allocation path that fails, the input that is one byte too short, the array that is exactly full, and the output that must not change when conversion fails.
+
+A useful method is *fault injection*. A test allocator can fail on the third request; a fake byte source can return an I/O error after a chosen number of bytes; a fake output sink can accept only a prefix of a write. The production algorithm should treat these failures as ordinary results.
+
+When an API promises strong failure safety, initialize the output with an unusual value and verify it remains unchanged after every rejection. Be careful not to compare structure padding bytes with `memcmp` and interpret differences as changes in member values.
+
+## 13.15 Static analysis and sanitizers complement each other
+
+A static analyzer inspects source or intermediate representation without necessarily running every path. It may detect impossible conditions, potential null dereferences, and unchecked return values. False positives exist, and the analyzer's assumptions must be understood.
+
+AddressSanitizer can catch many invalid memory accesses when they execute. UndefinedBehaviorSanitizer can catch selected invalid shifts, arithmetic, and other errors. Neither usually establishes absence of data races; ThreadSanitizer is a different instrument and has platform-specific limitations. Sanitizers also change timing and memory layout, so embedded hardware behavior still requires separate validation.
+
+For numerical kernels, compiler warnings and differential tests with independent reference implementations may reveal issues that memory sanitizers cannot.
+
+## 13.16 Differential testing
+
+When implementing a custom parser, compare its accepted strings and decoded values with a second trusted implementation **after matching their grammars**. If one parser allows leading whitespace and the other forbids it, disagreement may be by design rather than a bug.
+
+For a numeric function, compare against a reference with higher precision or a well-understood library routine over representative ranges. For a protocol codec, compare byte-level outputs against test vectors written from the format specification.
+
+A test that encodes and decodes using two functions sharing the same mistaken endianness can pass while violating the external protocol. Independent expectations are essential.
+
+## 13.17 CI as reproducible evidence
+
+A GitHub Actions job should report its actual compiler and version, the selected dialect, and the command that ran. Separate compilation, unit tests, sanitizer builds and document generation into distinguishable steps so a failed PDF toolchain is not mistaken for failing C code.
+
+A CI configuration file is not itself proof of a passing build. Evidence requires inspecting an actual completed workflow run for the exact commit. If the repository cannot expose run status through the available integration, say that verification is pending.
+
+## 13.18 Choose a release criterion
+
+A reasonable first reading edition can require all examples to compile under two supported compilers, all deterministic tests to pass, all Markdown links to resolve, and the generated PDF to include every chapter and appendix. A publishable technical book needs more: technical review, a coherent index, verified page layout, exercise solutions, and clear statements of compiler-specific features.
+
+**Further problems:** Design a differential test for a little-endian decoder using independent literal expected values. Explain why a clean sanitizer run cannot prove every array index is valid. Add a fault-injectable allocation layer to a dynamic vector and report which postconditions remain true.
