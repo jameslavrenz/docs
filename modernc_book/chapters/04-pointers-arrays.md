@@ -16,6 +16,7 @@ A pointer's validity depends on the referenced object's lifetime, alignment, and
 
 ```c compile-check
 #include <stddef.h>
+#include <stdbool.h>
 
 int sum(const int *data, size_t count, long long *out)
 {
@@ -35,7 +36,7 @@ The signature carries a count because a pointer does not record the bounds of th
 
 A C string is an array of `char` with a terminating zero byte. `strlen` measures the number of bytes before that terminator, not necessarily the number of Unicode characters. `sizeof` measures a type or an object, not the current length of a string.
 
-```c
+```c compile-check
 char name[] = "C23";
 size_t capacity = sizeof name;  /* 4 including '\0' */
 ```
@@ -46,6 +47,7 @@ UTF-8 represents some characters with multiple bytes. A procedure that uppercase
 
 ```c compile-check
 #include <stddef.h>
+#include <stdbool.h>
 
 bool copy_text(char *dst, size_t capacity, const char *src)
 {
@@ -74,7 +76,7 @@ This function assumes valid source storage and that source and destination do no
 
 The expression `sizeof array` is useful inside the scope where `array` is an actual array object. Once an array expression is converted to a pointer for passing to a function, its bound is ordinarily lost.
 
-```c
+```c compile-check
 #include <stddef.h>
 
 static size_t count_values(const int *values, size_t count)
