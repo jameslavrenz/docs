@@ -1,7 +1,13 @@
 CC ?= cc
 CFLAGS ?= -std=c23 -Wall -Wextra -Wpedantic -O2
 .PHONY: all clean check
-all: hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy word_index packet_decode byte_codec checked_interval spsc_queue callbacks utf8_decode compile_time c23_basics slices vector_checked
+all: hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy word_index packet_decode byte_codec checked_interval spsc_queue callbacks utf8_decode compile_time c23_basics slices vector_checked frame_codec callback_sink modules_demo
+frame_codec: examples/frame_codec.c
+	$(CC) $(CFLAGS) $< -o $@
+callback_sink: examples/callback_sink.c
+	$(CC) $(CFLAGS) $< -o $@
+modules_demo: examples/modules/main.c examples/modules/checksum.c examples/modules/checksum.h
+	$(CC) $(CFLAGS) examples/modules/main.c examples/modules/checksum.c -o $@
 slices: examples/slices.c
 	$(CC) $(CFLAGS) $< -o $@
 vector_checked: examples/vector_checked.c
@@ -47,4 +53,4 @@ digits: examples/digits.c
 check: all
 	@sh tests/test_examples.sh
 clean:
-	rm -f hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy word_index packet_decode byte_codec checked_interval spsc_queue callbacks utf8_decode compile_time c23_basics slices vector_checked
+	rm -f hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy word_index packet_decode byte_codec checked_interval spsc_queue callbacks utf8_decode compile_time c23_basics slices vector_checked frame_codec callback_sink modules_demo
