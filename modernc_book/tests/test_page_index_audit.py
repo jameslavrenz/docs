@@ -34,7 +34,7 @@ class IndexSectionTests(unittest.TestCase):
             )
             self.pages.append(title + "\nExample text.")
         # A numbered list can begin a page; it must not overwrite Chapter 2.
-        self.pages[30] = "2. Types: what are the promotions?\nAn ordinary numbered list"
+        self.pages[31] = "2. Types: what are the promotions?\nAn ordinary numbered list"
 
     def test_list_item_is_not_chapter(self):
         bounds = module.section_bounds(self.pages, self.finder)
@@ -48,7 +48,7 @@ class IndexSectionTests(unittest.TestCase):
             module.section_bounds(self.pages, self.finder)
 
     def test_duplicate_heading_is_rejected(self):
-        self.pages[30] = "2. Example chapter 2"
+        self.pages[31] = "2. Example chapter 2"
         with self.assertRaisesRegex(ValueError, "Duplicate"):
             module.section_bounds(self.pages, self.finder)
 
