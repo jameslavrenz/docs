@@ -47,6 +47,7 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 
 ### D
 
+- **Decoder, streaming frame:** four-state parser, bounded work and resynchronization, Chapter 10; worked solution, Appendix C.
 - **Data races:** non-atomic shared objects and undefined behavior, Chapter 16.
 - **Declarations:** pointers, functions, arrays and prototypes, Chapters 3–4; Appendix A.
 - **Decoding:** counted input, TLV formats, UTF-8 state machines, Chapters 10 and 18.
@@ -69,6 +70,7 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 
 ### F
 
+- **Fixed slot pool:** generational handles, retirement and stale references, Chapters 5 and 7; worked solution, Appendix C.
 - **Failure injection:** allocators and byte sinks, Chapters 7 and 13; Appendix C.
 - **File I/O:** `FILE *`, buffering, short reads and writes, Chapter 6.
 - **Flexible array members:** variable-length records, Chapter 5.
@@ -119,6 +121,7 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 - **One-past pointer:** valid construction versus invalid dereference, Chapter 4.
 - **Opaque interfaces:** callback contexts and ownership, Chapters 3 and 17.
 - **Ordering, evaluation:** function arguments and side effects, Chapters 3 and 15.
+- **Obsolete handles:** logical lifetime versus physical storage, Chapters 5, 7 and 15.
 - **Ownership:** borrowed and owning references, Chapters 4 and 7.
 - **Padding:** structure size and equality, Chapter 5.
 - **Partial writes:** callbacks and I/O, Chapters 6 and 17.
@@ -142,6 +145,7 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 
 ### S
 
+- **State-transition testing:** parser and pool validation, Chapter 13.
 - **Sanitizers:** testing evidence and limitations, Chapter 13.
 - **Sequencing:** unsequenced effects and evaluation ordering, Chapter 15.
 - **Serialization:** field widths, endianness, padding, Chapters 5 and 14.
