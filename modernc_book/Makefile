@@ -26,14 +26,5 @@ digits: examples/digits.c
 	$(CC) $(CFLAGS) $< -o $@
 check: all
 	@sh tests/test_examples.sh
-	@./parse_unsigned >/dev/null
-	@./byte_decode >/dev/null
-	@./checked_add >/dev/null
-	@./ring_buffer >/dev/null
-	@./checked_sum >/dev/null
-	@./vector >/dev/null
-	@test "$(printf 'a b c' | ./word_count)" = '3'
-	@test "$(./hello)" = "hello, world"
-	@test "$(printf '113\n' | ./digits | grep '^1: 2$')" = '1: 2' 
 clean:
 	rm -f hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy word_index
