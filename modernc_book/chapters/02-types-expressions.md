@@ -67,7 +67,7 @@ bool ready = false;
 struct point moved = (struct point){.x = 3, .y = 4};
 ```
 
-An empty initializer gives the object an empty-initialization value (for this structure, both fields become zero). The expression `(struct point){.x = 3, .y = 4}` is a **compound literal**: it creates an unnamed structure object, whose value initializes `moved`. At block scope, the unnamed object's lifetime extends to the end of the enclosing block. Check C23-specific syntax support on older toolchains.
+An empty initializer gives the object an empty-initialization value (for this structure, both fields become zero). **Compound literals** create unnamed objects; here `(struct point){.x = 3, .y = 4}` supplies the value used to initialize `moved`. At block scope, the unnamed object's lifetime extends to the end of the enclosing block. Check C23-specific syntax support on older toolchains.
 
 **Exercises.** 2.1 Implement absolute difference for unsigned integers without underflow. 2.2 Write `gcd` tests including zeros. 2.3 Explain why `int n = sizeof array;` can narrow an object size. 2.4 Determine which operations in a signed integer sum can overflow.
 
