@@ -26,6 +26,9 @@ jobs:
           else
             sudo apt-get install -y clang-18
           fi
+      - name: Check manuscript structure
+        working-directory: modernc_book
+        run: python3 scripts/check_manuscript.py
       - name: Compile and test all book examples
         working-directory: modernc_book
         env:
