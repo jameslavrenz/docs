@@ -19,6 +19,13 @@ An original, example-first introduction to the C programming language as standar
 11. [An Extended Example: Word Index](chapters/11-word-index.md)
 12. [Exercises and Further Reading](chapters/12-exercises.md)
 
+### Appendices
+
+- [A. Working Reference to C23](appendices/A-language-reference.md)
+- [B. Standard Library by Task](appendices/B-standard-library.md)
+- [C. Selected Worked Exercises](appendices/C-exercise-solutions.md)
+- [Compilable example files](examples/README.md)
+
 ## Build and scope
 
 Use a C23-capable compiler, e.g. `gcc -std=c23 -Wall -Wextra -Wpedantic -O2 program.c -o program`. GCC 15 and newer select C23 by default; Clang 18 and newer recognize `-std=c23`. Individual standard-library facilities can lag behind language support. Check the specific toolchain and C library.
