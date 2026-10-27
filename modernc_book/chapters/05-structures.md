@@ -239,3 +239,126 @@ The same logical sequence can be represented differently in physical storage. Cl
 ### Exercises
 
 **5.9** Write an equality function for a structure containing an integer, a floating value, and an optional identifier; state the NaN policy. **5.10** Add a status tag to a variant record and reject an unsupported tag on decoding. **5.11** Design a fixed-capacity node pool for a list and describe release behavior. **5.12** Trace ring-buffer state after each push and pop, identifying array index and logical position.
+
+
+## 5.18 A diagram of logical fields and physical layout
+
+The declaration
+
+```c
+struct event {
+    unsigned char kind;
+    unsigned count;
+    bool valid;
+};
+```
+
+establishes three members with those types and in that order. It does not specify an identical packed sequence of their representations across every target.
+
+An implementation might arrange them conceptually as follows:
+
+```text
++------+---------+----------------+-------+-----------+
+| kind | padding |     count      | valid | padding   |
++------+---------+----------------+-------+-----------+
+```
+
+The sizes and amount of padding in this sketch are deliberately unspecified. The compiler may choose a different layout to satisfy each member's alignment requirements. `offsetof(struct event, count)` can report the actual offset for the selected implementation, but using that result does not create a portable external file format.
+
+The structure's *semantic* equality should compare members under a documented policy. Comparing `sizeof(struct event)` raw bytes with `memcmp` can read padding values that need not match even when corresponding members compare equal.
+
+## 5.19 Representation is not serialization
+
+A common mistake is to write a structure to disk with:
+
+```c
+fwrite(&event, sizeof event, 1, stream);
+```
+
+This can be acceptable for a tightly controlled, versioned, same-ABI internal checkpoint under a deliberately chosen contract, but it is generally unsuitable as a portable protocol or persistent format. The bytes may contain padding, depend on endianness, encode a compiler-specific `bool` representation, and change when the structure definition or ABI changes.
+
+A portable message chooses field widths and byte order separately. For example, an event wire format might define one octet for kind, four little-endian octets for count, and one octet containing 0 or 1 for validity. Six octets are then required regardless of the native structure's `sizeof`, assuming eight-bit octets as required by the format.
+
+A field encoder should write each octet deliberately. It should reject a count outside the format's chosen numerical range if the C source type could represent larger values, and should not read from or write to buffers before checking their declared bounds.
+
+## 5.20 Padding does not solve ownership
+
+Suppose a structure contains a pointer to allocated text:
+
+```c
+struct record {
+    char *name;
+    size_t length;
+};
+```
+
+Assigning one `struct record` to another copies the pointer and length. It does not copy the characters. If both records now behave as independent owners, destroying each will attempt to free the same allocation.
+
+A correct owning interface must define one of several policies. It can forbid copying, offer an explicit deep-copy operation, or transfer ownership from one record to another while clearing the old owner. C permits expressing each policy, but it does not automatically enforce it.
+
+The same caution applies when records are moved inside a sorted array. Shifting a structure containing a pointer copies that pointer. If the data structure later destroys an overwritten record incorrectly, it can leak or double-release storage. A sorted array of fixed, inline word buffers avoids much of this complexity because each record carries its bytes directly.
+
+## 5.21 Flexible array members, correctly sized
+
+A flexible array member is a final array member with no declared bound. It permits one allocation to contain a header and a variable-length trailing sequence.
+
+```c
+struct message {
+    size_t count;
+    unsigned char payload[];
+};
+```
+
+An allocation for `count` bytes should use a checked size calculation. The language permits padding differences between `sizeof(struct message)` and offsets reported for its flexible member, so a conservative size computation can be based on `sizeof(struct message)` plus the payload byte count, after checking that the sum fits in `size_t`.
+
+```c
+if (count > SIZE_MAX - sizeof(struct message))
+    return nullptr;
+struct message *m = malloc(sizeof(struct message) + count);
+```
+
+The snippet requires the appropriate headers and still must check `malloc` failure. The count may also need an application maximum smaller than `SIZE_MAX`. Because `payload` is an array of `unsigned char`, no multiplication is needed for its element size. A flexible array of larger element type would need both checked multiplication and checked addition.
+
+There are important restrictions on structures with flexible array members. They are not a universal substitute for a vector type; the object still cannot grow by simply changing its `count` field. Resizing its allocation would require `realloc` or constructing another object, with the usual pointer invalidation and failure rules.
+
+## 5.22 A tagged union as a small protocol model
+
+A tagged union stores one of multiple logical value shapes:
+
+```c
+enum observation_kind { OBS_INTEGER, OBS_REAL };
+
+struct observation {
+    enum observation_kind kind;
+    union {
+        long integer;
+        double real;
+    } value;
+};
+```
+
+The tag describes how the program should interpret the union. An input decoder must validate the tag before selecting the member, and it must reject unsupported values. C enums can hold values produced by casts or corrupt external data that do not correspond to any named enumerator.
+
+A useful test constructs both valid variants, then constructs an invalid tag and confirms the consumer rejects it without reading an unintended member. This is a logical correctness test as well as a type-access safety discipline.
+
+## 5.23 A ring buffer as a state machine
+
+The fixed-capacity ring buffer in Chapter 5 can be described entirely through its state variables `head` and `count`. No pointer allocations are required.
+
+The queue is empty when `count == 0` and full when `count == capacity`. A successful push stores at `(head + count) % capacity` and increments `count`. A successful pop reads `data[head]`, advances head modulo capacity, and decrements count.
+
+To prove memory safety, assume initially that `head < capacity` and `count <= capacity`. Before a push, reject `count == capacity`; the calculated tail is a valid array index. Before a pop, reject `count == 0`; head is a valid index by invariant. Each update preserves the invariants.
+
+The state-machine description does not establish concurrency safety. If an interrupt producer and task consumer modify the same `count` without synchronization, the program can have a data race. Chapter 16 develops a distinct SPSC design with atomic publication positions; the two queues are not interchangeable simply because both have circular arrays.
+
+## 5.24 Representation tradeoffs for embedded firmware
+
+Choose a representation using four criteria: maximum storage, worst-case operation cost, ownership complexity, and concurrency needs.
+
+A fixed array has predictable allocation and simple indexed access. An intrusive list avoids external node allocations but requires careful membership and lifetime rules. A heap-backed list permits incremental growth but has per-node allocation costs and fragmentation concerns. A fixed pool provides bounded capacity and explicit slot reclamation. A ring buffer is appropriate for FIFO traffic and can be designed for specialized producer-consumer roles.
+
+The best representation is not the one that uses the most advanced C syntax. It is the one whose invariants, resource bounds, and interfaces are easiest to verify for the application.
+
+### Additional exercises
+
+**5.13** Use `offsetof` to inspect a structure on two compilers without assuming the offsets are universal. **5.14** Write a deep-copy function for a record containing an owned string, including allocation-failure cleanup. **5.15** Derive the checked allocation size for a flexible array member of `uint32_t`. **5.16** Construct an invalid tagged-union value and define a safe error result. **5.17** Prove the ring buffer's `head` and `count` invariants after push and pop.
