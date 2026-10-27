@@ -157,6 +157,39 @@ def main(pdf, finder, output):
         writer = csv.DictWriter(stream, fieldnames=list(rows[0]), delimiter=chr(9))
         writer.writeheader()
         writer.writerows(rows)
+
+    # Editorial preview, not a finished index of selected subject locations.
+    preview = output.with_name("page-index-preview.md")
+    literal_count = sum(row["status"] == "literal occurrence" for row in rows)
+    backed_count = sum(row["status"] == "evidence-backed candidate" for row in rows)
+    lines = [
+        "# Modern C23 - Candidate Page Index",
+        "",
+        "Generated from the precise PDF edition. Candidate page numbers are "
+        "textual occurrences, not necessarily the best subject reference.",
+        "",
+        f"Audit: {len(rows)} topics; {literal_count} literal matches; "
+        f"{backed_count} evidence-backed candidates; "
+        f"{len(rows)-literal_count-backed_count} without page locators.",
+        "",
+    ]
+    previous = None
+    for row in rows:
+        label = row["topic"]
+        initial = label.lstrip(chr(96))[0].upper()
+        if initial != previous:
+            lines.extend([f"## {initial}", ""])
+            previous = initial
+        if row["verified_pages"]:
+            page_label = "pp. " + row["verified_pages"]
+            qualifier = row["status"]
+        else:
+            page_label = row["cited_sections"].replace("Ch", "Chapter ").replace(
+                "App", "Appendix ")
+            qualifier = "page review needed"
+        lines.append(f"- **{label}:** {page_label} ({qualifier})")
+    preview.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
     literal = sum(row["status"] == "literal occurrence" for row in rows)
     backed = sum(row["status"] == "evidence-backed candidate" for row in rows)
     print(f"Page index audit: {len(rows)} topics; {literal} literal matches; "
