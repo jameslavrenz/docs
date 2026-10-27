@@ -39,6 +39,16 @@ An original, example-first introduction to the C programming language as standar
 
 All nineteen chapters received a second-pass technical expansion: more explanation of preconditions, numeric boundaries, lifetime, ownership, explicit byte formats, concurrency, and C23 portability. Five appendices supply reference tables, selected solutions, a glossary, and a deployment checklist.
 
+## Newly expanded worked examples
+
+The current expansion adds detailed treatments of module boundaries, sorted word indexing, packet validation, failure injection, and callback-driven output. The matching complete examples are:
+
+- [`frame_codec.c`](examples/frame_codec.c): checked byte-frame encoding and decoding with strong failure behavior.
+- [`callback_sink.c`](examples/callback_sink.c): bounded partial-write handling through a callback and fake output device.
+- [`modules/`](examples/modules/): a separately compiled interface with a self-contained header and executable client.
+
+These supplement the earlier counted-slice and checked-vector examples. Run `make check` to compile and execute the standalone test suite on a C23-capable toolchain.
+
 ## Build and scope
 
 Use a C23-capable compiler, e.g. `gcc -std=c23 -Wall -Wextra -Wpedantic -O2 program.c -o program`. GCC 15 and newer select C23 by default; Clang 18 and newer recognize `-std=c23`. Individual standard-library facilities can lag behind language support. Check the specific toolchain and C library.
