@@ -4,7 +4,7 @@ Every object occupies storage for a particular lifetime. Automatic objects usual
 
 ## 7.1 Allocation is a request
 
-```c
+```c compile-check
 #include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -308,7 +308,7 @@ A function that acquires a buffer, opens a file, and transforms data has multipl
 
 An illustrative pattern is:
 
-```c
+```c compile-check
 #include <stdio.h>
 #include <stdlib.h>
 
