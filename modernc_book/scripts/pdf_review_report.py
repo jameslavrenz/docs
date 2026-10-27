@@ -40,7 +40,7 @@ for number, page in enumerate(pages, 1):
                         inspect_visual="", notes=""))
 destination.parent.mkdir(parents=True, exist_ok=True)
 with destination.open("w", newline="", encoding="utf-8") as handle:
-    writer = csv.DictWriter(handle, fieldnames=list(records[0]))
+    writer = csv.DictWriter(handle, fieldnames=list(records[0]), delimiter="\\t")
     writer.writeheader()
     writer.writerows(records)
 print(f"Wrote {len(records)} per-page inspection rows to {destination}")
