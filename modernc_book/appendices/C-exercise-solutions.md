@@ -177,3 +177,61 @@ Sequential tests establish logical behavior, not thread safety. The atomic SPSC 
 For each solution, write down preconditions, postconditions on both success and failure, possible arithmetic overflow, and ownership effects. Then test exact boundaries. If your implementation uses a library function, read the library contract rather than assuming it matches the function's name.
 
 Solutions are examples of reasoning, not necessarily the only acceptable design. An alternative is valid when it meets the same explicit contract.
+
+
+## C.12 A counted slice and its ownership contract
+
+A counted slice has a data pointer and a length. It does not automatically own the referenced array. The caller must keep storage alive for any operation reading the slice.
+
+```c
+#include <stddef.h>
+#include <stdbool.h>
+
+struct int_slice {
+    const int *data;
+    size_t length;
+};
+
+bool slice_get(struct int_slice s, size_t index, int *out)
+{
+    if (out == nullptr || s.data == nullptr || index >= s.length)
+        return false;
+    *out = s.data[index];
+    return true;
+}
+```
+
+On failure, the function leaves `*out` unchanged. It requires that a nonempty slice identify at least `length` accessible elements; a misleading length is a caller contract violation, not something a simple C function can discover from the pointer.
+
+A subslice also needs to avoid unsigned overflow. Its valid-range test should be `offset <= original.length && count <= original.length - offset`, not `offset + count <= original.length`. With an empty original whose data pointer is null, return a null pointer for an empty result rather than attempting arithmetic on a null pointer.
+
+The complete program in `examples/slices.c` exercises these rules, including `SIZE_MAX` and one-past positions.
+
+## C.13 Failure-injected vector growth
+
+The vector in `examples/vector_checked.c` owns its element allocation. An append operation uses a function pointer to a resizing function so a test can force reallocation to fail at a chosen point.
+
+```c
+typedef void *(*resize_fn)(void *, size_t);
+
+static void *deny_resize(void *old, size_t bytes)
+{
+    (void)old;
+    (void)bytes;
+    return nullptr;
+}
+```
+
+After filling the vector's first allocation, save the pointer, length, capacity and last element. Invoke append with `deny_resize`. A correct strong-failure implementation returns false without changing any saved property.
+
+The second test repeats the append with a real `realloc` implementation; it then verifies the new value, the count, and safe destruction. Crucially, it does not use the old saved pointer after successful reallocation, because that pointer may be invalid even when its bit pattern looks unchanged.
+
+This injection technique can be extended to `malloc` and to fake I/O sources. It is more reliable than hoping the operating system happens to run out of memory during a small test.
+
+## C.14 Explain a failing test
+
+A failed assertion is a starting point for diagnosis. Before modifying source, identify whether the program violated its own contract, the test made an invalid assumption, or the compiler did not implement the chosen language/library facility.
+
+For example, a compiler warning that classifies a standardized C23 binary literal as a vendor extension does not automatically mean that the source is nonconforming. The response may be to use a more recent compiler or to suppress that one incorrect diagnostic while retaining other warnings. By contrast, using a macro removed in C23 is a source compatibility problem and should be corrected in the example itself.
+
+A good verification record contains the failing command, exact diagnostic, cause, smallest corrective change, and the result of running tests on the corrected version. Avoid claiming an entire book has been verified when only a single executable has been compiled.
