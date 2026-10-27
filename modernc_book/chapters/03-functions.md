@@ -61,7 +61,7 @@ A successful call writes the result. A failed call leaves the output unchanged b
 
 A function that returns an integer can use every integer value as an ordinary result. That leaves no spare sentinel for failure. An interface can instead return success and write the result through a pointer:
 
-```c
+```c compile-check
 #include <stdbool.h>
 #include <stddef.h>
 #include <limits.h>
@@ -141,7 +141,7 @@ The header describes the interface; it does not allocate storage or call the fun
 
 The earlier recursive factorial demonstrates recurrence, not a production overflow policy. A robust iterative version has to guard the multiplication and consider the loop-counter's boundary:
 
-```c
+```c compile-check
 #include <limits.h>
 #include <stdbool.h>
 
@@ -263,7 +263,7 @@ Notice what this interface *does not* do: it does not open a file, read from a U
 
 The following function illustrates a strong failure postcondition:
 
-```c
+```c compile-check
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
