@@ -17,9 +17,9 @@ This is a field guide to the most commonly needed hosted C facilities, not a com
 | Assertions | `<assert.h>` | `assert` |
 | Variadic functions | `<stdarg.h>` | `va_list`, `va_start`, `va_arg`, `va_end` |
 | Atomics | `<stdatomic.h>` | atomic types and operations |
-| Threads | `<threads.h>` | `thrd_t`, mutexes, condition variables where supported |
+| Threads | `<threads.h>` | `thrd_t`, mutexes, condition variables |
 | Checked integer arithmetic | `<stdckdint.h>` | `ckd_add`, `ckd_sub`, `ckd_mul` (C23) |
-| Bit utilities | `<stdbit.h>` | leading/trailing bit counts, population count, bit width, and bit floor/ceil (C23) |
+| Bit utilities | `<stdbit.h>` | leading/trailing zeros, popcount, bit width, bit floor/ceil (C23) |
 
 ## B.1 Length is not capacity
 
