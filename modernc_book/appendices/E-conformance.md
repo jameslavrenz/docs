@@ -65,9 +65,9 @@ The document build has its own acceptance criteria: all chapters and appendices 
 Library and compiler documentation change over time. Date your conformance matrix and retest after updating any part of a deployment toolchain.
 
 
-## E.8 A reproducible optional-feature probe suite
+## E.8 Reproducible C23 implementation-support probes
 
-The core executable examples in this book deliberately avoid requiring every advanced C23 facility. The repository also provides `scripts/probe_c23_features.py`, which can test selected features individually under a named compiler.
+The core executable examples in this book deliberately avoid requiring every advanced C23 facility. Their use is optional for the book's examples; this does not mean that the underlying facilities are necessarily optional provisions of ISO C23. The repository also provides `scripts/probe_c23_features.py`, which can test selected features individually under a named compiler.
 
 Run it with the same language mode, compiler, and standard library that the intended application will use:
 
