@@ -111,3 +111,68 @@ Assess work in four dimensions, not one. **Correctness**: do the algorithms meet
 A concise, correct implementation with explicit limits is preferable to a larger one that hides failures in complicated abstractions.
 
 **Further problems:** Review a peer's parser without running it, then compare your findings with compiler and sanitizer output. Build a small executable that verifies a public header compiles independently. Explain which claims in a test report are observed and which remain assumptions.
+
+
+## 12.18 Guided project: a bounded arena
+
+A fixed byte arena is a compact way to practice both arithmetic and ownership. The repository's `examples/arena_bytes.c` contains a reference implementation. Before reading it, write your own design specification.
+
+Your arena contains an array of 128 `unsigned char` elements and a `size_t used` offset. It must accept a request for a nonzero number of bytes if the request fits in the unallocated suffix. A successful request returns a pointer to that region and advances the offset. A failed request must leave the offset and the caller's output pointer unchanged.
+
+Work through three stages.
+
+**Stage A: capacity proof.** Write the invariant `used <= capacity`. Show that after checking it, the expression `capacity - used` is defined and nonnegative in the mathematical sense. Check `count <= capacity - used` before adding count to the offset.
+
+**Stage B: behavior.** Allocate five bytes, then seven bytes. Confirm that the second returned pointer lies immediately after the first region. Request more than the remaining capacity and ensure failure changes no state. Fill the arena exactly and verify that the next one-byte request fails.
+
+**Stage C: reuse.** Reset the arena offset. Confirm a fresh request starts at the first byte. Explain why every previously borrowed region must now be treated as invalid under the arena's logical lifetime contract.
+
+This project allocates byte spans, not arbitrary typed objects. To extend it into a general-purpose typed arena, investigate alignment, backing-storage guarantees, object access rules and target DMA constraints before introducing casts.
+
+## 12.19 Guided project: signed decimal input
+
+Write a parser for `long` with an optional sign followed by one or more ASCII decimal digits. Reject spaces and trailing garbage. Failure must leave the output unchanged.
+
+The challenge is `LONG_MIN`. On a two's-complement implementation it has a magnitude one greater than `LONG_MAX`. If you accumulate a positive signed magnitude, the parser cannot reach the most negative legal result without first trying to represent an illegal intermediate value.
+
+Accumulate an unsigned magnitude with a sign-dependent limit. Before each multiplication by ten, verify that the new value will fit. When the final input is the exact negative endpoint, assign `LONG_MIN` directly. Use `snprintf` to produce boundary strings on the actual implementation, rather than hardcoding an assumed `long` width.
+
+A good test sequence includes empty input, a bare plus or minus sign, zero, negative zero, leading zeros, ordinary positive and negative numbers, `LONG_MAX`, `LONG_MIN`, and strings whose magnitudes exceed both endpoints.
+
+Compare the final solution with `examples/parse_signed.c`. Then adapt the interface to accept a counted byte buffer so it does not require null termination.
+
+## 12.20 Guided project: portable rotation
+
+Implement a left and right 32-bit rotation. Define rotation counts modulo 32; this means counts 0, 32, and 64 leave the value unchanged.
+
+Your implementation must never evaluate a shift whose count is 32. Handle the normalized zero case separately. Prove that for all other counts, both shift quantities are between one and 31 inclusive.
+
+Test against independent hexadecimal constants. Then test the inverse property that rotating left and right by the same count restores the original value. This property is useful but insufficient by itself; two incorrect functions could still cancel one another.
+
+Finally, explain why a target CPU's presence or absence of a rotate instruction does not change the C source's required semantics. Optional assembly belongs behind a target-specific interface and must be justified by measurement.
+
+## 12.21 Guided project: ownership and aliases
+
+Draw the memory objects involved in a vector whose structure contains pointer, length and capacity. Add three integers through its append operation, then create a second structure by copying the first.
+
+Identify which fields have independent storage and which pointer values designate the same heap allocation. Does modifying an element through one structure affect the other? What happens if the first vector is destroyed? Can the second now be destroyed safely?
+
+Next, create a borrowed pointer to the first element and append enough values to trigger a successful reallocation. Explain why that old pointer is invalid even if the allocator returns an address with the same numerical value.
+
+Finally, add an injected allocation failure. Confirm that a correctly implemented append leaves every existing element and ownership field unchanged. This is an example of a strong failure guarantee, not an attempt to make shallow copies safe.
+
+## 12.22 Review a protocol without compiling it
+
+Given a packet consisting of a magic octet, version, two length octets, payload, and checksum, write a code-review checklist before implementing the parser. At what point may each byte be read? How is the length decoded? When can a subtraction underflow? What is the maximum payload? What happens if extra trailing data exists? When is output state published?
+
+Now implement the decoder, write manual golden test vectors, and run it with sanitizer instrumentation if available. Keep the input-buffer contract explicit: a non-null pointer and a numeric length do not by themselves prove that storage of that size exists.
+
+This exercise combines contracts from Chapters 4, 7, 10 and 14. Its outcome should include an implementation, a test matrix and a short reasoning argument.
+
+## 12.23 Writing up the result
+
+For each project, include a short report: the precise accepted input domain, key invariants, failure semantics, tests, compiler mode, and known limitations. Differentiate ordinary input errors from caller contract violations and from implementation-specific assumptions.
+
+A particularly useful final section is *what the tests do not prove*. A host byte-arena test does not establish general typed-object alignment. A sequential queue test does not prove concurrent safety. A passing frame-decoder test does not authenticate a message. A clean sanitizer run cannot prove that unexecuted paths are safe.
+
+That level of precision distinguishes a professional systems-programming exercise from a demonstration that happened to run once.
