@@ -145,3 +145,62 @@ Ordinary runs rarely exercise allocation failures. For a unit test, wrap `malloc
 This is a useful general lesson: error paths deserve executable tests, not just reassuring comments.
 
 **Further problems:** Modify the vector to distinguish allocation failure from arithmetic overflow. Implement `vector_reserve` that leaves all state untouched on failure. State the ownership implications of `struct vector copy = original;`. Write an arena allocation test covering zero bytes, alignment and exhaustion.
+
+
+## 7.15 Ownership as an interface contract
+
+C allocation functions do not attach a runtime owner to each block. Ownership is a design convention: one component is responsible for eventually releasing a resource, while other components may temporarily borrow access to it.
+
+A vector may own its element allocation. A slice into that vector borrows the memory. When the vector grows with \`realloc\`, every previously borrowed element pointer must be considered invalid, even if the new allocation happens to return the same numerical address.
+
+A useful public header should state whether a function borrows its input, retains it after returning, or transfers ownership. For example, \`vector_append\` can copy an \`int\` value and retain no caller pointer. An asynchronous send operation that merely borrows a buffer may require the caller to keep that buffer alive until a completion callback. An API that copies the payload on submission has a different resource and timing contract.
+
+These distinctions do not require a new language feature. They require precise documentation and tests.
+
+## 7.16 Strong and basic failure guarantees
+
+An append operation can promise that a failed allocation leaves the vector exactly as it was: same pointer, length, capacity, and existing elements. That is a strong failure guarantee. A more complex operation might promise only that the structure remains valid and usable, even though its contents have changed; that is a weaker but sometimes acceptable guarantee.
+
+To achieve strong failure behavior, compute requirements locally, allocate into a temporary pointer, and commit state only after success. With \`realloc\`, a failed nonzero-size request leaves the old object allocated, so the implementation must not overwrite its only saved pointer with a null result.
+
+The choice of a growth factor also affects behavior. Doubling gives amortized efficient append in the ordinary case, but may request more memory than immediately needed and can reject near-maximum capacities. A constrained embedded application may prefer fixed capacity or an arena with known bounds.
+
+## 7.17 A checked vector implementation
+
+The companion \`examples/vector_checked.c\` implements a small vector of \`int\`. It has initialization through an empty aggregate, append with checked capacity arithmetic, retrieval through an out-parameter, and destruction.
+
+Its invariants are:
+- \`length <= capacity\`;
+- \`data == nullptr\` when capacity is zero;
+- for positive capacity, \`data\` is an owned allocation of at least \`capacity * sizeof(int)\` bytes;
+- elements in the half-open range \`[0, length)\` have been assigned meaningful values.
+
+The append path computes a new capacity, checks both doubling and allocation-byte multiplication, and performs reallocation through a temporary pointer. If allocation fails, its earlier state remains intact. The test checks many appends, retrieval at boundaries, and destruction.
+
+A complete library would also consider whether copying the \`struct vector\` itself is permitted. A shallow copy creates two apparent owners of the same allocation. For this teaching interface, copying an owning vector by assignment is prohibited by the ownership contract. C cannot enforce that restriction in the type system.
+
+## 7.18 How to use an arena safely
+
+An arena can provide a bounded amount of dynamic-like storage without making a separate operating-system allocation for each item. But an arena still needs an alignment policy. A request for a \`double\` object must be aligned suitably for \`double\`; a byte pointer incremented without regard to alignment is not sufficient.
+
+When resetting the arena, think of every borrowed pointer into it as invalidated by the allocator's application-level lifetime rules. Even if old bytes remain readable on the hardware, the program must not depend on objects whose storage has been repurposed.
+
+A simple arena is not automatically thread-safe. The same considerations apply to a pool of fixed-size objects. Concurrency, memory ordering, and synchronization remain system-level responsibilities.
+
+## 7.19 Resource cleanup as a state machine
+
+A function acquiring two independent resources can be modeled with states: neither acquired, buffer acquired, buffer and file acquired, and both released. Every failure transition must eventually reach the released state.
+
+One C technique uses a single cleanup block with handles initialized to known safe values. Another uses small helper functions that release partial objects. Neither technique is inherently better in all contexts. The key is that cleanup must run on every exit path that owns resources, including paths triggered by short reads, failures to close a stream, and errors during an intermediate transformation.
+
+Avoid placing release operations inside a boolean expression that short-circuits when an earlier operation fails. Such expressions can unintentionally skip cleanup.
+
+## 7.20 Testing the allocator's failure paths
+
+Ordinary desktop runs may never fail a small allocation, leaving a large fraction of an owning container's control flow untested. A test allocator can reject the next request predictably. With this seam, verify that failed append does not change length, capacity, pointer, or previously stored values.
+
+Sanitizers can discover use-after-free and certain out-of-bounds errors along executed paths, but they do not prove the ownership design is correct. A written ownership contract plus fault-injection tests is a stronger foundation.
+
+### Guided exercises
+
+**7.8** Add \`reserve\` to the vector while preserving the strong failure guarantee. **7.9** Implement an allocator adapter that fails after N successful requests. **7.10** Explain why a shallow copy of the vector must not be destroyed independently. **7.11** Contrast an arena reset with \`free\` on an individual block. **7.12** Design a fixed-memory message pool for 32 records with allocation, release, and double-release detection.
