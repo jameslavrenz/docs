@@ -101,3 +101,79 @@ bool write_record(const char *path)
 ```
 
 Notice that `fclose` runs even after `fputs` fails. The function reports stream-level success, not guaranteed durable storage on physical media.
+
+
+## C.6 A safe interval check
+
+An interval starting at `offset` and containing `count` bytes fits within `capacity` when the start is valid and the count fits the remaining space:
+
+```c
+#include <stddef.h>
+#include <stdbool.h>
+
+bool fits(size_t offset, size_t count, size_t capacity)
+{
+    return offset <= capacity && count <= capacity - offset;
+}
+```
+
+The short-circuit operator prevents unsigned subtraction from being evaluated if `offset` already exceeds capacity. Test zero capacity, exact fit, one-byte overrun, and `SIZE_MAX` boundaries.
+
+## C.7 Checked allocation dimensions
+
+```c
+#include <stdint.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+bool allocate_ints(size_t count, int **out)
+{
+    if (out == nullptr || count == 0 ||
+        count > SIZE_MAX / sizeof(int))
+        return false;
+    int *p = malloc(count * sizeof *p);
+    if (p == nullptr)
+        return false;
+    *out = p;
+    return true;
+}
+```
+
+The function rejects zero-sized requests and leaves the output unchanged on failure. The caller owns the returned allocation and must call `free` once. The result is not initialized; assign to elements before reading them.
+
+## C.8 A consistent qsort comparator
+
+```c
+static int compare_ints(const void *left, const void *right)
+{
+    int a = *(const int *)left;
+    int b = *(const int *)right;
+    return (a > b) - (a < b);
+}
+```
+
+Returning `a - b` could overflow for extreme signed values, invalidating the intended ordering. Use the comparator with `qsort` only when both pointers refer to valid `int` elements supplied by that call.
+
+## C.9 A non-modifying failure test
+
+Suppose a parser promises not to modify its output on failure. Before invoking it on an invalid string, set `unsigned result = 0x5a5aU;`. Verify the parser returns false *and* that the result remains `0x5a5aU`. Repeat with empty input, trailing junk, and an out-of-range number. A failed result alone does not establish the postcondition.
+
+## C.10 A boundary test plan for a ring buffer
+
+| Initial state | Operation | Required behavior |
+| --- | --- | --- |
+| Empty | Pop | Report false; do not change output |
+| Empty | Push | Report true; count increases |
+| One element | Pop | Return first item; become empty |
+| Full | Push | Report false; preserve existing items |
+| Partially consumed | Wraparound pushes | FIFO order is preserved |
+| Returned to empty | Pop | Report false again |
+
+Sequential tests establish logical behavior, not thread safety. The atomic SPSC queue in Chapter 16 needs additional concurrent reasoning and testing.
+
+## C.11 How to check an exercise solution
+
+For each solution, write down preconditions, postconditions on both success and failure, possible arithmetic overflow, and ownership effects. Then test exact boundaries. If your implementation uses a library function, read the library contract rather than assuming it matches the function's name.
+
+Solutions are examples of reasoning, not necessarily the only acceptable design. An alternative is valid when it meets the same explicit contract.
