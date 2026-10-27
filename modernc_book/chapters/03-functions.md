@@ -231,3 +231,125 @@ When evaluating recursive code, ask whether the maximum depth is bounded by the 
 ### Guided exercises
 
 **3.9** Implement the structure-returning parser result and compare its call sites with the out-parameter version. **3.10** Write a self-contained public header and compile it as the first include in a separate test file. **3.11** Replace a recursively implemented byte count with a loop and identify the changed resource bounds. **3.12** Design an API to read a sensor value that can report 'not ready', 'hardware error', and 'valid sample' distinctly.
+
+
+## 3.18 Design functions around failure rather than around syntax
+
+A function signature is an engineering contract. It describes argument and result types, but it does not express every precondition or guarantee. A routine that accepts a buffer pointer and a byte count must still document whether the count can be zero, whether the pointer may be null, whether the buffer is mutable, and what happens if the operation cannot finish.
+
+For example, consider a parser that accepts a counted byte span and produces a 16-bit value. A useful status type could be:
+
+```c
+enum parse_status {
+    PARSE_OK,
+    PARSE_EMPTY,
+    PARSE_INVALID,
+    PARSE_RANGE
+};
+```
+
+A public interface may then declare:
+
+```c
+enum parse_status parse_u16(const unsigned char *bytes,
+                            size_t count, uint16_t *out);
+```
+
+The comments in its header should say that nonzero `count` requires at least that many readable bytes, that null `out` is not permitted, that failure leaves `*out` unchanged, and that accepted input contains only ASCII decimal digits. C cannot generally discover an invalid pointer whose bit pattern happens to be non-null.
+
+Notice what this interface *does not* do: it does not open a file, read from a UART, or display a message. Those tasks belong in adapters that supply counted spans and interpret status codes. Separating them makes the parser reusable on a host and a freestanding target.
+
+## 3.19 A complete checked operation
+
+The following function illustrates a strong failure postcondition:
+
+```c
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+bool sum_u32(const uint32_t *numbers, size_t count, uint32_t *out)
+{
+    if (out == nullptr || (numbers == nullptr && count != 0))
+        return false;
+    uint32_t sum = 0;
+    for (size_t i = 0; i < count; ++i) {
+        if (numbers[i] > UINT32_MAX - sum)
+            return false;
+        sum += numbers[i];
+    }
+    *out = sum;
+    return true;
+}
+```
+
+The invariant is that `sum` equals the mathematical total of previously visited elements, and `sum <= UINT32_MAX`. The subtraction is valid because `sum` never exceeds the unsigned type's maximum. The check precedes addition; no intermediate sum wraps.
+
+There is a subtle limitation: if `out` points into the `numbers` array, assigning the final result changes one input element, but only after all reads have completed. That is permitted by this synchronous design. A future refactoring that writes the output during iteration would have different aliasing implications. Rather than assuming every pointer is disjoint, document when aliasing matters.
+
+## 3.20 Make a status stable across versions
+
+A public interface may be used by code compiled at different times. An enumeration can represent useful status categories, but adding a new enumerator does not guarantee that older clients understand it. A caller's switch should have a documented fallback for an unknown result; otherwise a newly introduced failure category may be silently ignored.
+
+The size of an enum and its exact ABI can depend on implementation choices unless the interface specifies an underlying representation supported by the toolchain and ABI. Do not transmit a raw enum object as a wire-protocol field. Serialize a defined numeric code instead.
+
+For a stable binary interface, a structure's field layout and ownership rules are just as important as function names. In an internal application built from one revision of source, rebuilding callers and implementations together simplifies compatibility. A public library with independently deployed clients has stronger requirements.
+
+## 3.21 Initialization and cleanup symmetry
+
+A resource-managing module might expose functions conceptually named `open`, `read`, and `close`. Its documentation should identify when the handle is valid and who may release it.
+
+An effective pattern initializes a caller-owned structure to an empty state, acquires resources one by one, and guarantees cleanup after partial failure. The corresponding close function is tolerant of the empty state and leaves the object empty after successful release.
+
+Some C APIs return an opaque pointer from an open function and require a matching destroy function. Others use a caller-provided structure. These designs differ in allocation policy and ABI flexibility, but both benefit from explicit ownership transfer and well-defined failure behavior.
+
+Do not assume the fact that a function returns `nullptr` means no cleanup is necessary. An implementation may have acquired and released temporary resources before reporting failure, and those cleanup paths deserve tests.
+
+## 3.22 Order of evaluation at function calls
+
+When a function has two argument expressions, C does not generally require that the left argument be evaluated before the right. A function's parameters are initialized from the evaluated argument values, but an expression should not depend on one argument modifying state before another reads it.
+
+Avoid:
+
+```c
+int i = 1;
+/* Do not depend on which argument evaluation happens first: */
+use_values(i++, i);
+```
+
+Instead:
+
+```c
+int first = i;
+++i;
+int second = i;
+use_values(first, second);
+```
+
+The latter makes the sequencing explicit. The function prototype can verify argument types, but a declaration cannot repair unsequenced conflicting accesses in an expression supplied by the caller.
+
+## 3.23 Choosing between recursion and iteration
+
+A recursive traversal often matches a data structure naturally. But the call stack is a resource. A parser accepting nested syntax from an external source can receive a depth limited only by input length; an attacker or ordinary malformed file can then exhaust a small task stack.
+
+An iterative parser using an explicit stack can control storage explicitly. For a fixed maximum nesting depth, a bounded array of parser states makes the failure mode predictable: an input exceeding the depth is rejected rather than causing uncontrolled stack growth. The tradeoff is additional state-management code.
+
+A tail-recursive function is not guaranteed to be transformed into a loop by the language. If worst-case stack use matters, write the loop explicitly or rely only on an optimization whose use is verified and required by the deployment toolchain.
+
+## 3.24 A function review checklist
+
+For each exported function, answer these questions:
+
+1. What input values and storage regions are valid?
+2. Which storage is borrowed, retained, allocated, or released?
+3. What is written on success? What remains unchanged on failure?
+4. Can arithmetic overflow before a later check?
+5. Can callbacks or concurrent callers reenter the function?
+6. Does the function use a hosted facility unavailable on a freestanding target?
+7. How will tests reach its error paths?
+
+A short answer for each is usually more valuable than a long comment repeating what every line does.
+
+### Additional exercises
+
+**3.13** Implement `sum_u32` and inject an overflowing final element. Verify the caller's original result remains unchanged. **3.14** Define a parser status enumeration and write tests for empty, invalid, overflowing, and valid input. **3.15** Replace a recursive nested-record traversal with an explicit fixed-depth stack. **3.16** Write a public header that compiles independently and explain why its implementation must include the same header. **3.17** Review a resource-acquisition function for partial-failure cleanup.
