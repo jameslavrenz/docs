@@ -275,3 +275,14 @@ A public header should include its own dependencies. It must not require clients
 A passing byte-sink test demonstrates that the wrapper handles its tested partial-write and no-progress cases. It does not prove that a real UART driver handles DMA coherency or interrupt priority correctly. A passing frame-decoder test demonstrates behavior on its supplied packets, not exhaustive validation of every possible byte sequence. A passing module example demonstrates correct linkage under the chosen build command, not platform independence of every possible implementation.
 
 For each exercise solution, separate observed test results from the assumptions and reasoning needed to use it safely in another environment. This distinction is essential in production embedded systems.
+
+
+## C.19 Review checklist for the three complete examples
+
+When reviewing `frame_codec.c`, verify that no length or checksum byte is read before its bounds check. Compare the decoded frame length with the precise number of supplied bytes, not merely with buffer capacity. Confirm that the encoder's temporary frame fits the fixed maximum and that a failed encode never writes into the caller's destination. The XOR checksum is not a security guarantee.
+
+For `callback_sink.c`, prove that `offset` starts at zero, never exceeds the requested count, and increases on every successful loop iteration. A zero-byte callback result must terminate with failure rather than create a busy loop. The callback's promise not to return more than requested is checked; its promise to read only the provided source span remains part of the callback contract.
+
+For the checksum module, compile the header in isolation and verify that it declares every type it needs. Link a test client with the implementation file, then intentionally omit the implementation and observe the expected linker failure. These exercises distinguish a language error, interface error, runtime test failure, and missing link dependency.
+
+The important lesson is that tests, code review, and explicitly written invariants reinforce each other. A short, compile-tested demonstration can still require careful reasoning before its logic is reused in embedded production code.
