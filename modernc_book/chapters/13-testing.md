@@ -203,3 +203,39 @@ A CI configuration file is not itself proof of a passing build. Evidence require
 A reasonable first reading edition can require all examples to compile under two supported compilers, all deterministic tests to pass, all Markdown links to resolve, and the generated PDF to include every chapter and appendix. A publishable technical book needs more: technical review, a coherent index, verified page layout, exercise solutions, and clear statements of compiler-specific features.
 
 **Further problems:** Design a differential test for a little-endian decoder using independent literal expected values. Explain why a clean sanitizer run cannot prove every array index is valid. Add a fault-injectable allocation layer to a dynamic vector and report which postconditions remain true.
+
+## 13.19 A test is a contract experiment
+
+Testing becomes more systematic when each case is derived from a documented precondition, invariant, or postcondition. For a vector, the invariants include `length <= capacity` and valid ownership of allocated storage. For a packet parser, failure must not modify the public result. For an SPSC queue, the producer and consumer must observe values in FIFO order under the single-producer/single-consumer protocol.
+
+A test should state what it establishes. A successful sequential queue test demonstrates ordering and wraparound for the tested operations. It does not establish freedom from data races if producer and consumer execute simultaneously. A clean AddressSanitizer run shows that the tested execution did not trigger any instrumented errors; it does not prove all paths safe.
+
+## 13.20 Use fault injection to reach unlikely branches
+
+If a container allocates only a few dozen bytes, ordinary development runs rarely experience allocation failure. A design that can accept a resizing callback allows a test to deliberately return `nullptr` and verify strong failure safety. The book's `vector_checked.c` follows this pattern.
+
+An analogous technique works for output interfaces. The complete `callback_sink.c` example supplies a fake sink whose write operation accepts at most two bytes per call. A `write_all` wrapper must retry the unwritten suffix until the whole buffer has been accepted. A second fake mode returns no progress, and the wrapper must report failure rather than loop forever.
+
+These are not theatrical failures. Embedded UART queues can fill, filesystem writes can fail, network links can stall, and bounded buffers can run out of capacity. Making errors injectable produces reproducible tests for behavior that otherwise appears only in the field.
+
+## 13.21 Test the smallest complete interface
+
+A function-level test can verify a single boundary, but a project also needs tests for interfaces between modules. The module example in Chapter 8 exercises compilation through a header, implementation, and client. The word-index test exercises the complete command-line program through standard input and output. The PDF build tests documentation generation separately from C compilation.
+
+Keeping these levels distinct helps diagnose failures. If compilation fails because of a C23 syntax diagnostic, rewriting a parser algorithm is unlikely to help. If a program compiles but returns the wrong table, investigate semantics and test data. If the PDF builder fails while C tests pass, investigate the document toolchain.
+
+## 13.22 Measure coverage without worshipping a number
+
+Line and branch coverage can reveal unexecuted paths, especially error-handling branches. They do not say whether a test checks the right result. A test might run the overflow check but ignore the output state afterward. A branch can be covered without verifying that it preserves a container's ownership contract.
+
+For high-risk functions, review a small table of input classes: minimum size, maximum size, invalid value, missing data, exhausted resource, and valid boundary. Include a human explanation of why each case matters.
+
+## 13.23 Reproducible CI
+
+A useful CI run records the exact commit, compiler versions, flags, and exit status. Different compilers discover different issues, but changing to a newer toolchain can also change diagnostics. When the compiler misclassifies valid C23 syntax as an extension, handle that specific diagnostic rather than globally disabling `-Werror`.
+
+For publication, add a second gate: the generated PDF must contain every chapter and appendix, have a readable table of contents, and be built from the same source revision being published. A source repository containing an older PDF should not be treated as proof that the latest manuscript has been typeset.
+
+### Exercises
+
+**13.7** Write failure-injection cases for an allocator and a short-writing output sink. **13.8** List what a passing host test cannot establish about MCU interrupt timing. **13.9** Add a CI check that separately reports compiler-test and PDF-build failures. **13.10** Design independent golden vectors for a three-byte header codec.
