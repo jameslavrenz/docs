@@ -1,5 +1,13 @@
 name: TinyML book reference tests
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - 'tinyml_book/**'
+      - '.github/workflows/tinyml-book.yml'
+  pull_request:
+    paths:
+      - 'tinyml_book/**'
+      - '.github/workflows/tinyml-book.yml'
 jobs:
   build-test:
     runs-on: ubuntu-latest
