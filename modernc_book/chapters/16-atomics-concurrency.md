@@ -172,3 +172,76 @@ For embedded systems, task deletion and ISR unregistering can each require targe
 ### Exercises
 
 **16.7** Draw the two release/acquire edges on an eight-slot queue. **16.8** Explain why a second producer is unsafe despite atomic index variables. **16.9** Compare mutex-based and atomic-based designs for a real-time telemetry queue. **16.10** Describe a shutdown sequence that makes destruction safe.
+
+
+## 16.18 A complete two-thread atomic counter
+
+The repository's `examples/thread_counter.c` creates two hosted C threads through the facilities in `<threads.h>`. Each worker performs 20,000 increments on one shared `atomic_uint`. The main thread joins both workers and verifies that the final result is 40,000.
+
+The worker's essential operation is:
+
+```c
+atomic_fetch_add_explicit(&ctx->count, 1u, memory_order_relaxed);
+```
+
+This read-modify-write operation is atomic. Two workers cannot accidentally overwrite one another's increments through the classic load/increment/store race on an ordinary integer. The example deliberately chooses a total that fits even in the standard minimum range of `unsigned int`.
+
+Why is relaxed ordering sufficient? The program cares only about the counter's value. It does not use that counter to publish a separate ordinary data structure. The atomic object has an atomic modification order, and successful thread joins establish that the workers have completed before the main thread checks the result.
+
+If a producer filled an ordinary object and then incremented the counter to announce that the object was ready, the design would be different. Relaxed operations on the counter alone would not establish the necessary ordering of writes to the accompanying non-atomic object.
+
+## 16.19 Partial thread creation is a resource problem
+
+Suppose creating the first worker succeeds and creating the second fails. The first worker may still be executing and using a pointer to the caller's stack-local context.
+
+The correct cleanup principle is to remember how many workers started and join them all before allowing that context's lifetime to end. Returning immediately after the second creation error could leave the first thread with a dangling pointer.
+
+This is the same ownership discipline used for partially initialized files, allocations, and device resources: acquire incrementally, track what succeeded, and clean up what was acquired on every failure path.
+
+The example checks each creation and join result, although a failed join in a production thread framework may require a more comprehensive recovery policy. A passing test of ordinary creation and completion does not prove all exceptional thread-system conditions are recoverable.
+
+## 16.20 One-shot release/acquire publication
+
+An atomic counter is not the same as publishing a payload. Consider a shared ordinary `int payload` and an atomic readiness flag. The intended one-shot protocol is:
+
+```text
+Producer                              Consumer
+--------                              --------
+payload = value;
+store ready=true (release)            load ready (acquire)
+                                      if true, read payload
+```
+
+When the consumer's acquire load reads from the producer's release store, the release/acquire synchronization establishes that the preceding payload write happens-before the later read.
+
+This explanation depends on a **one-shot** lifetime rule: the producer writes payload once and does not overwrite it after publication. Reusing the flag and publishing a second value without coordinating with the consumer is not automatically safe. A later write could race with the earlier consumer's read.
+
+Using `volatile` instead of an atomic flag would not establish this general thread synchronization guarantee.
+
+## 16.21 Two distinct directions in an SPSC ring
+
+In the book's single-producer/single-consumer queue, the producer writes a slot and release-stores the updated tail. The consumer acquire-loads the tail before reading the newly available slot.
+
+The opposite direction matters too: after the consumer finishes reading a slot, it release-stores an advanced head; the producer acquire-loads head before deciding that the old slot is safe to reuse. One direction publishes data; the other publishes reclaimed capacity.
+
+The queue assumes exactly one producer and one consumer under this protocol. Adding a second producer is not a harmless increase in workload. Two producers may observe the same tail, write the same slot, and publish conflicting states. Atomic positions alone do not turn a sequence of operations into a multiple-producer transaction.
+
+## 16.22 Different tests answer different questions
+
+A sequential queue test verifies index arithmetic, FIFO behavior, full/empty conditions, and wraparound for chosen operations. A concurrent producer-consumer test may expose interleaving failures. The two-thread counter demonstrates that the test environment supports concurrent atomic read-modify-write operations.
+
+None of those tests proves all possible memory-ordering arguments for an unrelated lock-free algorithm. Correctness also requires reviewing which participant owns each slot, which objects are shared, what establishes happens-before relationships, and when storage may be destroyed.
+
+A host ThreadSanitizer run can detect certain data races on executed paths, but its instrumentation changes timing and may not model MCU interrupt or DMA semantics.
+
+## 16.23 What the C thread library does not promise for a microcontroller
+
+The hosted threads facility is not universally provided by freestanding C implementations. A desktop build may need a compiler/linker flag such as `-pthread`; an embedded project instead uses RTOS task facilities or target-specific interfaces.
+
+The C memory model provides a useful conceptual foundation, but whether a particular atomic operation is lock-free or safe inside an interrupt handler is an implementation-specific matter. An atomic operation lowered to a runtime library helper may be inappropriate in an ISR. DMA buffers also introduce coherency requirements outside the ordinary two-thread example.
+
+Do not equate lock-free with deadline-safe. System-wide progress is not the same as a proven maximum completion time for every caller. A real-time design must account for preemption, cache, scheduling, blocking and priority behavior.
+
+### Additional exercises
+
+**16.11** Explain why `memory_order_relaxed` is sufficient for a standalone atomic count but not for publication of an ordinary payload. **16.12** Draw all resources after one thread creation succeeds and the second fails. **16.13** Label the two release/acquire handoff directions of an SPSC queue. **16.14** Describe the additional requirements for making the queue safely usable by an MCU interrupt handler. **16.15** Distinguish lock-free, wait-free, and bounded real-time execution.
