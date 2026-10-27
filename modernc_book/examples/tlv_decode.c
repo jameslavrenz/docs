@@ -1,8 +1,13 @@
 /* Bounded TLV parser: explicit lengths, local candidate, one commit. */
 #include <stdbool.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+
+#if CHAR_BIT != 8
+#error "This TLV wire format uses eight-bit octets"
+#endif
 
 enum { TLV_MAX_FIELDS = 4, TLV_MAX_VALUE = 8 };
 
