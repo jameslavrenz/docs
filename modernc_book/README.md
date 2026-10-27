@@ -1,6 +1,6 @@
 # Modern C: A Concise Introduction to C23
 
-**An independent textbook** · Expanded technical-review draft · 26 October 2026
+**An independent textbook** · Technical-review draft · 27 October 2026
 
 An original, example-first introduction to the C programming language as standardized by ISO/IEC 9899:2024 (C23). Its compact teaching progression is inspired by the general *pedagogical approach* of classic concise programming texts. This is **not** a third edition of *The C Programming Language*, and is not written by or affiliated with Brian Kernighan, Dennis Ritchie, or their publishers.
 
@@ -52,9 +52,9 @@ Further examples include [`arena_bytes.c`](examples/arena_bytes.c) (bounded byte
 
 ## Build and scope
 
-Use a C23-capable compiler, e.g. `gcc -std=c23 -Wall -Wextra -Wpedantic -O2 program.c -o program`. GCC 15 and newer select C23 by default; Clang 18 and newer recognize `-std=c23`. Individual standard-library facilities can lag behind language support. Check the specific toolchain and C library.
+Run `make check` for the 35 standalone executable programs. GitHub Actions also compiles 13 self-contained C listings from the chapters under both GCC 14 and Clang 18, audits local links and heading numbering, and runs GCC 14 UndefinedBehaviorSanitizer. An additional C23 library-dependent chapter listing remains excluded from the generic listing checker because support varies by toolchain. These automated checks do not prove every illustrative fragment is correct.\n\nUse a C23-capable compiler, e.g. `gcc -std=c23 -Wall -Wextra -Wpedantic -O2 program.c -o program`. GCC 15 and newer select C23 by default; Clang 18 and newer recognize `-std=c23`. Individual standard-library facilities can lag behind language support. Check the specific toolchain and C library.
 
-The intended finished book is roughly **200–230 typeset pages**, comparable in scale to the first edition of the classic text. This repository currently contains an **expanded draft, not yet established to meet the target page count**, not a claim that the final page target has already been met. Content is written in original language; exercises emphasize reasoning and building small programs.
+The most recently published PDF contains **205 typeset pages**, meeting the original 200–230-page length target. This remains a **technical-review draft**, not a claim that final page layout, every illustrative fragment, or a page-numbered index has been fully reviewed. The examples and explanations use original language and emphasize small programs and explicit contracts.
 
 ## Sources for language conformance
 
