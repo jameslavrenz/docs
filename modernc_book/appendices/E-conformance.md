@@ -63,3 +63,71 @@ The document build has its own acceptance criteria: all chapters and appendices 
 - https://clang.llvm.org/c_status.html — Clang language support
 
 Library and compiler documentation change over time. Date your conformance matrix and retest after updating any part of a deployment toolchain.
+
+
+## E.8 A reproducible optional-feature probe suite
+
+The core executable examples in this book deliberately avoid requiring every advanced C23 facility. The repository also provides `scripts/probe_c23_features.py`, which can test selected features individually under a named compiler.
+
+Run it with the same language mode, compiler, and standard library that the intended application will use:
+
+```sh
+cd modernc_book
+CC=gcc-14 python3 scripts/probe_c23_features.py
+CC=clang-18 python3 scripts/probe_c23_features.py
+```
+
+The exact executable names and versions may differ on another host. These commands build and run small programs; cross-compilation for an MCU may require a target runner instead of executing binaries on the build machine.
+
+The current probe set tests five independent facilities:
+
+| Probe | Layer being tested | Why an application might use it |
+| --- | --- | --- |
+| `constexpr` scalar object | Compiler's C23 language front end | Translation-time named constants |
+| Nine-bit `_BitInt` | Compiler and selected target | Integers with explicit value-width requirements |
+| `<stdckdint.h>` checked addition | Header plus compiler/library integration | Overflow-tested integer operations |
+| `<stdbit.h>` bit-count operation | Header plus compiler/library integration | Portable bit-width and population-count utilities |
+| `#embed` with two known octets | Preprocessor and build resource search | Inclusion of small binary resources |
+
+Each probe reports whether the feature actually compiled, linked, and produced its expected result on that particular host. The report does not declare all C23 features implemented merely because one succeeds.
+
+An unsupported probe is recorded rather than failing the separate basic-example regression suite. This is intentional: the ordinary examples should remain usable on systems without a particular optional library facility. A *project that depends on the missing facility* must still reject that toolchain or select a carefully tested alternative implementation.
+
+## E.9 Language version and library version are different
+
+The compile flag `-std=c23` requests a language mode. It does not guarantee a complete hosted C23 library or every optional header on all installations. The build can also select an older library than the compiler release might suggest, especially when cross-compiling to firmware targets.
+
+Treat support as a tuple rather than a yes/no label:
+
+```text
+(compiler release, language flags, target triple,
+ C library and version, startup/linker environment)
+```
+
+A probe that passes on one Linux host may fail when the same compiler targets a freestanding MCU. Even if it compiles, its runtime use may be unsuitable inside an interrupt handler or may bring in an unexpectedly large support library.
+
+Some features are also limited by target representation. For instance, the ability to declare a bit-precise integer does not specify a stable byte-oriented packet layout. A protocol must define its own widths, byte order, and packing separately from the C type.
+
+## E.10 Distinguish published C23 from later proposals
+
+This edition uses ISO/IEC 9899:2024 as its language reference. Working-group papers published later may discuss improving `constexpr`, expanding constant-expression semantics, or changing other language features. Those proposals are useful context but are not retroactively part of C23 merely because they were proposed in 2026.
+
+For example, C23's rules for `constexpr` pointer initializers are more restrictive than some later proposed extensions. Readers should consult the published standard and verified compiler documentation before treating a draft proposal as accepted syntax.
+
+This distinction matters when evaluating online examples. Source code labeled 'modern C' may rely on a compiler extension, a forthcoming language proposal, or a feature present in a different C-family language. The relevant question for a production build is whether *the selected target toolchain* accepts it under the chosen contract.
+
+## E.11 How to record a defensible result
+
+A useful conformance report contains more than a green checkmark:
+
+- The exact source revision and probe file.
+- The compiler's full version and selected target.
+- The language-mode and warning flags.
+- The linked C library and relevant headers.
+- Whether translation, linking, execution, and expected-value checks passed.
+- Any fallback selected for a feature the implementation lacks.
+- Which real-target measurements or runtime checks remain outstanding.
+
+Keep compiler-supported syntax separate from application correctness. A `#embed` probe can prove that the compiler incorporated two known bytes; it does not show that a large embedded model will fit within firmware flash and RAM constraints. A checked-arithmetic test can prove that a chosen operation reports overflow; it does not establish that every application value has a valid semantic range.
+
+The purpose of a feature matrix is to make toolchain dependencies explicit and reproducible—not to increase the number of features listed on a résumé or in a build configuration.
