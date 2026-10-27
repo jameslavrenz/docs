@@ -38,8 +38,8 @@ for path in manuscript:
     headings = re.findall(r"^# (.+)$", text, re.MULTILINE)
     if len(headings) != 1:
         errors.append(f"Expected one H1 title in {path.name}; found {len(headings)}")
-    if re.search(r"^\\\\[\\s*$|^\\\\]\\s*$", text, re.MULTILINE):
-        errors.append(f"Use $ delimiters for display math in {path.name} (Pandoc GFM)")
+    if any(line.strip() in (chr(92) + "[", chr(92) + "]") for line in text.splitlines()):
+        errors.append(f"Use GFM-compatible dollar-sign math fences in {path.name} (Pandoc GFM)")
 
     if path in chapters:
         chapter_number = int(path.name[:2])
