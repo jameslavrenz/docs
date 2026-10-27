@@ -11,6 +11,7 @@ make all
 [ "$(./ring_buffer)" = 'ring_buffer: OK' ]
 [ "$(./checked_sum)" = 'checked_sum: OK' ]
 [ "$(./vector)" = 'vector: OK' ]
+[ "$(./packet_decode)" = 'packet_decode: OK' ]
 [ "$(printf 'C23 binary copy' | ./file_copy)" = 'C23 binary copy' ]
 [ "$(./byte_decode)" = 'decoded: 12345678' ]
 sh tests/test_word_index.sh
