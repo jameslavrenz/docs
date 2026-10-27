@@ -35,9 +35,10 @@ An original, example-first introduction to the C programming language as standar
 - [C. Selected Worked Exercises](appendices/C-exercise-solutions.md)
 - [D. Glossary of Modern C](appendices/D-glossary.md)
 - [E. Conformance and Migration Checklist](appendices/E-conformance.md)
+- [F. Alphabetical Topic Finder](appendices/F-topic-finder.md)
 - [Compilable example files](examples/README.md)
 
-All nineteen chapters received a second-pass technical expansion: more explanation of preconditions, numeric boundaries, lifetime, ownership, explicit byte formats, concurrency, and C23 portability. Five appendices supply reference tables, selected solutions, a glossary, and a deployment checklist.
+All nineteen chapters received a second-pass technical expansion: more explanation of preconditions, numeric boundaries, lifetime, ownership, explicit byte formats, concurrency, and C23 portability. Six appendices supply reference tables, selected solutions, a glossary, and a deployment checklist.
 
 ## Newly expanded worked examples
 
@@ -47,7 +48,7 @@ The current expansion adds detailed treatments of module boundaries, sorted word
 - [`callback_sink.c`](examples/callback_sink.c): bounded partial-write handling through a callback and fake output device.
 - [`modules/`](examples/modules/): a separately compiled interface with a self-contained header and executable client.
 
-Further examples include [`arena_bytes.c`](examples/arena_bytes.c) (bounded byte arena with reset semantics), [`parse_signed.c`](examples/parse_signed.c) (checked decimal parsing including `LONG_MIN`), and [`rotate_bits.c`](examples/rotate_bits.c) (defined 32-bit rotations). The newest examples are [`line_reader.c`](examples/line_reader.c), a bounded hosted line reader with overlong-record recovery, and [`thread_counter.c`](examples/thread_counter.c), a two-worker C11/C23 atomic-counter demonstration using the hosted threads API. These supplement the counted-slice and checked-vector examples. Run `make check` to compile and execute all 29 standalone test programs on a C23-capable toolchain.
+Further examples include [`arena_bytes.c`](examples/arena_bytes.c) (bounded byte arena with reset semantics), [`parse_signed.c`](examples/parse_signed.c) (checked decimal parsing including `LONG_MIN`), and [`rotate_bits.c`](examples/rotate_bits.c) (defined 32-bit rotations). Further streaming and binary-format examples include [`utf8_stream.c`](examples/utf8_stream.c), an incremental strict UTF-8 decoder, and [`tlv_decode.c`](examples/tlv_decode.c), a bounded TLV record decoder. The newer I/O and threading examples are [`line_reader.c`](examples/line_reader.c), a bounded hosted line reader with overlong-record recovery, and [`thread_counter.c`](examples/thread_counter.c), a two-worker C11/C23 atomic-counter demonstration using the hosted threads API. These supplement the counted-slice and checked-vector examples. Run `make check` to compile and execute all 31 standalone test programs on a C23-capable toolchain.
 
 ## Build and scope
 
