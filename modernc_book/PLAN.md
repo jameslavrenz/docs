@@ -1,6 +1,6 @@
 # Editorial Roadmap — Modern C23
 
-**Current milestone:** comprehensive second-pass revision completed on 26 October 2026. The repository now has 19 chapters, 5 appendices, a preface, and 18 standalone example programs. Chapter, appendix and preface Markdown total approximately 34,300 words, including code and exercises. The 200–230-page target is an editorial objective, not a verified page count.
+**Current milestone:** comprehensive second-pass revision completed on 26 October 2026. The repository now has 19 chapters, 5 appendices, a preface, and 19 standalone example programs. Chapter, appendix and preface Markdown total approximately 34,300 words, including code and exercises. The 200–230-page target is an editorial objective, not a verified page count.
 
 ## Completed in this pass
 
