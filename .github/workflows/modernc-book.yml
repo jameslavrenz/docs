@@ -34,6 +34,11 @@ jobs:
         env:
           CC: ${{ matrix.compiler }}
         run: python3 scripts/check_listings.py
+      - name: Report optional C23 feature support
+        working-directory: modernc_book
+        env:
+          CC: ${{ matrix.compiler }}
+        run: python3 scripts/probe_c23_features.py
       - name: Compile and test all book examples
         working-directory: modernc_book
         env:
