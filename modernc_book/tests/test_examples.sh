@@ -24,6 +24,9 @@ make all
 [ "$(./frame_codec)" = 'frame_codec: OK' ]
 [ "$(./callback_sink)" = 'callback_sink: OK' ]
 [ "$(./modules_demo)" = 'modules_demo: OK' ]
+[ "$(./arena_bytes)" = 'arena_bytes: OK' ]
+[ "$(./parse_signed)" = 'parse_signed: OK' ]
+[ "$(./rotate_bits)" = 'rotate_bits: OK' ]
 [ "$(printf 'C23 binary copy' | ./file_copy)" = 'C23 binary copy' ]
 [ "$(./byte_decode)" = 'decoded: 12345678' ]
 sh tests/test_word_index.sh
