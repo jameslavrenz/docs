@@ -14,3 +14,15 @@ function Header(el)
     }
   end
 end
+
+-- Give short, illustrative code listings enough space to stay together.
+-- For long programs, reserve an intelligible opening but allow pagination.
+function CodeBlock(el)
+  local _, newlines = el.text:gsub("\n", "\n")
+  local lines = newlines + 1
+  local reserve = lines <= 22 and (lines + 2) or 12
+  return {
+    pandoc.RawBlock("latex", string.format("\\Needspace{%d\\baselineskip}", reserve)),
+    el
+  }
+end
