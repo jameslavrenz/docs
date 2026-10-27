@@ -1,0 +1,58 @@
+name: Build and publish Modern C23 PDF
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'modernc_book/chapters/**'
+      - 'modernc_book/appendices/**'
+      - 'modernc_book/scripts/build-pdf.sh'
+      - '.github/workflows/modernc-pdf.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: modernc-pdf-main
+  cancel-in-progress: false
+
+jobs:
+  build-and-push:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out manuscript
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Install PDF toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc texlive-xetex texlive-latex-extra fonts-dejavu-core poppler-utils
+      - name: Build reading edition
+        working-directory: modernc_book
+        run: |
+          sh scripts/build-pdf.sh
+          test -s build/modern-c23.pdf
+          pdfinfo build/modern-c23.pdf | grep '^Pages:'
+          pdftotext build/modern-c23.pdf - | grep -q 'A First Look at C'
+      - name: Publish PDF to repository
+        run: |
+          mkdir -p modernc_book
+          cp modernc_book/build/modern-c23.pdf modernc_book/modern-c23.pdf
+          git add -f modernc_book/modern-c23.pdf
+          if git diff --cached --quiet; then
+            echo 'PDF unchanged'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'book: publish generated Modern C23 PDF'
+          git push origin HEAD:main
+      - name: Save PDF workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: modern-c23-reading-edition
+          path: modernc_book/modern-c23.pdf
+          if-no-files-found: error
