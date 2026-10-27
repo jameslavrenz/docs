@@ -6,7 +6,7 @@
 - Six appendices, including worked solutions and an alphabetical topic finder
 - 83,061 Markdown words including code and exercises
 - 35 standalone C examples in the Makefile and regression script
-- Structural checks of chapter numbers, appendix letters, Markdown fences, README links, and executable-test references
+- Structural checks of chapter and subsection numbers, appendix letters, Markdown fences, internal links throughout the manuscript, and executable-test references
 
 ## Latest technical additions
 
@@ -23,12 +23,12 @@ Chapter 8's header example was corrected to match the compiled module, including
 
 GitHub Actions runs C23 examples using GCC 14 and Clang 18 with warnings as errors (with one targeted Clang 18 workaround for its C23 binary literal diagnostic). The new source examples have passed intermediate runs. Refer to the latest workflow result for confirmation of the final editorial commit.
 
-The new manuscript checker passed its initial CI test after integration. It detects structural issues, not semantic errors in all prose fragments.
+The extended manuscript checker passed with all internal links and consecutive chapter section numbers. GCC 14 and Clang 18 compiled 13 complete chapter listings and tested all 35 standalone programs; a separate GCC 14 UndefinedBehaviorSanitizer job also passed the 35-program suite. These tests do not establish all semantics of every illustrative fragment or target-hardware behavior.
 
 ## PDF status
 
-A confirmed PDF published earlier in this session contains **187 pages**. The newest manuscript changes may not yet be reflected in the tracked PDF while its workflow is building. The exact new page count must come from the next completed PDF job.
+The successfully published PDF (run 40511272634) contains **205 pages**, meeting the original 200–230-page target. Subsequent changes in this review pass affect CI and documentation, not the typeset manuscript. The PDF remains a draft pending a page-by-page layout and technical review.
 
 ## Remaining acceptance criteria
 
-Complete code-listing audit; visual PDF inspection; cross-reference cleanup; final index with page numbers; full compatibility matrix for optional C23 language/library features; and enough substantive development to reach the approximately 200–230-page target.
+Technical audit of illustrative fragments (13 complete listings compile on two compilers; one optional-library listing remains excluded), visual PDF inspection, verified page-numbered index, and a full compatibility matrix for optional C23 language/library features.
