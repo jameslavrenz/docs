@@ -138,7 +138,7 @@ A good interface for an average also distinguishes the empty-input case from a r
 
 A cast requests a conversion; it does not assert that the mathematical value fits. If an external protocol provides a `uint32_t` length and a function expects an `int` length, test the range *before* conversion. A cast performed first may already have discarded information.
 
-```c
+```c compile-check
 #include <stdint.h>
 #include <limits.h>
 #include <stdbool.h>
@@ -192,7 +192,7 @@ Do not infer the expression's type solely from the declared type of its operands
 
 If a protocol needs an eight-bit mask, perform the operation in a known unsigned domain and intentionally narrow the result only after masking:
 
-```c
+```c compile-check
 #include <stdint.h>
 
 uint8_t low_byte(uint32_t value)
@@ -224,7 +224,7 @@ Prefer to keep array positions as `size_t` from the beginning when negative inde
 
 Integer division by zero is undefined. The signed quotient may also be unrepresentable: on ordinary two's-complement systems, `INT_MIN / -1` is the familiar example. A library routine parsing a user-supplied divisor should test both conditions before evaluating the operation.
 
-```c
+```c compile-check
 #include <stdbool.h>
 #include <limits.h>
 
@@ -246,7 +246,7 @@ A universal test such as `fabs(a - b) < 1e-6` is usually not a universal numeric
 
 A numerical application should choose absolute tolerance, relative tolerance, or a combination according to the units and problem:
 
-```c
+```c compile-check
 #include <math.h>
 #include <stdbool.h>
 
@@ -268,7 +268,7 @@ This is a teaching fragment with an explicit finite-input policy; even here, int
 
 For two nonnegative `size_t` operands, `a * b` fits when either operand is zero or `a <= SIZE_MAX / b`. Notice why the division is performed only when `b != 0`. The test avoids executing multiplication until representability has been established.
 
-```c
+```c compile-check
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -333,7 +333,7 @@ For an externally supplied counted byte span, avoid `strlen`. It is not safe to 
 
 Consider converting a signed `long` into an unsigned 16-bit field. Casting the negative value first may produce a valid-looking unsigned integer that does not represent the user's intended value. Check the sign before the cast; then check the upper limit:
 
-```c
+```c compile-check
 #include <stdint.h>
 #include <stdbool.h>
 
