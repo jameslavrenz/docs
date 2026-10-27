@@ -19,3 +19,11 @@ The rest of the programs are not yet recorded as compile-tested. Do not extrapol
 - Invocation: `-std=c23 -Wall -Wextra -Wpedantic -Werror`.
 - Result: both compilers built and executed the example; output was `c23_basics: OK`.
 - Limitation: This covers only the selected C23 syntax in the example. It does not establish `#embed`, `constexpr`, newer library-header support, or the status of the full CI matrix.
+
+## 26 October 2026 — C23 CI compatibility repair
+
+- Failure reproduced locally in `examples/spsc_queue.c` using GCC 14.2 and Clang 17 in C23 mode with `-Wall -Wextra -Wpedantic -Werror`.
+- Root cause: `ATOMIC_VAR_INIT` was removed from C23; both compilers treated it as undeclared/undefined in the C23 dialect.
+- Fix: replace the two `ATOMIC_VAR_INIT(0)` initializer expressions with scalar `0` initializers for the atomic members.
+- Retest: the corrected `spsc_queue.c` compiled and ran successfully under both local compilers, printing `spsc_queue: OK`.
+- CI result: the GitHub Actions checks for the new commit were not available through the current status interface at the time of review. A locally passing example is not proof of a completed passing workflow.
