@@ -28,9 +28,9 @@ This function classifies one byte without invoking locale-sensitive character cl
 
 A decimal parser maintains an accumulated number. Each incoming digit requests a transition from `value` to `value * 10 + digit`. For an unsigned maximum `MAX`, that transition is valid only when
 
-\[
+$
 value \leq \left\lfloor\frac{MAX-digit}{10}\right\rfloor.
-\]
+$
 
 The inequality must be tested *before* multiplication. A checked parser can therefore reject overflow without ever evaluating the overflowing expression.
 
