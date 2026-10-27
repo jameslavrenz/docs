@@ -572,3 +572,87 @@ For both examples, write a small verification report with these headings:
 **Unverified properties.** Identify deployment-specific assumptions, unsupported Unicode operations, authentication, concurrency, and any untested code paths.
 
 A reliable solution is one whose contracts can be reviewed without relying on lucky runtime behavior.
+
+## C.35 Fixed pool allocation with generation-tagged handles
+
+The fixed pool in examples/slot_pool.c manages four integer-valued records without a heap. Each slot has an occupancy flag, a retirement flag, a generation counter, and a value. A handle contains a slot index and the generation observed when the slot was allocated.
+
+The central invariant is that a handle is valid only if its index is within the array, the slot is occupied, and the generations match. Checking just the index is insufficient: a freed slot may have been assigned to a different client.
+
+### Acquire and release
+
+An acquire operation scans at most four slots and chooses the first slot that is neither occupied nor retired. It writes the value, marks the slot occupied, and publishes the newly formed handle only after success. If no slot is available, the caller's output handle remains unchanged.
+
+On release, the function first verifies the index, occupancy, and generation. It marks the slot unoccupied and increments its generation. An old handle now fails validation even if its original physical slot is reused for another value. A second release of the same handle is also rejected.
+
+The implementation retires any slot whose generation has reached UINT_MAX. Ordinary unsigned arithmetic would wrap to zero, which could eventually recreate a previously issued handle identity. Retirement prevents that reuse at the cost of reducing the available pool capacity after extremely many cycles.
+
+### A worked trace
+
+| Event | Slot 1 generation | Occupancy | Old handle valid? |
+| --- | --- | --- | --- |
+| Initially | 0 | Free | No handle |
+| Acquire value 20 | 0 | Occupied | Yes, handle (1,0) |
+| Release | 1 | Free | No |
+| Acquire value 99 | 1 | Occupied | No; new handle is (1,1) |
+| Release again | 2 | Free | Neither old handle is valid |
+
+The implementation tests a full pool, failed acquire, successful release, stale read, double release, reuse at a new generation, and retirement at the maximum generation.
+
+### Limits of generation handles
+
+A generation number is not authentication. A client can manufacture an index and number that happen to match. The teaching handle also lacks an owning-pool identifier; a handle from another pool may coincide with a valid pair. If clients are untrusted or handles cross subsystem boundaries, a stronger identity and permission scheme is necessary.
+
+The pool is not thread-safe. Concurrent acquire operations can select the same available slot unless appropriate synchronization or task confinement prevents interleaving. The lack of dynamic allocation does not remove the need for ownership discipline.
+
+## C.36 Worked byte-at-a-time frame parser
+
+The parser in examples/frame_stream.c accepts frames with this layout:
+
+    A5 | length | zero to eight payload octets | checksum
+
+The checksum is XOR of length and every payload octet. It is intended only as a teaching error-detection mechanism, not authentication.
+
+The state machine has four phases: wait for magic, read length, collect payload, and check checksum. Every call consumes one input octet and performs a bounded amount of work.
+
+A complete message is published only when the checksum succeeds. While a frame is incomplete, the parser updates its private candidate and returns FEED_MORE without changing the caller's previously completed message. Malformed input resets the parser and returns FEED_REJECTED, again without publishing partial output.
+
+### Independently calculated vector
+
+A length-three payload containing hexadecimal octets 0A, 14, and 1E has checksum 03, because 03 XOR 0A XOR 14 XOR 1E equals 03. The full frame is therefore:
+
+    A5 03 0A 14 1E 03
+
+The first five feed calls should return FEED_MORE; the sixth returns FEED_COMPLETE and publishes three payload octets. An empty frame is A5 00 00 and should also complete.
+
+### Bounds proof
+
+While collecting payload, the declared length is in the interval one through eight. Before storing the next byte, the received count is smaller than the declared length. Therefore the destination index is less than eight and lies within the fixed array.
+
+The parser accepts no length greater than eight. No loop runs over an untrusted length inside one feed operation. This supports a bounded per-byte work argument, though the actual MCU execution time still depends on the compiler, memory system, scheduling, and interrupts.
+
+### Truncation and resynchronization
+
+A prefix such as A5 02 07 is incomplete. The parser can retain its private state between input fragments, or the caller can reset it after a definite EOF or timeout.
+
+A rejected checksum is consumed even if that byte coincides with the magic marker A5. The simple recovery policy can therefore miss the start of a possible following frame. The external protocol must explicitly define how resynchronization works; scanning blindly for the next magic octet is not always correct when that value may appear in payload data.
+
+## C.37 The distinction between state and published results
+
+The two examples illustrate different failure guarantees. A failed pool acquire preserves both pool availability and the caller's output handle. A stale release preserves all pool state. A frame feed returning FEED_MORE changes its internal parser state intentionally while preserving the public output. A rejected frame resets its internal state while still preserving the public output.
+
+Consequently the phrase "no change on failure" is incomplete unless it specifies the object and state whose contents are unchanged.
+
+For a large system, write down this distinction for every API: which state is private, which is externally visible, and exactly when a completed result is published.
+
+## C.38 Concurrency and shutdown review
+
+These examples are deterministic when one owner controls each mutable object. A real embedded application must also decide who feeds the parser, who owns the pool, and what happens when a producer outruns a consumer.
+
+A common architecture places incoming UART bytes into a bounded ISR-safe queue and processes them in a normal RTOS task. The task can own the frame parser, while clients request pool operations through a controlled interface. This avoids mixing task and interrupt contexts indiscriminately.
+
+The queue itself still needs a suitable overflow policy, its atomic operations must be supported on the target, and shutdown must ensure no execution context continues using released state.
+
+### Extended exercises
+
+**C.1** Add an owning-pool identity to handles and document how identity changes when a pool is reinitialized. **C.2** Add detailed parser statuses for invalid length, checksum failure, and incomplete input. **C.3** Test every valid payload length from zero to eight with independent expected frames. **C.4** Design the reset and recovery action after a simulated input-queue overflow. **C.5** Write a review explaining which properties are tested, which follow from invariants, and which require real hardware verification.
