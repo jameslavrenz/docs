@@ -9,6 +9,7 @@ on:
       - 'modernc_book/appendices/**'
       - 'modernc_book/scripts/build-pdf.sh'
       - 'modernc_book/scripts/listings-setup.tex'
+      - 'modernc_book/scripts/chapter-openings.lua'
       - 'modernc_book/scripts/check_pdf.py'
       - 'modernc_book/scripts/pdf_review_report.py'
       - '.github/workflows/modernc-pdf.yml'
@@ -58,7 +59,8 @@ jobs:
           if ! git diff --quiet HEAD origin/main -- \
                modernc_book/frontmatter modernc_book/chapters \
                modernc_book/appendices modernc_book/scripts/build-pdf.sh \
-               modernc_book/scripts/listings-setup.tex; then
+               modernc_book/scripts/listings-setup.tex \
+               modernc_book/scripts/chapter-openings.lua; then
             echo 'Manuscript changed after checkout; skip stale publication'
             cp modernc_book/build/modern-c23.pdf modernc_book/modern-c23.pdf
             exit 0
