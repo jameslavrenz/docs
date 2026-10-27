@@ -27,6 +27,8 @@ make all
 [ "$(./arena_bytes)" = 'arena_bytes: OK' ]
 [ "$(./parse_signed)" = 'parse_signed: OK' ]
 [ "$(./rotate_bits)" = 'rotate_bits: OK' ]
+[ "$(./line_reader)" = 'line_reader: OK' ]
+[ "$(./thread_counter)" = 'thread_counter: OK' ]
 [ "$(printf 'C23 binary copy' | ./file_copy)" = 'C23 binary copy' ]
 [ "$(./byte_decode)" = 'decoded: 12345678' ]
 sh tests/test_word_index.sh
