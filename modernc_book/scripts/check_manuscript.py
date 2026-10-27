@@ -41,6 +41,23 @@ for path in manuscript:
     if any(line.strip() in (chr(92) + "[", chr(92) + "]") for line in text.splitlines()):
         errors.append(f"Use GFM-compatible dollar-sign math fences in {path.name} (Pandoc GFM)")
 
+    # Pandoc treats a lone dollar line as literal text, not display math.
+    # Ignore code fences, where dollars can be part of shell or C examples.
+    inside_code = False
+    display_fences = 0
+    for line_no, line in enumerate(text.splitlines(), 1):
+        if re.match(r"^\\s*`{3,}", line):
+            inside_code = not inside_code
+            continue
+        if inside_code:
+            continue
+        if line.strip() == "$":
+            errors.append(f"Single-dollar display-math fence in {path.name}:{line_no}; use $")
+        if line.strip() == "$":
+            display_fences += 1
+    if display_fences % 2:
+        errors.append(f"Unpaired display-math $ fence in {path.name}")
+
     if path in chapters:
         chapter_number = int(path.name[:2])
         found = [int(n) for n in re.findall(
