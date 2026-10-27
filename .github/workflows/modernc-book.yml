@@ -29,6 +29,11 @@ jobs:
       - name: Check manuscript structure
         working-directory: modernc_book
         run: python3 scripts/check_manuscript.py
+      - name: Compile complete chapter listings
+        working-directory: modernc_book
+        env:
+          CC: ${{ matrix.compiler }}
+        run: python3 scripts/check_listings.py
       - name: Compile and test all book examples
         working-directory: modernc_book
         env:
