@@ -1,21 +1,23 @@
-# Editorial Status — 26 October 2026
+# Editorial and Verification Status — 26 October 2026
 
-This is an **in-progress original C23 textbook**, not K&R's third edition.
+## Manuscript
 
-## Completed foundations
+- 19 chapters, all expanded in a full second editorial pass.
+- 5 appendices, including selected exercise solutions, a glossary and a migration checklist.
+- A preface explaining the audience, contracts, portability and source conventions.
+- Approximately 34,300 Markdown words in the front matter, chapters and appendices, counting code listings.
+- 18 standalone C examples in `examples/`.
 
-- Twelve concise chapters with exercises.
-- Three appendices including a reference and selected solutions.
-- Expanded Chapters 1–10 with reliability discussions and worked fragments.
-- Standalone example programs and a shell-based regression suite.
+## Verified versus unverified
 
-## Remaining work before a complete edition
+**Verified:** The updated Markdown files, scripts and workflow configuration were committed through the GitHub connector and checked as readable from the repository.
 
-1. Expand Chapters 11–12 into a full-sized project and systematic exercise collection.
-2. Replace intentionally simplified or illustrative fragments with vetted, self-contained listings when appropriate.
-3. Audit all examples for strict C23 conformance, memory safety, arithmetic overflow and implementation assumptions.
-4. Compile and run examples using multiple GCC and Clang configurations; add automated CI.
-5. Build an index, glossary, bibliography, acknowledgments and print-quality PDF.
-6. Verify the typeset page count, targeting about 200–230 pages without padding or duplicated prose.
+**Not independently verified in this pass:** A completed GitHub Actions test run, successful execution of the full example suite, layout of the newly revised PDF, and whether the regenerated PDF has been committed. An older PDF is present in `modernc_book/modern-c23.pdf`; it must not be assumed to contain the newest revisions until its build is verified.
 
-**Quality note:** material has been pushed to GitHub, but compiler tests have not yet been executed in this session.
+## C23 specificity
+
+The language specification is ISO/IEC 9899:2024. Features such as `nullptr`, `auto`, `typeof`, `constexpr`, `_BitInt`, `#embed`, `<stdbit.h>` and `<stdckdint.h>` have implementation-specific availability. Test language and library support separately on the intended target.
+
+## Acceptance criteria for a reading edition
+
+A complete reading draft must build from the latest source, include the preface and all five appendices, show a navigable table of contents, have no truncated code listings, and report a measured page count. Publication-ready status additionally requires source and example audits, cross-compiler results, comprehensive proofreading, and an index.
