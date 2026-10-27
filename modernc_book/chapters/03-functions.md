@@ -172,3 +172,62 @@ A routine that mixes input reading, parsing, allocation, and printing is harder 
 For host-based firmware tests, a function that accepts a byte buffer and a length can be tested without a UART peripheral. A thin UART adapter may read bytes on the device and forward them to the parser. This separation is useful because transport errors and parsing errors have different causes and remedies.
 
 **Further problems:** Write a header and implementation for a checked decimal parser. Define a status enumeration for invalid syntax versus overflow. Test that failure preserves the output. Explain why a static local variable may complicate recursion and concurrent calls.
+
+
+## 3.13 Separate syntax checking from semantic validation
+
+A parser does two jobs: it recognizes a sequence of characters and it interprets the recognized sequence as a value. Combining both stages into an unchecked conversion makes it easy to accidentally accept trailing garbage or overflow.
+
+Consider a decimal parser with this contract: the input must be a nonempty sequence of ASCII digits, its value must fit in \`unsigned\`, and on failure the output must remain unchanged. A clear algorithm is:
+
+1. Reject a null input or null output pointer.
+2. Reject empty text.
+3. Start an accumulator at zero.
+4. For each byte, reject anything outside \`'0'\` through \`'9'\`.
+5. Before multiplying by ten, check that the new value is representable.
+6. Assign the final accumulator to the output once, after the whole string succeeds.
+
+\`examples/parse_unsigned.c\` implements this design. It deliberately differs from \`strtoul\` by rejecting signs and spaces. Neither behavior is inherently better; the application's grammar decides.
+
+For a parser that receives a counted span, reject both a null pointer with nonzero length and any claimed length that is not actually backed by valid storage. The latter is a caller precondition C cannot test generically.
+
+## 3.14 Return values and out-parameters
+
+Why return a status and write a value through an out-parameter rather than return a structure containing both? Either design can work. In C, a small result structure is often natural:
+
+\`\`\`c
+struct parse_result {
+    bool ok;
+    unsigned value;
+};
+\`\`\`
+
+With this interface, the caller does not manage a separate output pointer. The function can return an all-zero result on failure, then fill both members on success. It may be clearer for small values; an out-parameter may be preferable when writing a large object or retaining a long-established ABI.
+
+Whichever design you choose, state the failure contract. A boolean-returning function that partly overwrites the output before reporting failure is much harder for callers to use correctly than one that commits a completed result once.
+
+## 3.15 File scope, linkage, and modules
+
+C has no built-in class module system. The conventional unit of modularity is a header plus one or more source files. The header exposes declarations; the source file defines those operations and keeps helpers private with \`static\`.
+
+A source file should include its own public header before defining the corresponding functions. That forces the compiler to compare the declared and defined types. If callers include the same header, interfaces cannot silently diverge without diagnostics.
+
+A declaration is not always a definition. For a shared file-scope object, the header can use \`extern unsigned event_count;\`, while precisely one source file supplies \`unsigned event_count = 0;\`. Repeating a non-\`extern\` external object definition across headers or translation units is not a sound substitute for a module.
+
+## 3.16 Passing arrays does not pass their sizes
+
+Suppose a function accepts \`const int values[10]\`. That parameter declaration is adjusted to a pointer type; the compiler does not automatically supply a count of ten and ordinarily cannot check what the caller passed. A more honest general interface accepts \`const int *values, size_t count\`.
+
+The type \`const int *\` says the function may not modify the elements *through that pointer*. It does not guarantee ownership, lifetime, or thread safety, and it does not make the underlying object immutable if other permitted aliases exist.
+
+To express a fixed minimum bound, C permits array parameter syntax with \`static\` in the brackets. Such a declaration is a caller contract, not dynamic bounds enforcement. It should be used only when every valid call really supplies enough elements.
+
+## 3.17 Recursive functions need a resource argument
+
+Recursion can closely express a tree traversal or mathematical recurrence, but every call consumes some execution resources. A desktop process may have ample stack; a microcontroller task may have only a small fixed stack.
+
+When evaluating recursive code, ask whether the maximum depth is bounded by the input contract. Can a malicious or malformed input create arbitrarily deep nesting? What happens when the recursion reaches its base case? A recursive algorithm with logarithmic depth may be reasonable; a recursive traversal of an unconstrained linked list often deserves an iterative form or a documented maximum depth.
+
+### Guided exercises
+
+**3.9** Implement the structure-returning parser result and compare its call sites with the out-parameter version. **3.10** Write a self-contained public header and compile it as the first include in a separate test file. **3.11** Replace a recursively implemented byte count with a loop and identify the changed resource bounds. **3.12** Design an API to read a sensor value that can report 'not ready', 'hardware error', and 'valid sample' distinctly.
