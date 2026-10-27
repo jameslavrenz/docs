@@ -101,6 +101,13 @@ jobs:
           name: modern-c23-page-index-audit
           path: modernc_book/build/page-index-audit.tsv
           if-no-files-found: warn
+      - name: Save candidate page-index preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: modern-c23-page-index-preview
+          path: modernc_book/build/page-index-preview.md
+          if-no-files-found: warn
       - name: Save PDF debug artifact even if layout validation fails
         if: always()
         uses: actions/upload-artifact@v4
