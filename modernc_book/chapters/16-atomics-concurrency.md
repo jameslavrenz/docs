@@ -135,3 +135,40 @@ Stopping a producer is not the same as ensuring it has stopped. A queue owner mu
 The choice between draining and discarding pending items should be explicit. Either can be correct depending on the application, but implicit destruction while work remains creates lifetime hazards.
 
 **Further problems:** Create a two-thread FIFO stress test recording item sequence numbers. Explain the effect of replacing a release store with a relaxed store. Sketch a shutdown protocol for a queue shared between a worker thread and an RTOS task.
+
+
+## 16.14 Memory ordering is a protocol, not a performance switch
+
+The SPSC queue works because it establishes two publication relationships. The producer writes an ordinary slot and then publishes an updated tail through a release operation. The consumer acquires that tail before reading the slot. In the opposite direction, the consumer finishes reading the slot and releases its updated head; the producer acquires head before reusing that storage.
+
+It is tempting to label every atomic access `memory_order_relaxed` for speed. But relaxed atomics guarantee the atomicity and modification order of the atomic object, not the required visibility of ordinary slot writes to another thread. The release/acquire relationships are part of this algorithm's proof.
+
+Conversely, using `memory_order_seq_cst` everywhere does not magically repair a design that lets two producers concurrently modify a slot intended for one producer. Memory ordering and permitted roles are separate requirements.
+
+## 16.15 Read the single-producer guarantee literally
+
+An SPSC queue has one producer and one consumer *at a time under the documented protocol*. Calling `push` from a second producer can make both read the same tail, write the same slot, and publish conflicting updates. Atomic tail storage does not turn the remaining sequence into an atomic transaction.
+
+A multiple-producer queue usually needs additional synchronization or a different algorithm. If a single interrupt is the producer and one task is the consumer, you must still verify that the compiler, target architecture and RTOS support the chosen atomic operations in that interrupt context.
+
+A callback that sometimes runs on the producer thread and sometimes runs in an interrupt is not automatically a single producer under a safe schedule. Identify the actual execution contexts.
+
+## 16.16 Progress guarantees are different
+
+A nonblocking operation returns without sleeping for a mutex, but the terms *lock-free* and *wait-free* have precise algorithmic meanings. Lock-free generally concerns system-wide progress; wait-free concerns per-operation completion in a bounded number of steps. Neither necessarily means low latency under every cache, interrupt or scheduling condition.
+
+The small SPSC queue has bounded local index work, but whether its atomic primitives are implemented without locks depends on the target. On a small MCU, a supposedly atomic operation may be lowered to a helper routine that is inappropriate in an interrupt handler.
+
+Measure real target execution and verify the atomic implementation before making a real-time guarantee.
+
+## 16.17 Shutdown and ownership
+
+Memory ordering does not establish object lifetime by itself. Imagine a queue owner frees the queue while a consumer is about to load its head. Even though the member is atomic, the storage is gone and the access is invalid.
+
+A shutdown protocol can announce cancellation, stop the producer, let the consumer drain or abandon remaining items by policy, wait for both to complete, and only then reclaim storage. A good API states who owns the queue object and which operation establishes that no in-flight access remains.
+
+For embedded systems, task deletion and ISR unregistering can each require target-specific synchronization. Test the shutdown path, not only steady-state traffic.
+
+### Exercises
+
+**16.7** Draw the two release/acquire edges on an eight-slot queue. **16.8** Explain why a second producer is unsafe despite atomic index variables. **16.9** Compare mutex-based and atomic-based designs for a real-time telemetry queue. **16.10** Describe a shutdown sequence that makes destruction safe.
