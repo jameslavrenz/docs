@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'modernc_book/frontmatter/**'
       - 'modernc_book/chapters/**'
       - 'modernc_book/appendices/**'
       - 'modernc_book/scripts/build-pdf.sh'
@@ -15,7 +16,7 @@ permissions:
 
 concurrency:
   group: modernc-pdf-main
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build-and-push:
@@ -36,11 +37,18 @@ jobs:
           sh scripts/build-pdf.sh
           test -s build/modern-c23.pdf
           pdfinfo build/modern-c23.pdf | grep '^Pages:'
-          pdftotext build/modern-c23.pdf - | grep -q 'A First Look at C'
+          pdftotext build/modern-c23.pdf build/modern-c23.txt
+          grep -q 'A First Look at C' build/modern-c23.txt
+          grep -q 'Conformance and Migration Checklist' build/modern-c23.txt
       - name: Publish PDF to repository
         run: |
           mkdir -p modernc_book
           cp modernc_book/build/modern-c23.pdf modernc_book/modern-c23.pdf
+          git fetch origin main
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+            echo 'Source was superseded; publish only the workflow artifact'
+            exit 0
+          fi
           git add -f modernc_book/modern-c23.pdf
           if git diff --cached --quiet; then
             echo 'PDF unchanged'
