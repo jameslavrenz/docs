@@ -134,3 +134,55 @@ The manuscript's PDF is generated from Markdown. A reliable release records the 
 Use a CI workflow to build, inspect, and publish the PDF after source changes, with an explicit failure whenever required tools or referenced files are missing. An automation configuration in a repository is a plan for a build, not evidence that the build actually passed.
 
 **Further problems:** Write Makefile rules for two object files sharing a header. Explain the meaning of `-c`. Design a two-compiler CI matrix and identify how to distinguish compiler-support failure from a programming error.
+
+## 8.15 A real three-file C module
+
+A header becomes useful when more than one translation unit agrees to an interface. The companion example under `examples/modules/` consists of a header, an implementation, and a separate client program. It computes a checksum over a bounded byte span. The calculation is intentionally elementary; the lesson is how declarations, definitions, and build dependencies cooperate.
+
+The header contains the declaration:
+
+```c
+#ifndef BOOK_CHECKSUM_H
+#define BOOK_CHECKSUM_H
+
+#include <stddef.h>
+
+unsigned book_checksum(const unsigned char *bytes, size_t count);
+
+#endif
+```
+
+The implementation includes that same header, rather than independently restating the function's type. It also places any helper functions under internal linkage with `static`. The client includes the header and calls the function. The build compiles both source files and links their object code.
+
+Why insist that the implementation include its own header? Suppose a developer changes the parameter from `size_t` to `unsigned` in only the implementation. Without the header, different translation units could compile against incompatible assumptions. With a common header, the compiler can diagnose disagreement where the function is defined.
+
+## 8.16 Rebuild dependencies
+
+A Makefile must know more than the final executable name. If `checksum.h` changes, both the implementation that defines the operation and the client that calls it may need recompilation. For a small demonstration, an explicit recipe that depends on all three files is sufficient:
+
+```make
+modules_demo: examples/modules/main.c examples/modules/checksum.c examples/modules/checksum.h
+	$(CC) $(CFLAGS) examples/modules/main.c examples/modules/checksum.c -o $@
+```
+
+For larger projects, compile to separate object files and generate header dependencies automatically. Otherwise a stale object file may be linked against an updated structure layout or changed interface.
+
+This particular checksum is not a cryptographic digest. It is a teaching example for module boundaries and input-length contracts. Using it for message authentication would be a security design error.
+
+## 8.17 Header hygiene and include order
+
+A well-designed public header should compile when included first in an otherwise minimal translation unit. It should include the standard headers needed by its own declarations instead of relying on the client to include them beforehand.
+
+Include guards prevent repeated textual inclusion within one translation unit, not multiple external definitions across separate source files. Define ordinary global storage in one implementation file; put only an `extern` declaration in the header if clients truly need to refer to it.
+
+An API can often avoid exporting global state at all. Pass a context structure or opaque handle through function arguments so tests can create independent instances without accidental interference.
+
+## 8.18 Libraries are composed, not merely named
+
+A static library usually packages compiled object files into an archive. A shared library adds platform-specific dynamic-linking rules and lifetime constraints. The C language itself specifies translation and linkage concepts but does not require a particular operating-system library format.
+
+An embedded firmware image may link application code, an RTOS, a runtime library, startup code and a linker script in one final step. The C code can be portable while its final link process is highly target-specific.
+
+### Exercises
+
+**8.8** Compile the module example with separate `-c` steps. **8.9** Remove the implementation file from the link command and explain the resulting diagnostic. **8.10** Delete `<stddef.h>` from the header and determine why standalone inclusion now fails. **8.11** Add a unit-test client using the same header but a different `main`.
