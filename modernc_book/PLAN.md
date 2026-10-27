@@ -11,7 +11,7 @@
 - Added Appendix F, an alphabetical topic finder with chapter-level references, to help readers navigate the growing book without unstable draft page numbers.
 - Added an integrated Chapter 12 capstone for a bounded telemetry receiver with explicit framing, pools, queues, and shutdown semantics.
 - Added worked examples of generation-tagged fixed pools and byte-at-a-time binary frame decoding, including model-based and transition testing.
-- Added a manuscript structure checker to CI; compiler regression testing uses GCC 14 and Clang 18.
+- Added a manuscript structure checker covering local links and consecutive chapter numbering; compiler regression testing uses GCC 14 and Clang 18, 13 complete chapter listings, and GCC 14 UBSan on all 35 executable examples.
 - Maintained a PDF build and publisher that includes all chapters and appendices.
 
 ## Next work priorities
@@ -21,12 +21,12 @@
 3. **Complete exercises:** Add worked solutions for combinations of data structures, formatting, error recovery, and portability.
 4. **Visual layout:** Inspect representative rendered pages, including long code blocks, table width, mathematical expressions, and topic-finder layout.
 5. **Index:** Retain Appendix F as a chapter-level topic finder during drafting; generate verified page references for a final printable edition.
-6. **Publication target:** Reach approximately 200–230 high-quality typeset pages through necessary technical explanation, not padding.
+6. **Publication quality:** The 205-page target is reached. Prioritize technical corrections, page-by-page typesetting review, and verified index references rather than increasing length.
 
 ## Verification rules
 
 A file or workflow existing in GitHub is not evidence that it passed. Always inspect completed CI runs for the relevant commit. A passing host test does not establish interrupt safety, DMA coherency, target ABI compatibility, or real-time deadlines.
 
-A subsequent technical expansion adds multi-key sorting, `_Generic` dispatch, a fixed-header correction, separate object compilation, a full word-index trace and stronger boundary tests, and additional standard-library API contracts. The source now totals 83,061 words including code, exercises and appendices; the last independently measured PDF before this latest material was 187 pages.
+A subsequent technical expansion adds multi-key sorting, `_Generic` dispatch, a fixed-header correction, separate object compilation, a full word-index trace and stronger boundary tests, and additional standard-library API contracts. The source now totals 83,061 words including code, exercises and appendices; the latest successfully published PDF contains 205 pages (GitHub Actions run 40511272634).
 
 The Markdown tree is authoritative. The tracked `modern-c23.pdf` is an output artifact and can lag when PDF workflows are queued or superseded. Measure the number of pages from the actual completed build rather than inferring it from manuscript word count.
