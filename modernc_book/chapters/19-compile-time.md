@@ -105,3 +105,48 @@ The companion program `examples/compile_time.c` combines `static_assert`, string
 **19.5** Define the differences among `#if`, `static_assert`, and a runtime `if` statement.
 
 **19.6** Use a `_Generic` selection to choose one of two distinct, typed integer-printing functions.
+
+
+## 19.11 Preprocessing is not type checking
+
+The preprocessor expands tokens before the compiler evaluates ordinary C types and expressions. This means a macro can construct an expression that looks plausible but has surprising side effects. A typed function receives evaluated arguments once for each parameter, but the order of evaluation among arguments is still not specified merely by the call.
+
+Prefer `enum` constants, appropriately typed `constexpr` objects where supported, and `static inline` functions for tasks that do not require token substitution. Reserve macros for conditional compilation, stringizing, token-pasting, or genuinely generic constructs that cannot be expressed as ordinary C functions.
+
+## 19.12 Expand macros deliberately
+
+Two-level macros are needed when a macro argument should be expanded before being stringized:
+
+```c
+#define STR_DIRECT(x) #x
+#define STR_EXPANDED(x) STR_DIRECT(x)
+#define MAJOR_VERSION 3
+
+const char *version = STR_EXPANDED(MAJOR_VERSION);
+```
+
+`STR_DIRECT(MAJOR_VERSION)` yields the identifier spelling, while `STR_EXPANDED(MAJOR_VERSION)` yields `"3"`. Macro expansion rules are precise but easy to misread. Prefer explicit, small helper macros with a test illustrating their purpose.
+
+## 19.13 Conditional compilation and dead branches
+
+A `#if` directive removes or retains preprocessing tokens before the compiler type-checks ordinary statements. A runtime `if` statement, even if its condition is a constant expression, still belongs to the translated C program and is subject to language constraints.
+
+Use conditional compilation for platform-specific includes, unsupported instructions, or truly unavailable APIs. When both implementations are valid C on the current target, a normal function call or runtime branch may be easier to maintain.
+
+## 19.14 Using embed responsibly
+
+C23's `#embed` is valuable for incorporating binary resources into source initialization. A resource might contain firmware calibration constants or a model binary. Treat the bytes as untrusted data from a build-input perspective: validate their length, version, and format before interpreting them, and record their provenance.
+
+Embedding data does not necessarily guarantee where the linker places it, whether it resides in ROM or RAM, or whether a given MCU can fetch it efficiently. Such placement is governed by target toolchain and linker configuration. Provide a generated C array fallback for compilers without the directive.
+
+## 19.15 Static assertions expose assumptions early
+
+A compile-time assertion can check that an integer width, structure-related condition, or application constant meets a documented requirement. It cannot check a runtime packet's length or prove that an allocation will succeed.
+
+C23 accepts `static_assert` directly as a keyword. To detect a feature's availability, compile a tiny representative translation unit with the intended compiler flags rather than assuming support from a marketing claim about C23 compliance.
+
+## 19.16 Build diagnostics as a teaching aid
+
+The book's `compile_time.c` demonstrates simple macro expansion and C23 initialization. Add variations that intentionally fail `static_assert` in a scratch file and observe the compiler's message. Then compare that translation-time diagnostic to a runtime check that reports an error without preventing compilation.
+
+**Further problems:** Explain the difference between `STR_DIRECT(VERSION)` and `STR_EXPANDED(VERSION)`. Implement a portable fallback for an embedded byte array. Design a compile-time condition selecting one of two platform adapters and fail explicitly when neither is supported.
