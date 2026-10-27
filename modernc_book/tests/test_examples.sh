@@ -21,6 +21,9 @@ make all
 [ "$(./c23_basics)" = 'c23_basics: OK' ]
 [ "$(./slices)" = 'slices: OK' ]
 [ "$(./vector_checked)" = 'vector_checked: OK' ]
+[ "$(./frame_codec)" = 'frame_codec: OK' ]
+[ "$(./callback_sink)" = 'callback_sink: OK' ]
+[ "$(./modules_demo)" = 'modules_demo: OK' ]
 [ "$(printf 'C23 binary copy' | ./file_copy)" = 'C23 binary copy' ]
 [ "$(./byte_decode)" = 'decoded: 12345678' ]
 sh tests/test_word_index.sh
