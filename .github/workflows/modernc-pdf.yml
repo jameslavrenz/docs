@@ -43,12 +43,19 @@ jobs:
       - name: Publish PDF to repository
         run: |
           mkdir -p modernc_book
-          cp modernc_book/build/modern-c23.pdf modernc_book/modern-c23.pdf
           git fetch origin main
-          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
-            echo 'Source was superseded; publish only the workflow artifact'
+          # Publishing is stale only if actual manuscript/build inputs changed.
+          # Editorial status, READMEs and CI-only commits do not invalidate it.
+          if ! git diff --quiet HEAD origin/main -- \
+               modernc_book/frontmatter modernc_book/chapters \
+               modernc_book/appendices modernc_book/scripts/build-pdf.sh; then
+            echo 'Manuscript changed after checkout; skip stale publication'
+            cp modernc_book/build/modern-c23.pdf modernc_book/modern-c23.pdf
             exit 0
           fi
+          # Advance to the current main while retaining the generated build file.
+          git reset --hard origin/main
+          cp modernc_book/build/modern-c23.pdf modernc_book/modern-c23.pdf
           git add -f modernc_book/modern-c23.pdf
           if git diff --cached --quiet; then
             echo 'PDF unchanged'
