@@ -14,7 +14,7 @@ A pointer's validity depends on the referenced object's lifetime, alignment, and
 
 ## 4.2 Array arguments carry no length
 
-```c
+```c compile-check
 #include <stddef.h>
 
 int sum(const int *data, size_t count, long long *out)
@@ -44,7 +44,7 @@ UTF-8 represents some characters with multiple bytes. A procedure that uppercase
 
 ## 4.4 Copying bounded text
 
-```c
+```c compile-check
 #include <stddef.h>
 
 bool copy_text(char *dst, size_t capacity, const char *src)
