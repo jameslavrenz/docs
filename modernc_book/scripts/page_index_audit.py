@@ -82,12 +82,44 @@ def chapter_refs(description):
     return list(dict.fromkeys(refs))
 
 
+def evidence_phrases(finder):
+    """Optional manually selected wording for a topic whose label is absent."""
+    source = finder.parent.parent / "docs" / "page-index-evidence.tsv"
+    if not source.exists():
+        return {}
+    result = {}
+    with source.open(encoding="utf-8", newline="") as stream:
+        for row in csv.DictReader(stream, delimiter=chr(9)):
+            topic = row["topic"].strip()
+            evidence = row["evidence_phrase"].strip()
+            if not topic or not evidence or topic in result:
+                raise ValueError(f"Invalid or duplicate topic evidence in {source}: {topic!r}")
+            result[topic] = evidence
+    return result
+
+
+def matching_pages(needle, targets, bounds, normalized_pages):
+    """Return only text-supported PDF pages inside a cited section."""
+    norm_needle = normal(needle)
+    if not norm_needle:
+        return []
+    search = re.compile(r"(?<![a-z0-9])" + re.escape(norm_needle) + r"(?![a-z0-9])")
+    hits = []
+    for target in targets:
+        first, last = bounds[target]
+        for page in range(first, last+1):
+            if search.search(normalized_pages[page-1]):
+                hits.append(page)
+    return sorted(set(hits))
+
+
 def main(pdf, finder, output):
     pages = pages_in(pdf)
     bounds = section_bounds(pages, finder)
     print("Verified title page map: " + ", ".join(
         f"{name}={first}" for name, (first, _) in bounds.items()))
     normalized_pages = [normal(page) for page in pages]
+    evidence = evidence_phrases(finder)
     rows = []
     for line in finder.read_text(encoding="utf-8").splitlines():
         match = re.match(r"^- \*\*(.+?)\*\*\s*(.*)$", line)
@@ -97,20 +129,27 @@ def main(pdf, finder, output):
         targets = chapter_refs(match[2])
         if not targets or any(t not in bounds for t in targets):
             raise ValueError(f"Unknown chapter/appendix locator for {label}: {targets}")
-        needle = normal(label)
-        occurrences = []
-        for target in targets:
-            first, last = bounds[target]
-            for page in range(first, last+1):
-                if re.search(r"(?<![a-z0-9])"+re.escape(needle)+r"(?![a-z0-9])",
-                             normalized_pages[page-1]):
-                    occurrences.append(page)
+        occurrences = matching_pages(label, targets, bounds, normalized_pages)
+        if occurrences:
+            status = "literal occurrence"
+        elif label in evidence:
+            occurrences = matching_pages(
+                evidence[label], targets, bounds, normalized_pages)
+            if not occurrences:
+                raise ValueError(
+                    f"Evidence phrase not found in cited sections for {label!r}: {evidence[label]!r}")
+            status = "evidence-backed candidate"
+        else:
+            status = "editorial locator needed"
         rows.append({
             "topic": label,
             "cited_sections": ", ".join(targets),
-            "verified_pages": ", ".join(map(str, sorted(set(occurrences)))),
-            "status": "literal occurrence" if occurrences else "editorial locator needed",
+            "verified_pages": ", ".join(map(str, occurrences)),
+            "status": status,
         })
+    stale = set(evidence) - {row["topic"] for row in rows}
+    if stale:
+        raise ValueError(f"Unknown topic labels in evidence file: {sorted(stale)}")
     if len(rows) < 130:
         raise ValueError(f"Expected 142 topic entries, found {len(rows)}")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -118,9 +157,11 @@ def main(pdf, finder, output):
         writer = csv.DictWriter(stream, fieldnames=list(rows[0]), delimiter=chr(9))
         writer.writeheader()
         writer.writerows(rows)
-    matched = sum(bool(row["verified_pages"]) for row in rows)
-    print(f"Page index audit: {len(rows)} topics; {matched} literal matches; "
-          f"{len(rows)-matched} need editorial locators; {len(pages)} PDF pages")
+    literal = sum(row["status"] == "literal occurrence" for row in rows)
+    backed = sum(row["status"] == "evidence-backed candidate" for row in rows)
+    print(f"Page index audit: {len(rows)} topics; {literal} literal matches; "
+          f"{backed} evidence-backed candidates; "
+          f"{len(rows)-literal-backed} need editorial locators; {len(pages)} PDF pages")
 
 
 if __name__ == "__main__":
