@@ -4,13 +4,13 @@
 
 - 19 chapters and a preface
 - Six appendices, including worked solutions and an alphabetical topic finder
-- 74,139 Markdown words including code and exercises
+- 75,304 Markdown words including code and exercises
 - 33 standalone C examples in the Makefile and regression script
 - Structural checks of chapter numbers, appendix letters, Markdown fences, README links, and executable-test references
 
 ## Latest technical additions
 
-Chapters 5, 7, 10, 13 and 15 were expanded for generation-tagged resource pools, incremental framing, logical ownership, bounds proofs, and model-based/state-transition testing. New `slot_pool.c` and `frame_stream.c` programs are included in the executable regression suite; Appendix C supplies worked solutions. The manuscript now contains approximately 74,139 words including code and exercises.
+Chapters 5, 7, 10, 12, 13 and 15 were expanded for generation-tagged resource pools, incremental framing, logical ownership, bounds proofs, and model-based/state-transition testing. New `slot_pool.c` and `frame_stream.c` programs are included in the executable regression suite; Appendix C supplies worked solutions. Chapter 12 now offers a complete bounded telemetry receiver design exercise integrating the parser, fixed pool, handle queue and shutdown contracts. The manuscript now contains approximately 75,304 words including code and exercises.
 
 
 The strict incremental UTF-8 decoder (`examples/utf8_stream.c`) distinguishes incomplete, complete and invalid sequences and preserves the previous scalar on non-success. The bounded TLV decoder (`examples/tlv_decode.c`) validates headers and lengths before reading, rejects records beyond fixed resource limits, and publishes the result only after validating the whole input.
