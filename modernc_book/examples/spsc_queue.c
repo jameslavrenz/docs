@@ -37,8 +37,8 @@ int main(void)
 {
     struct spsc q = {
         .items = {0},
-        .head = ATOMIC_VAR_INIT(0),
-        .tail = ATOMIC_VAR_INIT(0)
+        .head = 0,
+        .tail = 0
     };
     int out = 99;
     if (pop(&q, &out) || out != 99) return 1;
