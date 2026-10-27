@@ -62,3 +62,10 @@ Technical audit of illustrative fragments (13 complete listings compile on two c
 - Inspected PDF page 127 and confirmed a rotate formula was printed as literal LaTeX despite passing the off-page check. Corrected double-dollar display-math fences in Chapters 14 and 18 and inline math in Chapter 14; verified the next published PDF rendered the equations as mathematical notation (run 40585326277, 206 pages).
 - Added a source preflight to reject lone dollar-sign display fences and odd counts of doubled-dollar fences outside code blocks.
 - Added 40 source-evidence phrases for nonliteral topic labels. The extended audit keeps literal matches distinct from evidence-backed candidate pages, refuses missing support in the cited chapter/appendix, and produces a separate human-readable page-index preview. This is not a finished index; its latest CI result must be checked before using the new candidate totals.
+
+## 27 October 2026 — full candidate-index coverage
+
+- **PDF build and publication passed** at GitHub Actions run 40586959319 (commit `451a6dd`): 206 pages, strict page-boundary check passed, and the printed mathematical formulas have been verified in the reading edition.
+- Page-index coverage now includes **all 142 topic-finder entries**: 96 exact-label occurrences and 46 manually selected evidence-phrase matches in cited chapters/appendices, with zero entries lacking a candidate page.
+- CI publishes `page-index-audit.tsv` and a readable `page-index-preview.md` alongside the PDF. These references point to actual text occurrences; the preview is **not yet a conventional edited subject index**, since it retains multiple matches rather than selecting the most useful page or page range for each concept.
+- The next index acceptance task is editorial selection and cross-reference cleanup followed by embedding verified page references in the typeset Appendix F. Keep the technical-review-draft designation until then.
