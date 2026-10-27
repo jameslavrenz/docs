@@ -161,7 +161,7 @@ Measure on target hardware when performance matters. A desktop microbenchmark ma
 
 A callback can separate a useful algorithm from the device performing its I/O. Define a writer that receives a context pointer, source bytes, and a count, and returns how many bytes it accepted:
 
-```c
+```c compile-check
 #include <stddef.h>
 
 typedef size_t (*sink_write_fn)(void *context,
