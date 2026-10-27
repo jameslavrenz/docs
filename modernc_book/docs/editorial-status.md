@@ -32,3 +32,10 @@ The successfully published PDF (run 40511272634) contains **205 pages**, meeting
 ## Remaining acceptance criteria
 
 Technical audit of illustrative fragments (13 complete listings compile on two compilers; one optional-library listing remains excluded), visual PDF inspection, verified page-numbered index, and a full compatibility matrix for optional C23 language/library features.
+
+## 27 October 2026 — publication-quality review continuation
+
+- Added `scripts/pdf_review_report.py`, a page-by-page TSV review worksheet based on PDF text bounding boxes. The PDF workflow now generates and uploads this inspection artifact; it flags candidates for human inspection, but does not claim a completed visual review.
+- Promoted three self-contained Chapter 19 examples (header include guard, `static_assert` with `<limits.h>`, and `_Generic` floating dispatch) to the dual-compiler strict listing checker using `c compile-check` fences. Context-dependent surrounding fragments are still illustrative, not independently compile-tested.
+- Existing Appendix F remains a chapter-level topic finder, **not** a conventional verified page-numbered index. Do not advertise it as such in the reading edition.
+- The latest PDF and examples workflows must be checked at their final commit and completion status before publication. No final full-document visual sign-off is claimed here.
