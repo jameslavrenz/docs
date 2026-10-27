@@ -1,7 +1,9 @@
 CC ?= cc
 CFLAGS ?= -std=c23 -Wall -Wextra -Wpedantic -O2
 .PHONY: all clean check
-all: hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy word_index packet_decode byte_codec checked_interval spsc_queue callbacks utf8_decode
+all: hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy word_index packet_decode byte_codec checked_interval spsc_queue callbacks utf8_decode compile_time
+compile_time: examples/compile_time.c
+	$(CC) $(CFLAGS) $< -o $@
 utf8_decode: examples/utf8_decode.c
 	$(CC) $(CFLAGS) $< -o $@
 callbacks: examples/callbacks.c
