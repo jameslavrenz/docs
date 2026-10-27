@@ -1,6 +1,6 @@
 topic	evidence_phrase
 Acquire ordering	memory_order_acquire
-Arena allocator	arena_alloc
+Arena allocator	arena allocation test
 Array decay	array parameter is adjusted to a pointer
 Bit rotation	rotate-left
 Boolean values	bool
