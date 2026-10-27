@@ -169,3 +169,39 @@ An open-addressed hash table needs a defined hash function, collision resolution
 A Unicode-aware version is a different product. It must define normalization and word-boundary rules, decide how case folding works, and bound its memory for multibyte text. Simply applying `tolower` to each UTF-8 byte is not enough.
 
 **Further problems:** Provide a proof that the insertion loop cannot access index `MAX_WORDS`. Write a test generating 1024 distinct terms. Compare sorted-array and hash-table lookup under high repetition. Design a stable frequency ordering for ties.
+
+## 11.14 A search algorithm with a proof obligation
+
+Binary search is brief enough to fit on a few lines, but it should be understood through its invariant. At the start of each iteration, the insertion point lies in the half-open interval `[lo, hi)`. Every entry strictly before `lo` compares less than the requested word. Every entry at or after `hi` compares greater than or equal to it.
+
+Set `mid = lo + (hi - lo) / 2`. If the middle entry compares less than the request, the insertion position must follow `mid`, so set `lo = mid + 1`. Otherwise, it is at or before `mid`, so set `hi = mid`. When `lo == hi`, exactly one insertion position remains.
+
+The implementation can then determine whether the requested word already exists at that position. If so, it increments a counter only after verifying that increment is representable. If not, it checks table capacity before shifting existing records.
+
+The proof is useful when changing the data structure. One off-by-one mistake can produce a program that appears correct for a small vocabulary but corrupts storage when inserting at the beginning or end.
+
+## 11.15 The cost of sorted insertion
+
+Binary search reduces the number of comparisons needed to locate a word, but maintaining a sorted array costs more when inserting new records. If there are already `u` distinct words and the new one belongs at the front, the program shifts `u` entries. The worst-case cost of inserting `u` distinct keys is therefore quadratic in `u`, even though each lookup performs only logarithmically many comparisons.
+
+That is not automatically unacceptable. With a hard limit of 1,024 short keys, the worst-case memory usage is small and predictable. A microcontroller may value a fixed allocation and simple failure policy more than average-case insertion speed. For a large text corpus with millions of terms, a hash table or tree is likely more appropriate.
+
+Measure the actual workload: repeated tokens benefit from quick lookup and do not shift records, while a sorted stream of unique tokens repeatedly inserts near one end. Big-O notation tells us the growth trend, but a real resource bound must still account for maximum keys and fixed string lengths.
+
+## 11.16 Error handling belongs inside the index
+
+Rejecting a long token rather than truncating it prevents two different words from becoming the same key. Rejecting an eleventh-hundredth distinct key rather than writing past the table prevents memory corruption. Rejecting counter overflow prevents the program from silently reporting a smaller count than the truth.
+
+After any rejection, decide whether the program should stop, skip the offending token and continue, or expose a detailed status. The teaching implementation stops at the first error. A long-running service might recover, but only with a documented strategy that avoids partially committing a word.
+
+The internal operation `add_word` returns success or failure; a larger program could use an error enumeration to distinguish table-full from count-overflow. That would improve diagnostics without changing the sorted-array algorithm.
+
+## 11.17 Independently test the expected output
+
+A decoder and encoder written with the same wrong byte order can agree with each other. Likewise, a word index and an expected-result generator copied from the same algorithm can share the same defect. For a handful of text samples, write the expected alphabetical output manually.
+
+Then add generated larger cases with invariants: total counts must equal accepted word occurrences, entries must be strictly sorted and unique, and no count may be zero. For a stable random test, record the seed so failures can be reproduced.
+
+### Exercises
+
+**11.10** Trace the search interval for inserting a word at the beginning, middle, and end of a five-element table. **11.11** Estimate the maximum number of shifts for inserting 1,024 distinct words in reverse order. **11.12** Design an error enumeration that distinguishes a long word, full table, input failure, and counter overflow. **11.13** Write an independent expected output for a file containing repeated words with differing capitalization.
