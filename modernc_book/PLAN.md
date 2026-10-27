@@ -1,6 +1,6 @@
 # Editorial Roadmap — Modern C23
 
-**Current state (October 2026):** 19 chapters, a preface, six appendices, and **31 standalone examples**. The current Markdown manuscript contains **66,968 words** including code listings, reference entries, and exercises. It is an independent, original example-first textbook, not an authorized K&R third edition.
+**Current state (October 2026):** 19 chapters, a preface, six appendices, and **33 standalone examples**. The current Markdown manuscript contains **74,139 words** including code listings, reference entries, and exercises. It is an independent, original example-first textbook, not an authorized K&R third edition.
 
 ## Work completed
 
@@ -9,6 +9,7 @@
 - Added three classes of streaming/binary parser: a bounded line reader, incremental UTF-8 scalar decoder, and bounded TLV record decoder.
 - Developed atomic counter and SPSC discussion, release/acquire publication, and hosted-thread lifecycle tests.
 - Added Appendix F, an alphabetical topic finder with chapter-level references, to help readers navigate the growing book without unstable draft page numbers.
+- Added worked examples of generation-tagged fixed pools and byte-at-a-time binary frame decoding, including model-based and transition testing.
 - Added a manuscript structure checker to CI; compiler regression testing uses GCC 14 and Clang 18.
 - Maintained a PDF build and publisher that includes all chapters and appendices.
 
