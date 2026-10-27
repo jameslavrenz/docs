@@ -186,45 +186,45 @@ Be careful with `sizeof`: its result is `size_t`, not `int`. Printing it with `%
 
 ## 2.15 Promotions are part of the computation
 
-Small integer types are often promoted before arithmetic. Suppose \`uint8_t a = 200, b = 100;\`. On a common target where \`int\` represents every value of \`uint8_t\`, the expression \`a + b\` is evaluated in \`int\`, producing 300. Assigning that result back to \`uint8_t\` then performs a conversion that produces a value modulo 256. These are two different stages.
+Small integer types are often promoted before arithmetic. Suppose `uint8_t a = 200, b = 100;`. On a common target where `int` represents every value of `uint8_t`, the expression `a + b` is evaluated in `int`, producing 300. Assigning that result back to `uint8_t` then performs a conversion that produces a value modulo 256. These are two different stages.
 
-Do not infer the expression's type solely from the declared type of its operands. When shifts or bitwise complement are involved, promotions can be particularly surprising. A \`~\` applied to a narrow unsigned value can first promote it to \`int\`, yielding a value with more significant bits than the programmer expected.
+Do not infer the expression's type solely from the declared type of its operands. When shifts or bitwise complement are involved, promotions can be particularly surprising. A `~` applied to a narrow unsigned value can first promote it to `int`, yielding a value with more significant bits than the programmer expected.
 
 If a protocol needs an eight-bit mask, perform the operation in a known unsigned domain and intentionally narrow the result only after masking:
 
-\`\`\`c
+```c
 #include <stdint.h>
 
 uint8_t low_byte(uint32_t value)
 {
     return (uint8_t)(value & UINT32_C(0xff));
 }
-\`\`\`
+```
 
 The mask states exactly which bits belong in the result.
 
 ## 2.16 Comparisons between signed and unsigned values
 
-Consider \`int delta = -1;\` and \`size_t count = 4;\`. The expression \`delta < count\` can convert the negative \`int\` to an unsigned type, depending on the usual arithmetic conversions. On a typical 64-bit platform, it evaluates in a way a casual mathematical reading does not predict.
+Consider `int delta = -1;` and `size_t count = 4;`. The expression `delta < count` can convert the negative `int` to an unsigned type, depending on the usual arithmetic conversions. On a typical 64-bit platform, it evaluates in a way a casual mathematical reading does not predict.
 
 A reliable design checks negativity first:
 
-\`\`\`c
+```c
 bool valid_index(int index, size_t count)
 {
     return index >= 0 && (size_t)index < count;
 }
-\`\`\`
+```
 
-The \`&&\` operation evaluates the cast and comparison only after establishing that the signed input is nonnegative. The cast is then value-preserving whenever \`size_t\` has sufficient range for the nonnegative \`int\`; implementations with unusual widths deserve a more general conversion policy.
+The `&&` operation evaluates the cast and comparison only after establishing that the signed input is nonnegative. The cast is then value-preserving whenever `size_t` has sufficient range for the nonnegative `int`; implementations with unusual widths deserve a more general conversion policy.
 
-Prefer to keep array positions as \`size_t\` from the beginning when negative indexes are not meaningful. But do not convert a potentially negative external value to \`size_t\` before validating it.
+Prefer to keep array positions as `size_t` from the beginning when negative indexes are not meaningful. But do not convert a potentially negative external value to `size_t` before validating it.
 
 ## 2.17 Division edge cases
 
-Integer division by zero is undefined. The signed quotient may also be unrepresentable: on ordinary two's-complement systems, \`INT_MIN / -1\` is the familiar example. A library routine parsing a user-supplied divisor should test both conditions before evaluating the operation.
+Integer division by zero is undefined. The signed quotient may also be unrepresentable: on ordinary two's-complement systems, `INT_MIN / -1` is the familiar example. A library routine parsing a user-supplied divisor should test both conditions before evaluating the operation.
 
-\`\`\`c
+```c
 #include <stdbool.h>
 #include <limits.h>
 
@@ -236,17 +236,17 @@ bool divide_int(int a, int b, int *out)
     *out = a / b;
     return true;
 }
-\`\`\`
+```
 
 The output is unchanged on failure. If the function returns a quotient and remainder, compute them only after the same validation. C integer division truncates toward zero; the remainder has the sign rules implied by that division, not the always-nonnegative modulo convention used in some mathematical texts.
 
 ## 2.18 Floating-point comparisons require a scale
 
-A universal test such as \`fabs(a - b) < 1e-6\` is usually not a universal numeric contract. It may reject two large quantities whose relative difference is tiny, and it may accept two tiny values whose relative difference is enormous.
+A universal test such as `fabs(a - b) < 1e-6` is usually not a universal numeric contract. It may reject two large quantities whose relative difference is tiny, and it may accept two tiny values whose relative difference is enormous.
 
 A numerical application should choose absolute tolerance, relative tolerance, or a combination according to the units and problem:
 
-\`\`\`c
+```c
 #include <math.h>
 #include <stdbool.h>
 
@@ -260,15 +260,15 @@ bool approximately_equal(double a, double b,
     double scale = fmax(fabs(a), fabs(b));
     return difference <= absolute || difference <= relative * scale;
 }
-\`\`\`
+```
 
-This is a teaching fragment with an explicit finite-input policy; even here, intermediate overflow can make \`a - b\` or \`relative * scale\` nonfinite for extreme values. That may be acceptable for the application, or it may require a more careful algorithm. A numerical routine is correct relative to a chosen error model, not simply because it uses \`double\`.
+This is a teaching fragment with an explicit finite-input policy; even here, intermediate overflow can make `a - b` or `relative * scale` nonfinite for extreme values. That may be acceptable for the application, or it may require a more careful algorithm. A numerical routine is correct relative to a chosen error model, not simply because it uses `double`.
 
 ## 2.19 Derive overflow checks rather than guessing
 
-For two nonnegative \`size_t\` operands, \`a * b\` fits when either operand is zero or \`a <= SIZE_MAX / b\`. Notice why the division is performed only when \`b != 0\`. The test avoids executing multiplication until representability has been established.
+For two nonnegative `size_t` operands, `a * b` fits when either operand is zero or `a <= SIZE_MAX / b`. Notice why the division is performed only when `b != 0`. The test avoids executing multiplication until representability has been established.
 
-\`\`\`c
+```c
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -280,10 +280,10 @@ bool multiply_size(size_t a, size_t b, size_t *out)
     *out = a * b;
     return true;
 }
-\`\`\`
+```
 
 When zero-sized allocations are undesirable, a caller can separately reject zero operands. Arithmetic validity and resource-policy validity are different matters.
 
 ### Worked questions
 
-What is the type of \`sizeof buffer\`? Why can a byte count greater than \`INT_MAX\` not safely be passed as an \`int\` length without a range check? Why can \`INT_MIN\` not always be negated? What does \`a & b == 0\` mean without additional parentheses? For each, answer by applying the language rules rather than by running one compiler and memorizing its output.
+What is the type of `sizeof buffer`? Why can a byte count greater than `INT_MAX` not safely be passed as an `int` length without a range check? Why can `INT_MIN` not always be negated? What does `a & b == 0` mean without additional parentheses? For each, answer by applying the language rules rather than by running one compiler and memorizing its output.
