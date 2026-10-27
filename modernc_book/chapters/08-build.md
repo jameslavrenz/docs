@@ -147,7 +147,8 @@ The header contains the declaration:
 
 #include <stddef.h>
 
-unsigned book_checksum(const unsigned char *bytes, size_t count);
+bool book_xor_checksum(const unsigned char *bytes, size_t count,
+                       unsigned char *out);
 
 #endif
 ```
