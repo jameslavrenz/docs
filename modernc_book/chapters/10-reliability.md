@@ -276,3 +276,171 @@ The separation is valuable architecturally. A framing layer obtains a complete m
 ### Additional exercises
 
 **10.15** Modify the TLV decoder to return distinct statuses for truncated header, truncated payload, excessive field count, and oversized value. **10.16** Specify mandatory tags and reject duplicate instances of those tags. **10.17** Add an unknown-field skipping policy while preserving all bounds checks. **10.18** Build an independent expected-value test for two TLV fields rather than relying on an encoder written with the same algorithm. **10.19** Explain why a bounded parser is not automatically a secure or real-time protocol implementation.
+
+
+## 10.31 Framing one byte at a time
+
+The complete TLV decoder earlier in the chapter assumes that its caller already has a complete candidate message. Real serial links often provide only a few bytes at a time. A UART receiver might produce one octet per interrupt; a DMA operation might deposit a block; a network API may return a fragment that ends in the middle of a field.
+
+A streaming frame parser makes progress incrementally. It keeps a small state object between calls and processes one received octet at a time. It never needs to allocate a buffer proportional to an untrusted advertised length.
+
+For an educational frame format, define these octets:
+
+```text
++--------+--------+----------------------+----------+
+| magic  | length | payload (0..8 octets) | checksum |
++--------+--------+----------------------+----------+
+  0xA5    0..8     exactly length bytes    XOR below
+```
+
+The checksum is the bitwise XOR of the length octet and all payload octets. The magic octet is not included. The format is intentionally simple enough to hand-calculate expected frames. It is not cryptographically secure, nor is its XOR checksum a robust choice for all error-detection environments.
+
+The implementation appears in `examples/frame_stream.c`. It requires eight-bit octets and makes that assumption explicit at compile time.
+
+## 10.32 Four parser states
+
+The parser recognizes a frame using four states:
+
+```text
+             magic A5
+EXPECT_MAGIC ----------> EXPECT_LENGTH
+     ^                         |
+     |                         | length 0
+     |                         v
+     |                    EXPECT_CHECK
+     |                         ^
+     |                         | last payload byte
+     |                         |
+     |                      EXPECT_PAYLOAD
+     |                         ^
+     |                         |
+     +-------------------------+
+       complete frame or error
+       resets to EXPECT_MAGIC
+```
+
+The actual transitions are:
+
+- `EXPECT_MAGIC`: accept only the framing marker and move to length; other octets are rejected.
+- `EXPECT_LENGTH`: reject a value above eight; otherwise store the expected payload count and choose `EXPECT_CHECK` for zero-length payload or `EXPECT_PAYLOAD` for a nonempty payload.
+- `EXPECT_PAYLOAD`: append exactly the announced number of octets, updating the running XOR.
+- `EXPECT_CHECK`: compare the next octet with the computed XOR and either publish one complete frame or reject it.
+
+This explicit state design is useful for RTOS tasks and event-driven firmware. Each call performs a bounded amount of work, independent of how long the input stream runs.
+
+It does not guarantee that the task receives input at a bounded interval; scheduling, interrupt latency, and transport backpressure are separate requirements.
+
+## 10.33 Invariants of the parser state
+
+A helpful proof begins by identifying what each state makes true.
+
+In `EXPECT_MAGIC`, no partial frame remains. The parser can accept a new framing marker.
+
+In `EXPECT_LENGTH`, the magic octet has been accepted but the length has not yet been read.
+
+In `EXPECT_PAYLOAD`, the declared length is between one and eight, and `received < length` before appending the next octet. Since the destination array has eight elements, the access `candidate.bytes[received]` is within bounds.
+
+In `EXPECT_CHECK`, the announced payload length has been fully received, including the zero-length special case. The running checksum corresponds to the length and every received payload octet.
+
+Every rejected frame resets the parser to its initial state. On success, the parser assigns its completed candidate to the output and then resets. That single publication point ensures callers never see a partly decoded public message.
+
+In the example, the output is a `struct message` containing a count and an eight-element array. The parser owns a separate candidate structure and only copies it once validation has succeeded.
+
+## 10.34 Bounded work per byte
+
+The parser performs at most a few comparisons, one array store in the payload state, and an XOR operation for each input byte. It never calls `malloc`, loops over an untrusted count, or copies a variable-length region in one invocation.
+
+Its memory requirement is constant: a parser state object and an output message supplied by the caller.
+
+This establishes a useful algorithmic property: processing any one octet requires a bounded number of C operations. It does **not** establish a precise worst-case execution time on every MCU. Compiler optimization, interrupt preemption, cache behavior, memory wait states, and synchronization can affect actual latency.
+
+When moving the parser to an RTOS, a good design separates the interrupt-level byte acquisition from higher-level frame interpretation. An ISR may deposit octets into a bounded queue; an ordinary task can then call `frame_feed`. Queue overflow and input dropping must have a documented policy.
+
+## 10.35 An explicit three-result interface
+
+The feed function returns one of:
+
+| Result | Meaning | Public message |
+| --- | --- | --- |
+| `FEED_MORE` | A possible frame is incomplete | Unchanged |
+| `FEED_COMPLETE` | A complete valid frame has been received | Updated |
+| `FEED_REJECTED` | Invalid marker, length, checksum, or API state | Unchanged |
+
+The caller can process completed messages without needing to inspect a partial buffer. It can ignore or count rejected octets according to its transport policy.
+
+An error return does not necessarily mean an exceptional software fault. In a noisy communications link, malformed input is normal data that a decoder must handle safely.
+
+The parser treats `FEED_MORE` as a legitimate result. A caller must not interpret it as a failure and reset the parser after every input fragment, or multibyte frames could never complete.
+
+## 10.36 Checksum validation and publication
+
+A frame with payload `0A 14 1E` and length three has a checksum obtained by XORing `03 0A 14 1E`:
+
+```text
+A5 03 0A 14 1E 03
+|  |  |  |  |  +-- XOR checksum
+|  |  +--+--+----- three payload octets
+|  +-------------- length 3
++----------------- magic
+```
+
+The checksum happens to be `03` for this example. That coincidence is not part of the general format; different payloads produce different XOR results.
+
+A failed checksum must not modify the caller's previously completed message. The parser resets its internal candidate and consumes the failing checksum octet.
+
+The code checks this property by setting a recognizable output length, sending a corrupted frame, and verifying that the old output remains intact.
+
+## 10.37 The subtle problem of resynchronization
+
+The educational parser uses the simple policy **consume the rejected octet and reset**. It does not reconsider that octet as a possible magic marker.
+
+This has a consequence. If the bad checksum octet equals `A5` and simultaneously would have been the start of a new frame, that potential new frame start is lost. Likewise, a magic octet inside a payload is treated as payload, not as a new frame boundary.
+
+Neither behavior is necessarily a bug; it follows from the specified framing policy. However, a robust protocol must decide how receivers recover from corruption and where true message boundaries can be discovered.
+
+A stronger design might use byte stuffing or escaping, a delimiter that cannot appear unescaped inside a payload, an authenticated record layer, or a scanning strategy with carefully tested recovery rules.
+
+Searching blindly for the next `A5` is not automatically correct, because payload data may naturally contain that octet. The format, not just the parser code, determines what resynchronization can guarantee.
+
+## 10.38 Timeout, truncation, and reset
+
+An input source can stop providing bytes midway through a frame. For a parser at its initial state, clean stream termination means no incomplete frame remains. For a parser in any other state, final termination means the last frame is truncated.
+
+The caller can query whether the parser is at a clean boundary and, on truncation, record an incomplete-input error. In an ongoing UART session, a temporary pause may not justify resetting the parser immediately. A higher-level timeout policy determines how long partial frames are retained.
+
+The example exposes a reset operation for explicitly abandoning a partial frame. Reset is an ownership and protocol action: any bytes previously accumulated are discarded and cannot be recovered.
+
+For applications requiring deadlines, a timestamp of the most recent received byte or an expected completion deadline can accompany the parser state. Timekeeping itself should remain outside the pure byte-decoding operation so host tests can supply deterministic timestamps.
+
+## 10.39 How to test the state machine
+
+Use independently calculated packets rather than relying exclusively on an encoder written by the same developer. The test suite covers:
+
+- One valid frame containing three payload octets.
+- A valid zero-length payload.
+- An invalid advertised length above eight.
+- A bad checksum that must not publish a result.
+- A valid prefix that ends before all payload bytes arrive.
+- Explicit reset after abandoning a truncated frame.
+
+Additional recommended tests include every payload length from zero to eight, all possible single-byte corruptions of representative packets, and splitting a valid frame at each transport boundary.
+
+A property-based test can generate valid frames and feed them one octet at a time. The resulting message must match the generated payload. A separate set of manually constructed vectors remains important because both a generator and decoder can share a format mistake.
+
+## 10.40 Choosing a protocol interface
+
+A whole-record parser is often simpler when the input transport supplies bounded complete messages. An incremental state machine is useful when records arrive in fragments or the application has a small per-invocation work budget.
+
+Neither approach universally replaces the other. A stream parser often delegates completed frames to a whole-record semantic decoder. For example, `frame_feed` could identify and validate a small payload, then a TLV decoder could interpret fields inside that payload.
+
+Each layer would have a distinct contract:
+1. Transport supplies octets and reports delivery errors.
+2. Framing recognizes one complete message.
+3. Content decoding validates field representation and lengths.
+4. Application logic checks the meaning, authorization, and allowed state changes.
+
+That separation makes it easier to test algorithms on a desktop and replace only the transport adapter when moving to embedded hardware.
+
+### Exercises
+
+**10.20** Construct the byte sequence for an empty frame and explain every state transition. **10.21** Prove that the payload store can never write beyond index seven. **10.22** Design a separate timeout policy for an incomplete frame. **10.23** Explain what can happen when a failing checksum octet is also a magic marker. **10.24** Extend the parser with error categories for invalid marker, invalid length, and checksum failure. **10.25** Describe how an RTOS task would feed bytes acquired through a UART interrupt-driven ring buffer.
