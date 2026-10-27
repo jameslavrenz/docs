@@ -26,7 +26,7 @@ The parentheses around `*comparison` are essential. Without them, the declaratio
 
 Practical interfaces often accept both a callback and an opaque context pointer. The context lets the caller maintain state without resorting to global variables:
 
-```c
+```c compile-check
 #include <stddef.h>
 #include <stdbool.h>
 
