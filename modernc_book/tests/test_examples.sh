@@ -13,6 +13,7 @@ make all
 [ "$(./vector)" = 'vector: OK' ]
 [ "$(./packet_decode)" = 'packet_decode: OK' ]
 [ "$(./byte_codec)" = 'byte_codec: OK' ]
+[ "$(./checked_interval)" = 'checked_interval: OK' ]
 [ "$(printf 'C23 binary copy' | ./file_copy)" = 'C23 binary copy' ]
 [ "$(./byte_decode)" = 'decoded: 12345678' ]
 sh tests/test_word_index.sh
