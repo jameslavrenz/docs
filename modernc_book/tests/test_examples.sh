@@ -8,5 +8,7 @@ make all
 [ "$(printf '' | ./word_count)" = '0' ]
 [ "$(./parse_unsigned)" = 'parse_unsigned: OK' ]
 [ "$(./checked_add)" = 'checked_add: OK' ]
+[ "$(./ring_buffer)" = 'ring_buffer: OK' ]
+[ "$(./checked_sum)" = 'checked_sum: OK' ]
 [ "$(./byte_decode)" = 'decoded: 12345678' ]
 printf '%s\n' 'All example checks passed'
