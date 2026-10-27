@@ -362,3 +362,128 @@ The best representation is not the one that uses the most advanced C syntax. It 
 ### Additional exercises
 
 **5.13** Use `offsetof` to inspect a structure on two compilers without assuming the offsets are universal. **5.14** Write a deep-copy function for a record containing an owned string, including allocation-failure cleanup. **5.15** Derive the checked allocation size for a flexible array member of `uint32_t`. **5.16** Construct an invalid tagged-union value and define a safe error result. **5.17** Prove the ring buffer's `head` and `count` invariants after push and pop.
+
+
+## 5.25 A fixed pool for bounded record ownership
+
+An application can know its maximum number of live objects even when it does not know the exact times at which they will be created and released. A sensor interface might allow four outstanding requests. A telemetry task might buffer sixteen fixed-size events. A driver might have a small set of descriptors, each of which is either available or currently assigned to a client.
+
+A fixed pool stores those objects in a statically bounded array and maintains availability metadata. It offers operations resembling allocation and deallocation without repeatedly calling `malloc` or `free`.
+
+The following example uses four integer-valued slots, but the idea generalizes to records:
+
+```c
+enum { SLOT_CAPACITY = 4 };
+
+struct slot {
+    bool occupied;
+    bool retired;
+    unsigned generation;
+    int value;
+};
+
+struct pool {
+    struct slot slots[SLOT_CAPACITY];
+};
+```
+
+Every `struct pool` owns its slots. Its storage lasts as long as the containing object. An automatic `struct pool` is destroyed when its lifetime ends; a static one lasts for the relevant program lifetime. Clients must not assume an acquired reference remains meaningful after its owning pool is destroyed.
+
+A pool's maximum storage is fixed and can be inspected with `sizeof(struct pool)` on each target. Padding may make this larger than the sum of the visible field sizes. That matters in a small RAM budget but does not change the pool's logical capacity.
+
+## 5.26 Why a raw index is not always enough
+
+The simplest handle for a slot pool is an array index. A client receives index one, uses the record at index one, and eventually releases it. But the same index might later be reassigned to a different client.
+
+Consider the sequence:
+
+```text
+Time    Slot 1               Client A              Client B
+----    ------------------   --------------------  ----------------
+t0      free                 —                     —
+t1      owns value 10        receives index 1      —
+t2      released             retains stale 1       —
+t3      owns value 99        still has stale 1     receives index 1
+t4      owns value 99        reads using index 1   —
+```
+
+At time `t4`, checking only that index one is occupied would allow A to read B's new logical object. The memory address is valid; the bug is *logical lifetime*, not necessarily an out-of-bounds access.
+
+A generation-tagged handle adds a number that changes when the slot is released:
+
+```c
+struct handle {
+    size_t index;
+    unsigned generation;
+};
+```
+
+The pool accepts a handle only if its index is valid, the slot is currently occupied, and the supplied generation matches the slot's current generation. A stale handle with an older generation is rejected.
+
+The idea is analogous to versioning a resource identifier. It helps detect a stale reference even when the physical slot has been reused.
+
+## 5.27 The pool's invariants
+
+A pool operation can be reviewed using a small set of statements:
+
+1. Every slot is either occupied or available. An occupied slot is not considered available to allocation.
+2. A retired slot is never allocated again.
+3. A successfully acquired handle identifies an occupied slot whose generation equals the handle's generation.
+4. A successful release changes the slot's state so the old handle can no longer access it.
+5. A failed acquire or release does not accidentally modify an unrelated slot.
+6. Slot indexes are checked before array access.
+
+The first allocation searches for an available, non-retired slot. Because `SLOT_CAPACITY` is a fixed small number, a linear scan is simple and takes a bounded number of slot examinations.
+
+The implementation fills the selected slot and publishes the handle only after success. If no slot is available, it returns false and leaves the caller's out-parameter unchanged.
+
+This is a useful *strong failure guarantee*. A caller can keep its previous handle after a failed request without wondering whether the pool partly updated it.
+
+## 5.28 Stale handles and generation wraparound
+
+Generation counters introduce their own corner case. If the counter is `unsigned`, incrementing it after `UINT_MAX` wraps to zero under C's unsigned arithmetic rules. A very old stale handle whose generation was zero might then match a newly assigned object after enough reuse cycles.
+
+For teaching purposes, the companion `examples/slot_pool.c` avoids that possibility by retiring a slot when its current generation reaches `UINT_MAX`. A retired slot is never reused.
+
+This policy exchanges eventual capacity loss for a simple lifetime argument: generations for a particular reusable slot never repeat. In most short-lived applications, exhaustion of a wide unsigned generation counter may be impractical, but a correctness proof should not rest on the assumption that an event is merely unlikely.
+
+Other systems may choose much wider generation numbers, process-lifetime guarantees, or explicit epoch mechanisms. Their design must account for the length of time old handles can remain in circulation and for what happens after wraparound.
+
+A generation number also cannot prevent every misuse. The teaching handle does not include the identity of its owning pool. If two different pool objects happen to have matching slot indexes and generation values, passing a handle from one pool to the other might be accepted. An API that must reject foreign-pool handles needs an additional identity mechanism or a type/interface boundary that prevents such cross-pool use.
+
+## 5.29 No heap is not the same as no ownership
+
+Although this pool performs no dynamic allocation, callers still have ownership obligations. One client must know when an acquired logical object can be released. Releasing it twice is invalid. Using the old handle after release is invalid. Destroying the pool while clients hold handles invalidates their logical references.
+
+The storage's location does not eliminate those rules.
+
+A pool also is not automatically thread-safe. Two concurrent clients searching for an available slot may both observe the same slot as free. Correct concurrent allocation requires synchronization or an algorithm specifically designed for multiple participants.
+
+If an interrupt handler accesses the pool, the chosen synchronization mechanism must be appropriate for that context. A general mutex may not be callable from an ISR, and ordinary unsynchronized state updates may constitute data races in threaded C.
+
+## 5.30 The practical design choices
+
+A four-slot pool that scans at most four entries is easy to analyze. With thousands of entries, an explicit free list or bitmap may locate available slots more efficiently. Those representations introduce their own invariants and corruption hazards, so complexity should follow measured requirements.
+
+A fixed pool is often appealing when:
+- maximum simultaneous occupancy is known;
+- allocation and release must be predictable;
+- object sizes are uniform;
+- heap fragmentation is undesirable;
+- stale client handles should be detected.
+
+It is less natural when individual items have very different sizes, when the maximum capacity is unknown, or when clients require independently resized objects.
+
+The broader lesson is to choose a data structure around its observable contract: which resources are available, who owns them, when identities can be reused, and how failure is reported.
+
+### Worked trace
+
+Starting from an empty four-slot pool, acquire values 10, 20, 30, and 40. The pool is full. A fifth acquire fails and leaves the requested output handle unchanged.
+
+Release the handle for slot one. Its generation increments. Acquire another record with value 99; slot one can be reused, but it now has a different generation. The original handle for slot one fails on lookup, while the new handle succeeds.
+
+The standalone program tests this trace, double release, stale reads, and the retirement path at `UINT_MAX`.
+
+### Exercises
+
+**5.18** Add an explicit pool identifier to each handle and state how identifiers are kept unique during the pool's lifetime. **5.19** Add a `pool_write` operation that validates generation before updating the value. **5.20** Compare a scan-based pool with a bitmap-based pool for 64 fixed records. **5.21** Explain why permanent retirement avoids a generation wraparound alias but reduces capacity. **5.22** Design the synchronization required when multiple threads may acquire slots concurrently.
