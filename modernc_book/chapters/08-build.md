@@ -145,6 +145,7 @@ The header contains the declaration:
 #ifndef BOOK_CHECKSUM_H
 #define BOOK_CHECKSUM_H
 
+#include <stdbool.h>
 #include <stddef.h>
 
 bool book_xor_checksum(const unsigned char *bytes, size_t count,
