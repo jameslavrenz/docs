@@ -32,6 +32,15 @@ for path in manuscript:
     if fences % 2:
         errors.append(f"Unbalanced backtick code fences in {path}")
 
+    # A second top-level heading silently creates a PDF chapter/bookmark.
+    # With the Pandoc GFM reader, backslash-bracket display math is not
+    # recognized and a standalone "=" line can become a setext H1 heading.
+    headings = re.findall(r"^# (.+)$", text, re.MULTILINE)
+    if len(headings) != 1:
+        errors.append(f"Expected one H1 title in {path.name}; found {len(headings)}")
+    if re.search(r"^\\\\[\\s*$|^\\\\]\\s*$", text, re.MULTILINE):
+        errors.append(f"Use $ delimiters for display math in {path.name} (Pandoc GFM)")
+
     if path in chapters:
         chapter_number = int(path.name[:2])
         found = [int(n) for n in re.findall(
