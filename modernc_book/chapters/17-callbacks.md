@@ -90,7 +90,7 @@ Likewise, do not manufacture a function pointer from an integer address and call
 
 A driver interface might offer methods to read, write, and close a device:
 
-```c
+```c compile-check
 #include <stddef.h>
 #include <stdbool.h>
 
