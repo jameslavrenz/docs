@@ -6,7 +6,7 @@
 - 5 appendices, including selected exercise solutions, a glossary and a migration checklist.
 - A preface explaining the audience, contracts, portability and source conventions.
 - Approximately 34,300 Markdown words in the front matter, chapters and appendices, counting code listings.
-- 19 standalone C examples in `examples/`.
+- 24 standalone C examples in `examples/`.
 
 ## Verified versus unverified
 
@@ -21,3 +21,9 @@ The language specification is ISO/IEC 9899:2024. Features such as `nullptr`, `au
 ## Acceptance criteria for a reading edition
 
 A complete reading draft must build from the latest source, include the preface and all five appendices, show a navigable table of contents, have no truncated code listings, and report a measured page count. Publication-ready status additionally requires source and example audits, cross-compiler results, comprehensive proofreading, and an index.
+
+## Subsequent expansion: practical systems examples
+
+Expanded Chapters 8, 11, 13–15, 17 and 19 with additional reasoning, contracts, and engineering examples. Added three complete programs: a checked frame encoder/decoder, a partial-write callback sink, and a multi-file checksum module. Appendix C now explains their correctness conditions and boundary tests. The Makefile and CI script compile and test 24 programs.
+
+PDF page count and publication status must be verified from the newly generated artifact rather than assumed from the manuscript change. The new GitHub Actions PDF build may be waiting behind earlier runs.
