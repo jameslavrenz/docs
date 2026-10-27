@@ -60,7 +60,7 @@ The operators `&&`, `||`, and comma (when used as an operator) introduce sequenc
 
 For an unsigned integer type, arithmetic is performed modulo one more than its maximum representable value. Signed arithmetic overflow has undefined behavior. These are not implementation details that can safely be ignored because a processor uses two's complement.
 
-```c
+```c compile-check
 #include <limits.h>
 #include <stdbool.h>
 
@@ -83,7 +83,7 @@ Object access rules restrict which lvalue types may be used to read or write sto
 
 For object-representation inspection, an appropriately sized array of `unsigned char` and `memcpy` are usually clearer. Representation inspection does not imply that every bit pattern is a valid value of every destination type.
 
-```c
+```c compile-check
 #include <string.h>
 #include <stdint.h>
 
@@ -109,7 +109,7 @@ For array access, verify the index against a known count before evaluation of `a
 
 Suppose a program writes `count` bytes beginning at `offset` into a buffer of `capacity` bytes. The tempting check `offset + count <= capacity` can itself overflow when the quantities use an unsigned type. Rewrite the requirement into conditions that can be checked safely:
 
-```c
+```c compile-check
 #include <stdbool.h>
 #include <stddef.h>
 
