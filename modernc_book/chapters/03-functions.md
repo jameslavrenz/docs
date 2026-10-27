@@ -178,16 +178,16 @@ For host-based firmware tests, a function that accepts a byte buffer and a lengt
 
 A parser does two jobs: it recognizes a sequence of characters and it interprets the recognized sequence as a value. Combining both stages into an unchecked conversion makes it easy to accidentally accept trailing garbage or overflow.
 
-Consider a decimal parser with this contract: the input must be a nonempty sequence of ASCII digits, its value must fit in \`unsigned\`, and on failure the output must remain unchanged. A clear algorithm is:
+Consider a decimal parser with this contract: the input must be a nonempty sequence of ASCII digits, its value must fit in `unsigned`, and on failure the output must remain unchanged. A clear algorithm is:
 
 1. Reject a null input or null output pointer.
 2. Reject empty text.
 3. Start an accumulator at zero.
-4. For each byte, reject anything outside \`'0'\` through \`'9'\`.
+4. For each byte, reject anything outside `'0'` through `'9'`.
 5. Before multiplying by ten, check that the new value is representable.
 6. Assign the final accumulator to the output once, after the whole string succeeds.
 
-\`examples/parse_unsigned.c\` implements this design. It deliberately differs from \`strtoul\` by rejecting signs and spaces. Neither behavior is inherently better; the application's grammar decides.
+`examples/parse_unsigned.c` implements this design. It deliberately differs from `strtoul` by rejecting signs and spaces. Neither behavior is inherently better; the application's grammar decides.
 
 For a parser that receives a counted span, reject both a null pointer with nonzero length and any claimed length that is not actually backed by valid storage. The latter is a caller precondition C cannot test generically.
 
@@ -195,12 +195,12 @@ For a parser that receives a counted span, reject both a null pointer with nonze
 
 Why return a status and write a value through an out-parameter rather than return a structure containing both? Either design can work. In C, a small result structure is often natural:
 
-\`\`\`c
+```c
 struct parse_result {
     bool ok;
     unsigned value;
 };
-\`\`\`
+```
 
 With this interface, the caller does not manage a separate output pointer. The function can return an all-zero result on failure, then fill both members on success. It may be clearer for small values; an out-parameter may be preferable when writing a large object or retaining a long-established ABI.
 
@@ -208,19 +208,19 @@ Whichever design you choose, state the failure contract. A boolean-returning fun
 
 ## 3.15 File scope, linkage, and modules
 
-C has no built-in class module system. The conventional unit of modularity is a header plus one or more source files. The header exposes declarations; the source file defines those operations and keeps helpers private with \`static\`.
+C has no built-in class module system. The conventional unit of modularity is a header plus one or more source files. The header exposes declarations; the source file defines those operations and keeps helpers private with `static`.
 
 A source file should include its own public header before defining the corresponding functions. That forces the compiler to compare the declared and defined types. If callers include the same header, interfaces cannot silently diverge without diagnostics.
 
-A declaration is not always a definition. For a shared file-scope object, the header can use \`extern unsigned event_count;\`, while precisely one source file supplies \`unsigned event_count = 0;\`. Repeating a non-\`extern\` external object definition across headers or translation units is not a sound substitute for a module.
+A declaration is not always a definition. For a shared file-scope object, the header can use `extern unsigned event_count;`, while precisely one source file supplies `unsigned event_count = 0;`. Repeating a non-`extern` external object definition across headers or translation units is not a sound substitute for a module.
 
 ## 3.16 Passing arrays does not pass their sizes
 
-Suppose a function accepts \`const int values[10]\`. That parameter declaration is adjusted to a pointer type; the compiler does not automatically supply a count of ten and ordinarily cannot check what the caller passed. A more honest general interface accepts \`const int *values, size_t count\`.
+Suppose a function accepts `const int values[10]`. That parameter declaration is adjusted to a pointer type; the compiler does not automatically supply a count of ten and ordinarily cannot check what the caller passed. A more honest general interface accepts `const int *values, size_t count`.
 
-The type \`const int *\` says the function may not modify the elements *through that pointer*. It does not guarantee ownership, lifetime, or thread safety, and it does not make the underlying object immutable if other permitted aliases exist.
+The type `const int *` says the function may not modify the elements *through that pointer*. It does not guarantee ownership, lifetime, or thread safety, and it does not make the underlying object immutable if other permitted aliases exist.
 
-To express a fixed minimum bound, C permits array parameter syntax with \`static\` in the brackets. Such a declaration is a caller contract, not dynamic bounds enforcement. It should be used only when every valid call really supplies enough elements.
+To express a fixed minimum bound, C permits array parameter syntax with `static` in the brackets. Such a declaration is a caller contract, not dynamic bounds enforcement. It should be used only when every valid call really supplies enough elements.
 
 ## 3.17 Recursive functions need a resource argument
 
