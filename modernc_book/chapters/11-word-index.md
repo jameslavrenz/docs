@@ -170,6 +170,18 @@ A Unicode-aware version is a different product. It must define normalization and
 
 **Further problems:** Provide a proof that the insertion loop cannot access index `MAX_WORDS`. Write a test generating 1024 distinct terms. Compare sorted-array and hash-table lookup under high repetition. Design a stable frequency ordering for ties.
 
+## 11.13 Two implementations and two output contracts
+
+This chapter intentionally presents an initial *linear-search teaching implementation* before developing the sorted-index design. The first complete listing stores new words in the order in which it first encounters them. Its final loop prints entries in that insertion order, using a padded word column.
+
+The standalone executable `examples/word_index.c`, in contrast, implements the **sorted-index version**. It uses binary search to locate existing words or an insertion position and shifts records to preserve lexicographic ordering. It emits unpadded `word count` lines and is the version exercised by `tests/test_word_index.sh`.
+
+These are related algorithms, not byte-for-byte copies of the same program. Their important common contracts are bounded storage, case folding for the stated ASCII-compatible environment, count-overflow rejection, and failure rather than silent truncation. Their output ordering and formatting are deliberately different.
+
+For example, the input `pear apple` causes the initial insertion-order implementation to print `pear` before `apple`, while the sorted implementation prints `apple` before `pear`. That is an observable behavioral distinction. A user-facing application or regression test should state which output contract is required.
+
+When migrating from the first implementation to the second, preserve the tokenizer's accepted grammar and error behavior, then change the indexing algorithm and explicitly update the expected ordering. The regression suite tests the second program, not the first chapter listing. A future manuscript-wide listing audit should compile and test both independently.
+
 ## 11.14 A search algorithm with a proof obligation
 
 Binary search is brief enough to fit on a few lines, but it should be understood through its invariant. At the start of each iteration, the insertion point lies in the half-open interval `[lo, hi)`. Every entry strictly before `lo` compares less than the requested word. Every entry at or after `hi` compares greater than or equal to it.
