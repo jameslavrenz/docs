@@ -33,6 +33,8 @@ make all
 [ "$(./tlv_decode)" = 'tlv_decode: OK' ]
 [ "$(./slot_pool)" = 'slot_pool: OK' ]
 [ "$(./frame_stream)" = 'frame_stream: OK' ]
+[ "$(./sort_records)" = 'sort_records: OK' ]
+[ "$(./generic_select)" = 'generic_select: OK' ]
 [ "$(printf 'C23 binary copy' | ./file_copy)" = 'C23 binary copy' ]
 [ "$(./byte_decode)" = 'decoded: 12345678' ]
 sh tests/test_word_index.sh
