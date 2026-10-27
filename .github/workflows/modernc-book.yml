@@ -32,4 +32,10 @@ jobs:
           CC: ${{ matrix.compiler }}
         run: |
           make clean
-          make CFLAGS='-std=c23 -Wall -Wextra -Wpedantic -Werror -O2' check
+          # Clang 18 incorrectly classifies C23's 0b binary literals as a GNU
+          # extension under -Wpedantic. Keep -Werror for all other diagnostics.
+          extra_flags=''
+          if [ "$CC" = 'clang-18' ]; then
+            extra_flags='-Wno-gnu-binary-literal'
+          fi
+          make CFLAGS="-std=c23 -Wall -Wextra -Wpedantic -Werror -O2 $extra_flags" check
