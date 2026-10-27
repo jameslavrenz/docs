@@ -2,12 +2,15 @@ topic	evidence_phrase
 Acquire ordering	memory_order_acquire
 Arena allocator	arena allocation test
 Array decay	array parameter is adjusted to a pointer
+Array indexing	final legal element index
 Bit rotation	rotate-left
+Bitwise operators	Masks, shifts, and flags
 Boolean values	bool
 Bounded input	bounded line reader
 Character encodings	UTF-8
-Comparators	comparator
+Comma operator	comma (when used as an operator)
 Comparator, three-way integer	relational comparisons
+Comparators	comparator
 const qualification	const int
 Copying storage	memmove
 CRC and checksums	checksum
@@ -18,11 +21,13 @@ Error statuses	parse_status
 Exercise solutions	Selected Worked Exercises
 File I/O	fopen
 Frame decoder	frame_stream
-Implementation-defined behavior	implementation-defined
+Generic macro dispatch	The _Generic selection mechanism
 I/O errors	ferror
+Implementation-defined behavior	implementation-defined
 Line input	fgets
 Link-time errors	linker
 Memory layout	padding
+Multi-threading	A threaded application
 Numeric parsing	strtol
 Obsolete handles	stale handle
 Opaque interfaces	opaque
@@ -33,9 +38,11 @@ Release ordering	memory_order_release
 Ring buffers	ring buffer
 State-transition testing	state-transition
 String literals	string literal
+Thread lifecycle	termination protocol and a join
 TLV format	type-length-value
 Unsigned arithmetic	modular
 Unspecified behavior	unspecified
 Wait-free algorithms	wait-free
 Word-index tokenizer	tokenizer
+Zero initialization	Initialize the entire queue
 Zero-length requests	zero-length
