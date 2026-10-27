@@ -460,3 +460,115 @@ For one example, write a review under six headings:
 **Limitations:** untested interleavings, unsupported platforms, and properties requiring hardware or normative review.
 
 This report can be shorter than the program. Its value is making the conditions of correct use explicit.
+
+
+## C.31 An incremental UTF-8 decoder
+
+The central challenge in decoding UTF-8 from a stream is that a transport boundary may divide one encoded scalar value. A decoder that reads only complete strings can treat missing continuation bytes as failure, but a stateful decoder needs to return *incomplete* without discarding valid prefix information.
+
+The `utf8_stream.c` example maintains three fields: a partial unsigned scalar accumulator, the minimum valid scalar value for the chosen sequence length, and the number of continuation octets still needed.
+
+Its transition table is:
+
+| Current state | Incoming byte | New state or result |
+| --- | --- | --- |
+| Ready | 00–7F | Complete ASCII scalar |
+| Ready | C2–DF | Store five payload bits; expect one continuation |
+| Ready | E0–EF | Store four payload bits; expect two |
+| Ready | F0–F4 | Store three payload bits; expect three |
+| Ready | Other | Invalid |
+| Waiting | 80–BF | Append six bits; decrement remaining |
+| Waiting | Other | Invalid; reset |
+| Final continuation | Result in permitted scalar range | Complete; publish value and reset |
+| Final continuation | Overlong, surrogate or too large | Invalid; reset |
+
+The implementation does not commit `*out` while waiting or on malformed input. This is the same strong failure-postcondition pattern used throughout the book: accumulate into local or private state and publish an answer only when the complete candidate has passed validation.
+
+When the producer reports that no more input will ever arrive, a state with `remaining > 0` means truncated UTF-8 input. It is not necessarily an error when the source is merely waiting for its next packet or DMA buffer.
+
+**Independent test vectors:** E2 82 AC must produce U+20AC; F0 9F 99 82 must produce U+1F642; E0 80 80 must be rejected as overlong; ED A0 80 must be rejected as surrogate; F4 90 80 80 must be rejected as greater than U+10FFFF.
+
+A useful property test splits the *same valid octet sequence* into different input chunks and compares the completed scalar sequence. The result should depend on the bytes, not on how they arrived.
+
+### What the example does not do
+
+It does not normalize Unicode, identify grapheme clusters, apply case folding, or choose replacement-character behavior for malformed input. It deliberately rejects malformed sequences and resets state, which is a reasonable strict-parser policy but not a universal text-rendering policy.
+
+It is also not a length-counted entire-text decoder: it emits one scalar at a time. An application must decide whether to append, count, compare, or otherwise process each completed scalar.
+
+## C.32 A bounded TLV decoder
+
+For the TLV decoder, let `size` be the count of input octets and `cursor` the count already consumed. The critical invariant is `cursor <= size`.
+
+Before reading the tag and length, require at least two unconsumed bytes:
+
+```c
+if (size - cursor < 2)
+    return false;
+```
+
+The subtraction is defined under the invariant and cannot underflow. After reading two header octets, advance cursor by two; that remains within the input because the check already proved two octets were available.
+
+Then validate the announced payload length against both limits:
+
+```c
+if (length > TLV_MAX_VALUE || length > size - cursor)
+    return false;
+```
+
+The first comparison is an application storage limit; the second is an input-completeness check. They are not interchangeable. A length can be perfectly valid in the protocol but unavailable in the truncated buffer, or fully present in a huge input but larger than the application permits.
+
+Once both checks pass, `memcpy` receives a valid, bounded source span and a fixed-capacity destination field. The candidate's field count increases only after the complete field has been validated.
+
+### Why commit once?
+
+The decoder builds a local `struct tlv_message candidate = {};` and copies it into `*out` only after it reaches the exact end of the input. This prevents partial configuration updates. For example, a message containing one valid field followed by a truncated second field must not overwrite a previously valid configuration with the first field alone.
+
+The sample tests a valid two-field record, incomplete header, incomplete payload, declared value length above the limit, and excessive field count. Each rejection must leave the previous output values intact.
+
+### Resource reasoning
+
+There are at most four fields and each contains at most eight value octets. That bounds the work of a successful decode and bounds the candidate's storage. Input bytes beyond the fifth field header cause rejection without copying an unbounded amount of data.
+
+The TLV message may represent an empty field sequence. The sample contract accepts a null source pointer when and only when the supplied input length is zero. This avoids constructing any pointer through arithmetic on null.
+
+### Semantics beyond TLV shape
+
+A structurally valid TLV stream may still be an invalid command: it might contain repeated mandatory tags, unsupported tag codes, or semantically inconsistent fields. A real protocol should validate those requirements separately, before committing application state.
+
+A TLV parser does not authenticate the sender. Nor does it guarantee freedom from replay or malicious changes. Those are independent protocol and security concerns.
+
+## C.33 A comparison of decoding contracts
+
+| Contract | Line reader | UTF-8 stream | TLV decoder |
+| --- | --- | --- | --- |
+| Input unit | Hosted stream byte | One octet | Counted octet buffer |
+| Output unit | Terminated line | One Unicode scalar | Structured message |
+| Incomplete input | Waits or EOF handling | `UTF8_MORE` | Rejected as incomplete |
+| Capacity limit | 16 bytes per line | Constant decoder state | Four fields, eight octets each |
+| Failure output | Unchanged | Unchanged scalar | Unchanged record |
+| Recovery | Drain to delimiter | Reset on malformed sequence | Reject entire record |
+| Environment | Hosted streams | Any octet source | Counted buffer |
+| Security guarantee | None | Encoding validity only | Bounds and structural validity only |
+
+The table shows why a general-purpose parser interface is not one-size-fits-all. A blocking line reader owns the task of obtaining bytes. A one-byte decoder depends on the caller to provide the next byte. A whole-message TLV decoder requires that a framing component has already supplied the complete candidate record.
+
+Each design can be correct when its preconditions and error semantics match the surrounding application.
+
+## C.34 Turning an exercise into a reviewable result
+
+For both examples, write a small verification report with these headings:
+
+**Input grammar.** State exactly which byte sequences are legal.
+
+**Invariants.** Identify the bounds and state relationships maintained after every step.
+
+**Failure behavior.** State which outputs are unchanged, which parser state is reset, and which conditions require additional bytes.
+
+**Limits.** Give the maximum allocated storage and maximum local parsing work, distinguishing those from transport waiting time.
+
+**Evidence.** Provide independent test vectors, the compiler and language mode, and the resulting test run.
+
+**Unverified properties.** Identify deployment-specific assumptions, unsupported Unicode operations, authentication, concurrency, and any untested code paths.
+
+A reliable solution is one whose contracts can be reviewed without relying on lucky runtime behavior.
