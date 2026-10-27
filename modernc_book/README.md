@@ -47,7 +47,7 @@ The current expansion adds detailed treatments of module boundaries, sorted word
 - [`callback_sink.c`](examples/callback_sink.c): bounded partial-write handling through a callback and fake output device.
 - [`modules/`](examples/modules/): a separately compiled interface with a self-contained header and executable client.
 
-These supplement the earlier counted-slice and checked-vector examples. Run `make check` to compile and execute the standalone test suite on a C23-capable toolchain.
+Further examples include [`arena_bytes.c`](examples/arena_bytes.c) (bounded byte arena with reset semantics), [`parse_signed.c`](examples/parse_signed.c) (checked decimal parsing including `LONG_MIN`), and [`rotate_bits.c`](examples/rotate_bits.c) (defined 32-bit rotations). These supplement the counted-slice and checked-vector examples. Run `make check` to compile and execute all 27 standalone test programs on a C23-capable toolchain.
 
 ## Build and scope
 
