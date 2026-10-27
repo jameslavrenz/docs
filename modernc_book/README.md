@@ -6,6 +6,8 @@ An original, example-first introduction to the C programming language as standar
 
 ## Reader's route
 
+[Preface: Audience, conventions, and approach](frontmatter/preface.md)
+
 1. [A First Look at C](chapters/01-first-look.md)
 2. [Types, Expressions, and Control](chapters/02-types-expressions.md)
 3. [Functions and Program Structure](chapters/03-functions.md)
