@@ -52,7 +52,9 @@ Further examples include [`arena_bytes.c`](examples/arena_bytes.c) (bounded byte
 
 ## Build and scope
 
-Run `make check` for the 35 standalone executable programs. GitHub Actions also compiles 13 self-contained C listings from the chapters under both GCC 14 and Clang 18, audits local links and heading numbering, and runs GCC 14 UndefinedBehaviorSanitizer. An additional C23 library-dependent chapter listing remains excluded from the generic listing checker because support varies by toolchain. These automated checks do not prove every illustrative fragment is correct.\n\nUse a C23-capable compiler, e.g. `gcc -std=c23 -Wall -Wextra -Wpedantic -O2 program.c -o program`. GCC 15 and newer select C23 by default; Clang 18 and newer recognize `-std=c23`. Individual standard-library facilities can lag behind language support. Check the specific toolchain and C library.
+Run `make check` for the 35 standalone executable programs. GitHub Actions also compiles 13 self-contained C listings from the chapters under both GCC 14 and Clang 18, audits local links and heading numbering, and runs GCC 14 UndefinedBehaviorSanitizer. An additional C23 library-dependent chapter listing remains excluded from the generic listing checker because support varies by toolchain. These automated checks do not prove every illustrative fragment is correct.
+
+Use a C23-capable compiler, e.g. `gcc -std=c23 -Wall -Wextra -Wpedantic -O2 program.c -o program`. GCC 15 and newer select C23 by default; Clang 18 and newer recognize `-std=c23`. Individual standard-library facilities can lag behind language support. Check the specific toolchain and C library.
 
 The most recently published PDF contains **205 typeset pages**, meeting the original 200–230-page length target. This remains a **technical-review draft**, not a claim that final page layout, every illustrative fragment, or a page-numbered index has been fully reviewed. The examples and explanations use original language and emphasize small programs and explicit contracts.
 
