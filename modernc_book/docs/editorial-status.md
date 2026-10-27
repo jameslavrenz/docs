@@ -27,7 +27,7 @@ The extended manuscript checker passed with all internal links and consecutive c
 
 ## PDF status
 
-The successfully published PDF (run 40511272634) contains **205 pages**, meeting the original 200–230-page target. Subsequent changes in this review pass affect CI and documentation, not the typeset manuscript. The PDF remains a draft pending a page-by-page layout and technical review.
+The PDF workflow at commit `4413f2d` (run 40580124200) completed successfully and published a **206-page** reading edition. Automated checks found no off-page text. The contents now fits on one page; the PDF contains 26 navigable chapter/appendix bookmarks. Short code examples are protected against split page breaks. The PDF remains a technical-review draft pending exhaustive visual and page-numbered-index verification.
 
 ## Remaining acceptance criteria
 
@@ -39,3 +39,12 @@ Technical audit of illustrative fragments (13 complete listings compile on two c
 - Promoted three self-contained Chapter 19 examples (header include guard, `static_assert` with `<limits.h>`, and `_Generic` floating dispatch) to the dual-compiler strict listing checker using `c compile-check` fences. Context-dependent surrounding fragments are still illustrative, not independently compile-tested.
 - Existing Appendix F remains a chapter-level topic finder, **not** a conventional verified page-numbered index. Do not advertise it as such in the reading edition.
 - The latest PDF and examples workflows must be checked at their final commit and completion status before publication. No final full-document visual sign-off is claimed here.
+
+## 27 October 2026 — print-layout and index review
+
+- Rendered and inspected representative title, contents, chapter, code, equation, table, and topic-finder pages from the previous 205-page edition. The compact contents formatting now removes the nearly blank second contents page without changing the body font.
+- The 206-page edition has a one-page table of contents, 26 PDF bookmarks, and zero off-page words detected by `check_pdf.py` (GitHub Actions run 40580124200).
+- A page-transition inspection found two remaining code listings that continue across page boundaries; both are larger multi-function examples. This is an improvement from eleven cross-page listing transitions in the prior PDF. This is not a claim of full page-by-page visual sign-off.
+- Alphabetized all 142 topic-finder entries and added an ordering/uniqueness check to CI. Appendix F continues to use **chapter locators**, not verified per-topic page references.
+- Three more self-contained chapter fragments were promoted into strict compile checking (rotate-right, `restrict` array addition, and callback byte sink). GCC 14 / Clang 18 checks now report **46 Markdown listings checked, two skipped, 129 intentionally contextual or not-yet-compiled C blocks**, and all 35 standalone programs tested successfully.
+- Remaining publication criteria: finish the contextual-fragment technical audit, review the printed page transitions and other representative layouts, and generate/verify a conventional page-numbered index after pagination is frozen.
