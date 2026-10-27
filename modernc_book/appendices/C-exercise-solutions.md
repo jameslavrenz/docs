@@ -286,3 +286,91 @@ For `callback_sink.c`, prove that `offset` starts at zero, never exceeds the req
 For the checksum module, compile the header in isolation and verify that it declares every type it needs. Link a test client with the implementation file, then intentionally omit the implementation and observe the expected linker failure. These exercises distinguish a language error, interface error, runtime test failure, and missing link dependency.
 
 The important lesson is that tests, code review, and explicitly written invariants reinforce each other. A short, compile-tested demonstration can still require careful reasoning before its logic is reused in embedded production code.
+
+
+## C.20 The exact boundary of a signed decimal parser
+
+The most difficult valid input for a signed-decimal parser is often the negative endpoint, `LONG_MIN`. On a two's-complement implementation its magnitude is one greater than `LONG_MAX`, which means a positive signed accumulator cannot hold that magnitude.
+
+The worked solution in `examples/parse_signed.c` instead accumulates an `unsigned long` magnitude. It selects the maximum permitted magnitude based on the sign: `LONG_MAX` for a nonnegative result and `(unsigned long)LONG_MAX + 1UL` for a negative result.
+
+Before accepting each digit, it checks:
+
+```c
+if (magnitude > (limit - digit) / 10UL)
+    return false;
+```
+
+This inequality is derived from the requirement that `10 * magnitude + digit <= limit`. The subtraction and division occur before the multiplication. The parser rejects an input once it would exceed the permitted mathematical range, so the accumulator never overflows.
+
+At the final step, an exact negative endpoint is assigned as `LONG_MIN` rather than converted from an out-of-range positive signed value. For all smaller magnitudes, conversion to `long` is representable and a unary minus can safely be applied.
+
+The grammar is also part of the contract: optional sign, at least one digit, no whitespace, no trailing characters. `+` and `-` by themselves are invalid. The output remains unchanged on failure.
+
+**Boundary tests:** Use `snprintf` to create exact strings for `LONG_MIN` and `LONG_MAX` on the test machine. Add ordinary signed values, leading zeros, sign-only inputs, trailing garbage and much-too-long decimal strings. Confirm the output sentinel is not modified for any rejected string.
+
+## C.21 A byte arena proof
+
+Let the arena capacity be \(C\), its current used count be \(u\), and the requested count be \(n\). The invariant is \(0 \le u \le C\). A request for \(n>0\) bytes is accepted only when \(n \le C-u\).
+
+The expression `C - u` is safe because the function first checks `u <= C`. It follows that \(u+n \le C\), so the updated offset is valid and the returned interval fits in the backing array.
+
+```c
+if (arena->used > ARENA_CAPACITY ||
+    count > ARENA_CAPACITY - arena->used)
+    return false;
+```
+
+The routine computes the returned pointer only after the checks. A failed request leaves both the `used` field and the out-parameter unchanged.
+
+A reset changes `used` back to zero. It does not destroy the underlying byte array, but the allocator's logical contract makes all old borrowed regions invalid for subsequent use. Those bytes may be overwritten by new allocations. This distinction should be explicit in the interface documentation.
+
+The example is a **byte** arena. It does not promise the alignment or object-access rules required for arbitrary typed allocations.
+
+## C.22 Rotations without undefined shifts
+
+For a 32-bit unsigned value, a left rotation by a count \(n\) in the range 1–31 consists of `(x << n) | (x >> (32 - n))`. The count zero must be handled separately, since shifting a 32-bit operand by 32 is invalid.
+
+Normalize any supplied count with `n = count % 32u`. If zero, return the original value. Otherwise both shift counts are in the interval 1–31, satisfying the language's shift-count requirement.
+
+The companion `examples/rotate_bits.c` tests the following independent constants:
+
+| Input | Rotation | Expected value |
+| --- | --- | --- |
+| `0x12345678` | left 0 | `0x12345678` |
+| `0x12345678` | left 4 | `0x23456781` |
+| `0x12345678` | right 4 | `0x81234567` |
+| `0x12345678` | left 32 | `0x12345678` |
+
+It also checks that rotating left and then right by equal counts restores the original value for 64 count choices. That round-trip property is valuable but should not replace the independent constants, because two incorrect inverse functions could agree with each other.
+
+## C.23 Equality and padding
+
+Suppose two `struct event` values contain equal member values. Can `memcmp(&a, &b, sizeof a) == 0` be relied upon to express semantic equality? No. Structure padding bytes are not generally meaningful members, and their stored representations need not be identical. Floating-point members and pointers can add representation-specific concerns as well.
+
+Define equality by comparing the meaningful fields under an explicit application policy. For floating fields, decide whether NaNs and signed zero need special treatment. For a string pointer, decide whether equality means the same pointer identity or identical string contents.
+
+A wire format requires an additional design step: explicitly encode field widths, order and validity values. A raw structure copy is not a general serialization scheme.
+
+## C.24 The ownership trace
+
+Consider an owning vector `a`, a shallow copy `b = a`, and a borrowed pointer `p = a.data`. Initially all three pointer values refer to one allocation.
+
+If `a` grows successfully through `realloc`, the old allocation's lifetime ends, even if the returned pointer value appears unchanged. The borrowed pointer `p` is invalid for accessing the old allocation. The pointer inside `b` is likewise invalid. Destroying `b` would attempt to release storage it no longer owns correctly.
+
+If the vector instead fails to grow, the old allocation remains valid and the strong failure guarantee leaves `a` unchanged. But the copy `b` is still a second apparent owner, so destroying both will remain unsafe. Avoiding shallow ownership copies is a separate rule from handling failed allocation.
+
+A correct design may use an opaque owning type, an explicit deep-copy function or a transfer operation that leaves the source in an empty state. C allows these conventions but does not enforce them automatically.
+
+## C.25 A reviewer’s test matrix
+
+| Operation | Successful boundary | Rejection boundary | Preserve on failure? |
+| --- | --- | --- | --- |
+| Signed parser | `LONG_MIN`, `LONG_MAX` | too many digits | Yes, output unchanged |
+| Byte arena | exactly remaining bytes | one byte too many | Yes, offset and pointer unchanged |
+| 32-bit rotate | counts 0, 31, 32 | all counts permitted via modulo | Not applicable |
+| Counted subslice | ending exactly at length | offset greater than length | Yes, output view unchanged |
+| Vector append | growth succeeds | injected resize failure | Yes, all prior elements |
+| Frame decoder | complete valid frame | truncated or corrupted frame | Yes, output record unchanged |
+
+A passing test for every listed row provides useful evidence. It does not establish arbitrary pointer validity, interrupt safety, or correctness for all possible inputs. Those conclusions require the API contracts and independent reasoning developed in the chapters.
