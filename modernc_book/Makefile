@@ -1,7 +1,9 @@
 CC ?= cc
 CFLAGS ?= -std=c23 -Wall -Wextra -Wpedantic -O2
 .PHONY: all clean check
-all: hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy word_index packet_decode byte_codec
+all: hello digits parse_unsigned byte_decode word_count checked_add ring_buffer checked_sum vector file_copy word_index packet_decode byte_codec checked_interval
+checked_interval: examples/checked_interval.c
+	$(CC) $(CFLAGS) $< -o $@
 byte_codec: examples/byte_codec.c
 	$(CC) $(CFLAGS) $< -o $@
 packet_decode: examples/packet_decode.c
