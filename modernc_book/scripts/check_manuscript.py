@@ -98,11 +98,11 @@ if finder.is_file():
         errors.append(f"Topic finder unexpectedly short: {len(entries)} entries")
     for line in entries:
         # Match both singular/plural and ranges; check all number endpoints.
-        for hit in re.finditer(r"\\bChapters?\\s+([0-9]+)(?:[–-]([0-9]+))?", line):
+        for hit in re.finditer(r"\bChapters?\s+([0-9]+)(?:[–-]([0-9]+))?", line):
             for value in (hit.group(1), hit.group(2)):
                 if value is not None and not 1 <= int(value) <= len(chapters):
                     errors.append(f"Invalid topic-finder chapter reference: {line}")
-        for letter in re.findall(r"\\bAppendix\\s+([A-Z])\\b", line):
+        for letter in re.findall(r"\bAppendix\s+([A-Z])\b", line):
             if letter not in letters:
                 errors.append(f"Invalid topic-finder appendix reference: {line}")
     print(f"Checked {len(entries)} topic-finder entries for reference ranges")
