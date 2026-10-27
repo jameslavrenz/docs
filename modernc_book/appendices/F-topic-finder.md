@@ -31,26 +31,26 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 
 ### C
 
+- **C23 migration:** language changes and toolchain probes, Chapter 9; Appendix E.
 - **Callbacks:** function pointers and context, Chapter 17.
 - **Character encodings:** UTF-8 and character count, Chapter 18.
 - **Checked arithmetic:** addition, subtraction and multiplication, Chapters 2, 9 and 15; Appendix B.
 - **CI:** compiler matrix, regression suites and reproducibility, Chapters 8 and 13.
 - **Comma operator:** sequencing and expression rules, Chapter 15.
-- **Comparator, three-way integer:** overflow-safe relational comparison and multi-key sorting, Chapter 17; Appendix C.
 - **Comparators:** `qsort`, signed overflow and consistent ordering, Chapter 17.
+- **Comparator, three-way integer:** overflow-safe relational comparison and multi-key sorting, Chapter 17; Appendix C.
 - **Compound literals:** initialization and object lifetimes, Chapters 2 and 15.
-- **`const` qualification:** pointer access and contracts, Chapter 4.
 - **`constexpr`:** C23 constant objects and feature probes, Chapter 9.
+- **`const` qualification:** pointer access and contracts, Chapter 4.
 - **Conversions:** promotions, narrowing, signed/unsigned arithmetic, Chapter 2.
 - **Copying storage:** `memcpy` versus `memmove`, Chapter 4.
-- **C23 migration:** language changes and toolchain probes, Chapter 9; Appendix E.
 - **CRC and checksums:** format checks and limitations, Chapters 10 and 14.
 
 ### D
 
-- **Decoder, streaming frame:** four-state parser, bounded work and resynchronization, Chapter 10; worked solution, Appendix C.
 - **Data races:** non-atomic shared objects and undefined behavior, Chapter 16.
 - **Declarations:** pointers, functions, arrays and prototypes, Chapters 3–4; Appendix A.
+- **Decoder, streaming frame:** four-state parser, bounded work and resynchronization, Chapter 10; worked solution, Appendix C.
 - **Decoding:** counted input, TLV formats, UTF-8 state machines, Chapters 10 and 18.
 - **Designated initialization:** structures, Chapters 5 and 9.
 - **Device registers:** volatile access and hardware semantics, Chapter 14.
@@ -71,9 +71,9 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 
 ### F
 
-- **Fixed slot pool:** generational handles, retirement and stale references, Chapters 5 and 7; worked solution, Appendix C.
 - **Failure injection:** allocators and byte sinks, Chapters 7 and 13; Appendix C.
 - **File I/O:** `FILE *`, buffering, short reads and writes, Chapter 6.
+- **Fixed slot pool:** generational handles, retirement and stale references, Chapters 5 and 7; worked solution, Appendix C.
 - **Flexible array members:** variable-length records, Chapter 5.
 - **Floating point:** accuracy, range and NaNs, Chapter 2.
 - **Frame decoder:** byte layouts, checksum and strong failure safety, Chapters 10 and 14.
@@ -83,9 +83,9 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 
 ### G–H
 
-- **`getchar`:** the `int` result and `EOF`, Chapter 1.
 - **Generic macro dispatch:** typed maximum functions, side-effect evaluation and limitations, Chapter 19; Appendix C.
 - **Generic selection:** `_Generic`, Chapter 19.
+- **`getchar`:** the `int` result and `EOF`, Chapter 1.
 - **Headers:** declarations, include guards, standalone inclusion, Chapters 3 and 8.
 - **Heap allocation:** `malloc`, `realloc`, capacity planning, Chapter 7.
 - **Hosted implementations:** entry points, files and threads, Chapters 1, 6 and 16.
@@ -93,24 +93,24 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 ### I–L
 
 - **Implementation-defined behavior:** representation and portability, Chapters 2, 9, 15; Appendix A.
-- **Invariants:** loop proofs, buffers, containers, Chapters 4, 7, 10 and 11.
 - **Integer conversion:** representability before casts, Chapter 2.
 - **Integer overflow:** signed undefined behavior, unsigned modular operations, Chapters 2 and 15.
 - **Interrupts:** RTOS and atomic restrictions, Chapter 16.
+- **Invariants:** loop proofs, buffers, containers, Chapters 4, 7, 10 and 11.
 - **I/O errors:** short transfers, buffering and cleanup, Chapter 6.
 - **Lifetime:** automatic, static and allocated objects, Chapters 7 and 15.
 - **Line input:** bounded line reader and resynchronization, Chapter 6.
-- **Link-time errors:** missing definitions and multiple definitions, Chapter 8; Appendix C.
 - **Linkage:** translation units, internal and external definitions, Chapters 3 and 8.
+- **Link-time errors:** missing definitions and multiple definitions, Chapter 8; Appendix C.
 - **Lock-free algorithms:** progress properties, memory order and hardware constraints, Chapter 16.
 
 ### M–N
 
 - **Macros:** double evaluation, stringizing and token pasting, Chapter 19.
-- **Memory layout:** arrays and pointers, Chapter 4; structures and padding, Chapter 5.
-- **Memory ordering:** relaxed, release, acquire and sequential consistency, Chapter 16.
 - **`memcpy`:** copying object representations, Chapters 4 and 15.
 - **`memmove`:** overlapping buffers, Chapter 4.
+- **Memory layout:** arrays and pointers, Chapter 4; structures and padding, Chapter 5.
+- **Memory ordering:** relaxed, release, acquire and sequential consistency, Chapter 16.
 - **Modules:** header plus implementation, Chapters 3 and 8.
 - **Multi-threading:** C threads and resource cleanup, Chapter 16.
 - **NaN:** floating equality and comparator behavior, Chapters 2, 5 and 17.
@@ -121,10 +121,10 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 ### O–P
 
 - **Object representation:** padding, serialization and aliasing, Chapters 5, 14 and 15.
+- **Obsolete handles:** logical lifetime versus physical storage, Chapters 5, 7 and 15.
 - **One-past pointer:** valid construction versus invalid dereference, Chapter 4.
 - **Opaque interfaces:** callback contexts and ownership, Chapters 3 and 17.
 - **Ordering, evaluation:** function arguments and side effects, Chapters 3 and 15.
-- **Obsolete handles:** logical lifetime versus physical storage, Chapters 5, 7 and 15.
 - **Ownership:** borrowed and owning references, Chapters 4 and 7.
 - **Padding:** structure size and equality, Chapter 5.
 - **Partial writes:** callbacks and I/O, Chapters 6 and 17.
@@ -148,13 +148,13 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 
 ### S
 
-- **State-transition testing:** parser and pool validation, Chapter 13.
 - **Sanitizers:** testing evidence and limitations, Chapter 13.
 - **Sequencing:** unsequenced effects and evaluation ordering, Chapter 15.
 - **Serialization:** field widths, endianness, padding, Chapters 5 and 14.
 - **Signed integers:** C23 representation, conversion and overflow, Chapter 2.
 - **Slices:** pointer/length views and range proofs, Chapter 4.
 - **SPSC queue:** atomic producer-consumer exchange, Chapter 16.
+- **State-transition testing:** parser and pool validation, Chapter 13.
 - **`static`:** storage duration and internal linkage, Chapters 3 and 15.
 - **`static_assert`:** translation-time assertions, Chapters 9 and 19.
 - **Storage duration:** object lifetime, Chapter 15.
@@ -165,26 +165,26 @@ For the precise normative meaning of any language rule, consult ISO/IEC 9899:202
 
 ### T–U
 
-- **TLV format:** bounded type-length-value decoding, Chapter 10.
 - **Thread lifecycle:** creation, partial failure and joining, Chapter 16.
 - **Time bounds:** bounded memory versus bounded execution, Chapters 6, 10 and 16.
+- **TLV format:** bounded type-length-value decoding, Chapter 10.
 - **Toolchains:** host versus cross-compiler, Chapter 8; feature support, Chapter 9.
 - **Translation units:** source/header compilation and linking, Chapter 8.
 - **Type inference:** C23 `auto` and `typeof`, Chapter 9.
 - **Undefined behavior:** overflow, invalid pointers, data races, Chapter 15.
 - **Unicode:** scalar values, UTF-8 and normalization boundaries, Chapter 18.
-- **Unspecified behavior:** evaluation order and portability, Chapter 15.
 - **Unsigned arithmetic:** modular rules and checked sizes, Chapter 2.
+- **Unspecified behavior:** evaluation order and portability, Chapter 15.
 - **UTF-8:** complete and incremental decoders, Chapter 18.
 
 ### V–Z
 
-- **`volatile`:** device access versus thread synchronization, Chapters 14 and 16.
 - **Vector:** dynamic capacity, ownership, and failure guarantees, Chapter 7.
-- **Warnings:** pedantic diagnostics and compiler differences, Chapters 9 and 13.
+- **`volatile`:** device access versus thread synchronization, Chapters 14 and 16.
 - **Wait-free algorithms:** progress guarantees, Chapter 16.
-- **Word-index tokenizer:** ASCII assumptions, exact 31-byte limit and EOF behavior, Chapter 11.
+- **Warnings:** pedantic diagnostics and compiler differences, Chapters 9 and 13.
 - **Word index:** sorting, insertion invariants, errors and complexity, Chapter 11.
+- **Word-index tokenizer:** ASCII assumptions, exact 31-byte limit and EOF behavior, Chapter 11.
 - **Zero initialization:** aggregate initialization versus raw bytes, Chapters 5, 7 and 9.
 - **Zero-length requests:** allocation and slice policies, Chapters 4 and 7.
 
