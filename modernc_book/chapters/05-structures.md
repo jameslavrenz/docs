@@ -119,3 +119,61 @@ Opaque types are especially useful for devices, parsers, and protocol sessions. 
 ## 5.8 Exercises
 
 **5.4** Trace the queue above across eight pushes, one failed push, three pops, and three more pushes. **5.5** Add a `queue_peek` operation that does not remove an item. **5.6** Test that a failed pop leaves the output unchanged. **5.7** Encode `kind` and `count` in a documented byte order without copying the structure representation. **5.8** Compare the memory requirements of this queue and a linked queue for the same maximum capacity.
+
+
+## 5.9 Structure layout as a local implementation detail
+
+A structure value is a collection of logically related members, not a universally portable byte record. A compiler may insert padding before, between, and after members so that each can be accessed at an appropriate alignment. The expression `sizeof(struct sample)` therefore answers a question about this implementation's object layout; it does not define a network packet size.
+
+Use `offsetof` from `<stddef.h>` when you genuinely need a member's offset within a structure. Avoid guessing offsets from the declaration. Embedded systems sometimes depend on a vendor-defined register structure layout, but that dependency should be explicit, reviewed against the compiler ABI, and separated from protocol serialization.
+
+A structure assignment copies the member values, including pointer *values*, not heap allocations reachable through those pointers. If a record contains `char *name`, copying the record makes two references to the same storage. It does not perform a deep copy, extend the pointed-to object's lifetime, or establish a second independent owner.
+
+## 5.10 Flexible array members
+
+A final structure member can be a flexible array. It has no fixed element count in the structure's definition:
+
+```c
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+struct message {
+    size_t length;
+    unsigned char bytes[];
+};
+```
+
+A caller may allocate extra storage sufficient for the header and a requested number of byte elements. The size computation must be checked against `SIZE_MAX` before the call to `malloc`, and the allocated object must remain alive during access. This representation is useful for variable-length messages in one allocation, but it is inappropriate when a strictly bounded static buffer is preferable.
+
+Flexible array members have restrictions: they belong at the end of an eligible structure, and the containing type cannot be used in every context where an ordinary fixed-size structure can. They also do not turn the member into a bounds-checked array; the actual allocation size still matters.
+
+## 5.11 Layout-independent serialization
+
+A portable encoder establishes each output byte deliberately. Consider a record with an 8-bit kind and 16-bit little-endian length. Its wire representation can use exactly three octets regardless of padding in the in-memory structure:
+
+```c
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+
+bool encode_header(unsigned char *dst, size_t size,
+                   uint8_t kind, uint16_t length)
+{
+    if (dst == nullptr || size < 3) return false;
+    dst[0] = kind;
+    dst[1] = (unsigned char)length;
+    dst[2] = (unsigned char)(length >> 8);
+    return true;
+}
+```
+
+This example assumes an octet-oriented destination and should be used only where the target's byte representation meets that contract. The field width and endianness are design decisions, independent of the host machine.
+
+## 5.12 Data-structure choice follows requirements
+
+A linked list offers insertion without moving contiguous records, but each node needs storage and a link, and traversal is not random access. A fixed array has locality and predictable overall capacity but may need to shift elements during insertion. A ring buffer is excellent for FIFO traffic but does not support arbitrary deletion efficiently.
+
+For an MCU message queue with a known maximum occupancy, the fixed array or ring buffer may be easier to justify than a heap-backed list. If the queue is shared with an interrupt, however, a nonconcurrent ring implementation remains unsafe without a synchronization design. Capacity, ownership, timing, and concurrency are separate requirements.
+
+**Further problems:** Implement a deep-copy operation for a record owning a dynamically allocated string. Show how to reject a flexible-array allocation whose size calculation overflows. Write an encoder and decoder for the three-octet header, testing both directions and malformed lengths.
