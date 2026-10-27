@@ -188,3 +188,129 @@ An embedded firmware image may link application code, an RTOS, a runtime library
 ### Exercises
 
 **8.8** Compile the module example with separate `-c` steps. **8.9** Remove the implementation file from the link command and explain the resulting diagnostic. **8.10** Delete `<stddef.h>` from the header and determine why standalone inclusion now fails. **8.11** Add a unit-test client using the same header but a different `main`.
+
+
+## 8.19 Follow the module through the compiler
+
+The repository's `examples/modules/` directory contains three files: `checksum.h`, `checksum.c`, and `main.c`. They illustrate a complete but small source-level library.
+
+The header declares an operation that computes a byte-wise XOR of a counted input:
+
+```c
+#ifndef BOOK_CHECKSUM_H
+#define BOOK_CHECKSUM_H
+
+#include <stdbool.h>
+#include <stddef.h>
+
+bool book_xor_checksum(const unsigned char *bytes, size_t count,
+                       unsigned char *out);
+
+#endif
+```
+
+The implementation includes this header. That makes it impossible for its function definition to silently disagree with the declaration without the compiler having the opportunity to diagnose the mismatch.
+
+A caller also includes the same header. The compiler can then type-check the function call, even when it has not yet seen the implementation's source file.
+
+The entire demonstration is built as a single executable in the book's main Makefile. However, its two source files can also be compiled separately to object files:
+
+```sh
+cc -std=c23 -Wall -Wextra -Wpedantic -c examples/modules/checksum.c -o checksum.o
+cc -std=c23 -Wall -Wextra -Wpedantic -c examples/modules/main.c -o module_main.o
+cc checksum.o module_main.o -o modules_demo
+./modules_demo
+```
+
+These commands are run from the `modernc_book` directory and assume a compiler named `cc` that understands C23. The final link command is what combines the two compiled translation units into a runnable program.
+
+## 8.20 A header is a contract, not a shared implementation file
+
+A public header normally provides declarations and the types needed by callers. Ordinary externally linked function definitions belong in implementation files. If an externally linked definition is pasted into a header included by many source files, the linker may encounter multiple definitions.
+
+There are legitimate header-defined functions, including appropriately declared `static inline` functions and implementation-specific patterns. Those require understanding the function's linkage and emission rules. The straightforward starting design is one externally visible definition in one source file, with declarations visible through a self-contained header.
+
+The include guard stops repeated textual inclusion within one translation unit. It does not resolve multiple definitions across different translation units. These are separate concerns.
+
+An implementation file should generally include its own public header first. If the function signature changes accidentally, a compile-time discrepancy is detected close to the source of the mistake.
+
+## 8.21 The difference between syntax errors and link errors
+
+Imagine the caller includes the header and invokes `book_xor_checksum`, but the object file containing the function definition is omitted from the link. Each source file may compile perfectly well on its own. The final link step then fails to resolve the function's external symbol.
+
+That is not a missing declaration; the declaration was present. It is a missing definition in the linked program.
+
+Conversely, if the caller omits the header and uses an undeclared function, modern C requires a diagnostic for the invalid declaration situation. A later linker success cannot repair the source-level type contract.
+
+Distinguishing these cases makes build failures easier to diagnose:
+
+| Symptom | Likely stage | First investigation |
+| --- | --- | --- |
+| Unknown type `size_t` | Compile | Header's own dependencies |
+| Conflicting function types | Compile | Declaration versus definition |
+| Undefined reference to a known function | Link | Missing object or library |
+| Multiple definition of a symbol | Link | Repeated external definitions |
+| Program runs but output is wrong | Execution | Algorithm and input contracts |
+| Works on host but not on MCU | Target integration | Runtime, ABI, drivers and linker script |
+
+These are categories, not a complete error taxonomy; compilers and linkers use different diagnostic messages.
+
+## 8.22 Automate dependencies rather than relying on luck
+
+Suppose `checksum.h` changes but a build system recompiles only `checksum.c`. The old `main.o` may have been compiled using a different interface assumption. A successful link is not always enough to establish source-level agreement if objects come from incompatible revisions.
+
+Makefile dependencies must therefore include included headers as well as source files. On many GCC-compatible toolchains, options such as `-MMD -MP` can generate dependency files listing included non-system headers. The exact flag support should be checked on the chosen compiler.
+
+The book's small Makefile can list the three module files explicitly, avoiding a need for generated dependencies in the teaching example. Larger projects should move to reliable dependency generation or a build system that handles it.
+
+A clean build is useful for validation, but it should not be the only way to avoid stale object files in daily work.
+
+## 8.23 Host and target have different responsibilities
+
+The C language defines source and translation semantics, but it does not choose a particular microcontroller linker script, reset vector, RTOS runtime, memory map, or device driver.
+
+An embedded build can involve:
+- a cross-compiler targeting a different instruction set;
+- startup code that initializes memory before calling application entry points;
+- a linker script locating code and data in flash and RAM;
+- a chosen implementation of the C library, sometimes with reduced functionality;
+- hardware-specific interrupt and peripheral definitions;
+- a flashing and debugging mechanism.
+
+A C module can remain portable even while the final firmware image is highly platform-specific. Isolate target details in separate adapters and keep the module's public contract independent of register addresses where possible.
+
+A hosted `FILE *` test does not prove that the firmware image has a filesystem, and a hosted `<threads.h>` test does not prove that the MCU toolchain supplies C threads. Test those interfaces separately.
+
+## 8.24 Feature tests must include the library
+
+A compiler accepting `-std=c23` does not guarantee that its selected C library provides every new C23 header. A feature probe should include the intended header, use a representative interface, compile, link, and when meaningful, run the result.
+
+For `<stdckdint.h>`, a probe calls `ckd_add` on fitting and overflowing operands. For `<stdbit.h>`, it calls the desired bit utility. For `#embed`, a probe includes a small known binary resource and verifies its compiled contents. Those are different checks because some features are language-front-end functionality and others depend on the library or build resource handling.
+
+Do not silently downgrade a test to C17 and still report that it verified C23 support. Record the exact dialect, compiler, library, target, and observed result.
+
+## 8.25 Reproducible does not mean identical machine code
+
+Two conforming compilers may generate different instructions from the same C program while preserving its required observable behavior. Different optimization levels, ABIs, standard libraries and linker configurations also affect the resulting executable.
+
+A reproducible software workflow should identify its source revision, toolchain and options so an observed build can be repeated. Bit-for-bit reproducible binaries require additional controls, such as deterministic archives, build paths, timestamps and toolchain versions.
+
+For this book, the immediate goal is narrower but important: each example should compile and execute under the specified C23-capable CI compilers, and the PDF should be generated from the intended manuscript revision.
+
+## 8.26 A teaching exercise in failure classification
+
+Deliberately introduce one fault at a time into the checksum module:
+
+1. Remove `<stdbool.h>` from the header and compile a client that includes it first.
+2. Change the function's output pointer type in the implementation only.
+3. Omit the implementation object when linking the client.
+4. Change the algorithm to XOR one byte fewer than required.
+5. Change the source's accepted null-pointer contract but leave its tests unchanged.
+
+For each, record whether compilation fails, linking fails, execution fails a test, or a contract mismatch remains hidden by incomplete tests.
+
+This exercise emphasizes the limits of each stage. Compilers catch some interface errors. Linkers resolve definitions. Runtime tests check selected behaviors. Code review and specifications establish the requirements against which those behaviors should be judged.
+
+### Further exercises
+
+**8.12** Compile the module into separate object files and link them by hand. **8.13** Make a header self-contained by including its required standard type definitions. **8.14** Add a generated header-dependency file for a two-source project. **8.15** Create separate host and embedded build configurations without changing the checksum algorithm. **8.16** Document the difference between a missing function declaration and a missing function definition.
