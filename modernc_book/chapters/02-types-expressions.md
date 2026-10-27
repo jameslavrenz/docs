@@ -287,3 +287,98 @@ When zero-sized allocations are undesirable, a caller can separately reject zero
 ### Worked questions
 
 What is the type of `sizeof buffer`? Why can a byte count greater than `INT_MAX` not safely be passed as an `int` length without a range check? Why can `INT_MIN` not always be negated? What does `a & b == 0` mean without additional parentheses? For each, answer by applying the language rules rather than by running one compiler and memorizing its output.
+
+
+## 2.20 Parsing a signed integer without invoking signed overflow
+
+A decimal parser for a signed type is trickier than one for an unsigned type. The problem is the negative endpoint. On a two's-complement implementation, the negative range contains one more magnitude than the positive range. For a typical 32-bit `long`, `LONG_MIN` is −2,147,483,648 while `LONG_MAX` is 2,147,483,647.
+
+An implementation that accumulates a positive signed magnitude and negates it at the end cannot represent the magnitude of `LONG_MIN` during parsing. Its valid final answer becomes impossible to compute through that intermediate value.
+
+One solution is to accumulate the magnitude in an unsigned type. Parse an optional sign first, then choose the maximum allowed magnitude:
+
+```c
+const unsigned long limit =
+    negative ? (unsigned long)LONG_MAX + 1UL
+             : (unsigned long)LONG_MAX;
+```
+
+C23's two's-complement requirement makes the negative endpoint's magnitude one larger than the positive maximum. The unsigned type corresponding to `long` can represent that magnitude.
+
+For each decimal digit `d`, the next mathematical magnitude is `10 * magnitude + d`. Check it *before* performing the arithmetic:
+
+```c
+if (magnitude > (limit - digit) / 10UL)
+    return false;
+magnitude = magnitude * 10UL + digit;
+```
+
+Here every digit is in the range zero through nine, and the limit is far larger than nine for standard `long` ranges. The subtraction and division therefore have valid operands.
+
+At the end, if the input was negative and the magnitude equals `LONG_MAX + 1`, assign `LONG_MIN` directly. For smaller negative magnitudes, cast the unsigned value into a representable signed value and then negate. Never cast the unrepresentable endpoint magnitude into `long` and then hope negation repairs it.
+
+The program `examples/parse_signed.c` implements this design and tests ordinary values, signs, leading zeros, `LONG_MIN`, `LONG_MAX`, malformed strings, and overflow.
+
+## 2.21 Grammar is independent from arithmetic
+
+The same mathematical value can have multiple textual forms. Is `+00042` valid? Is `42 ` valid? May there be leading whitespace? Are digit separators allowed? Must the parser consume the entire input?
+
+The `parse_signed` example accepts an optional leading plus or minus sign followed by at least one ASCII decimal digit. It rejects spaces before or after the number and rejects all trailing nondigits. The standard function `strtol` intentionally accepts a broader grammar, including leading whitespace, so using it would require checking how that grammar matches the application.
+
+A protocol field containing exactly four ASCII digits may require a still narrower parser that accepts no sign and no variable number of digits. Grammar validation and arithmetic overflow detection are separate responsibilities.
+
+For an externally supplied counted byte span, avoid `strlen`. It is not safe to assume arbitrary data is null-terminated. Instead parse exactly the declared span, test every byte, and return a status explaining whether the grammar and range were valid.
+
+## 2.22 Convert after proving range
+
+Consider converting a signed `long` into an unsigned 16-bit field. Casting the negative value first may produce a valid-looking unsigned integer that does not represent the user's intended value. Check the sign before the cast; then check the upper limit:
+
+```c
+#include <stdint.h>
+#include <stdbool.h>
+
+bool to_u16(long input, uint16_t *out)
+{
+    if (out == nullptr || input < 0 ||
+        (uintmax_t)input > UINT16_MAX)
+        return false;
+    *out = (uint16_t)input;
+    return true;
+}
+```
+
+The comparison uses a domain capable of representing the nonnegative input, so the conversion to the destination type occurs only after representability has been established. Notice that the function does not confuse the destination type's maximum with the application's permitted value. A sensor register might have a 16-bit representation while supporting only the numerical range 0–4095; that additional restriction belongs in the API's contract.
+
+## 2.23 Signed division and remainder
+
+C integer division truncates toward zero. Thus `-7 / 3` yields `-2`, and `-7 % 3` yields `-1`. Some mathematical algorithms require a nonnegative remainder even for negative inputs; implementing them correctly means handling negative operands intentionally rather than assuming C's `%` operator is the mathematical modulo function.
+
+Two special cases must be rejected before signed division: divisor zero, and division of the most negative representable value by −1 when that quotient cannot be represented. In the C23 two's-complement model, `LONG_MIN / -1` overflows its signed result.
+
+A checked division routine can return a boolean success value and leave its quotient output unchanged on failure. If it also returns a remainder, both outputs should be assigned together only after successful validation, so the caller cannot observe a new quotient paired with an old remainder.
+
+## 2.24 Value, representation, and transport
+
+A number has a mathematical meaning; a C object has an implementation-defined in-memory representation within the language's constraints; a file or network packet has a specified external representation. These are three layers.
+
+For example, the mathematical value 4660 fits in a `uint16_t` if that type is available. Its in-memory octet order depends on the target. A little-endian protocol represents it as octets `0x34` and `0x12`. Decoding those bytes requires applying the protocol's rule, not casting an arbitrary byte pointer to a `uint16_t *`.
+
+That distinction is fundamental for embedded interoperability. Different processors may exchange identical packets while using different internal representations.
+
+## 2.25 Why tests need all endpoints
+
+A parser that works for 0, 17, and −17 may still fail at `LONG_MIN`. A size calculation that works for small arrays may wrap at `SIZE_MAX`. A shift that works with count one may invoke undefined behavior with count 32.
+
+Construct tests from the type's limits and the function's domain:
+- The smallest legal value and one value smaller, when representable.
+- The largest legal value and one value larger, when representable.
+- The empty or zero-size case.
+- Malformed input and null arguments when those are permitted error cases.
+- A result that exactly fills available capacity.
+- A result that exceeds capacity by one.
+
+Where a mathematical out-of-range value cannot be represented in the function's input type, use an external representation such as a decimal string to construct the test. This is another reason parser tests require both syntax and range cases.
+
+### Additional exercises
+
+**2.9** Explain why a positive signed accumulator cannot parse `LONG_MIN` on a two's-complement implementation. **2.10** Extend `parse_signed` to work with a pointer and explicit byte length rather than a terminating string. **2.11** Write checked division returning both quotient and remainder and preserving both outputs on failure. **2.12** Define a sensor-register range smaller than `UINT16_MAX` and write a conversion that checks both limits. **2.13** Produce independent decimal-string test cases for the signed maximum and minimum using `snprintf`.
