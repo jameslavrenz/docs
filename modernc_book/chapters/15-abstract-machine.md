@@ -185,3 +185,31 @@ For each expression ask: Which types participate? What conversions occur? Which 
 This short set of questions is particularly effective for parsing, arithmetic kernels, and pointer-heavy utilities.
 
 **Further problems:** Rewrite an overflow-after-addition test into a valid precondition check. Identify the violated rule in a dangling-pointer return. Explain why `memcpy` may safely move representation bytes even though a cast-and-dereference technique is not generally interchangeable.
+
+## 15.14 Draw the memory model before optimizing
+
+A useful sketch separates objects and pointers. For a vector, draw one structure containing a pointer, a length, and a capacity. Draw a separate heap block containing the elements. A shallow assignment of the vector copies its three fields into another structure, creating another pointer to the same block. It does not allocate a second block.
+
+Now suppose one vector calls `realloc`. The old block's lifetime ends on success. Any pointer borrowed from the old block is invalid; the second shallow-copied owner also has an invalid pointer. Destroying both structures can produce invalid releases. The simplest fix is not a clever cast or compiler option but an ownership rule forbidding such copies.
+
+## 15.15 Distinguish value equality from byte equality
+
+For an ordinary `struct`, two values may have equal members but different padding bytes. Comparing their raw representations with `memcmp` is not a general semantic equality test. For floating values, even member-wise `==` needs an application policy concerning NaNs and signed zeros.
+
+Serialization is a further step: it needs a stable external format independent of structure padding, compiler ABI, and machine byte order. This is why Chapter 14 constructs protocol fields byte-by-byte instead of writing the in-memory structure directly.
+
+## 15.16 Expression transformations need preconditions
+
+A mathematically valid rearrangement is not always valid for finite-width C arithmetic. The expression `offset + count <= capacity` looks equivalent to `count <= capacity - offset`, but only the latter can be evaluated safely after first checking `offset <= capacity` when all quantities have type `size_t`.
+
+Similarly, `a + b` can overflow for signed integers even when a later comparison attempts to detect it. A valid transformation must preserve the language-defined behavior for all permitted inputs, not merely produce the same result on small examples.
+
+## 15.17 Observable behavior and the optimizer
+
+Compilers may reorder and eliminate operations when permitted by the language's abstract-machine rules. The fact that a debugger shows a particular sequence of machine instructions does not make that sequence the semantics of the source program.
+
+For concurrent code, atomics and synchronization express ordering requirements across threads. `volatile` affects certain observable accesses but is not a general mechanism for sharing ordinary variables safely. For device registers, additional target-specific rules determine bus transactions and barriers.
+
+### Exercises
+
+**15.7** Draw the heap and stack objects involved in `vector_append`, then redraw them after successful growth. **15.8** Identify when pointer aliases become invalid. **15.9** Compare two structures semantically without reading padding bytes. **15.10** Transform a potentially overflowing length sum into a checked subtraction formulation.
